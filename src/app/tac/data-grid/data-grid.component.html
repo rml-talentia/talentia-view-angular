@@ -1,0 +1,41 @@
+<tf-simple-panel 
+    [cols]="12"
+    margin="none">
+    <tf-grid-row>
+        <tf-panel 
+            [cols]="12"
+            padding="xs" 
+            [dropshadow]="false"
+            borderStyle="none"
+            [coloredBackground]="false"
+            addClasses="tac-data-grid-toolbar"
+            style="text-align: right;">
+            <tf-flat-button *ngFor="let action of data.actions"
+                mode="light" 
+                [name]="action.name"
+                [icon]="action.icon" 
+                text="" 
+                size="md" 
+                margin="sm"
+                (selected)="doAction(action)"></tf-flat-button>
+        </tf-panel>
+    </tf-grid-row>
+    <tf-grid-row>
+        <tf-grid-col [cols]="12">
+            <ag-grid-angular
+                #agGrid
+                class="ag-theme-balham"
+                style="width: 100%; height: 500px;"
+                [gridOptions]="gridOptions"
+                [modules]="modules"
+                [frameworkComponents]="frameworkComponents"
+                [sideBar]="sideBar"
+                [rowHeight]="rowHeight">
+            </ag-grid-angular>
+        </tf-grid-col>
+    </tf-grid-row>
+</tf-simple-panel>
+
+<ng-template #customEditor>
+    <tf-text></tf-text> OLOL
+</ng-template>

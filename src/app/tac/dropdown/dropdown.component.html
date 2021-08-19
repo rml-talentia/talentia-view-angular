@@ -1,0 +1,15 @@
+<tf-input  
+    *ngIf="!data.access"
+    class="text" 
+    typeinput="text" 
+    [disabled]="true"
+    [(ngModel)]="text"></tf-input>
+<tf-dropdown
+    *ngIf="data.access"
+    placeholder=""
+    [showSearchThreshold]="-1"
+    [allowNull]="true"
+    [data]="items"
+    [title]="title"
+    [(ngModel)]="value"
+    (changed)="valueChanged($event)"></tf-dropdown>

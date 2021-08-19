@@ -1,0 +1,8 @@
+<form
+    [formGroup]="formGroup"
+    [action]="!data ? undefined : data.action"
+    (ngSubmit)="doSubmit()">
+    <p style="display:none;">Form Status: {{ formGroup.status  }}</p>
+    <p style="display:none;">Form Value: {{ formGroup.value | json }}</p>
+    <ng-content></ng-content>
+</form>

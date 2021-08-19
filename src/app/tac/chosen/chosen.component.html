@@ -1,0 +1,20 @@
+<tf-input  
+    *ngIf="!data.access"
+    class="text" 
+    typeinput="text" 
+    [disabled]="true"
+    [(ngModel)]="text"></tf-input>
+<ng-content></ng-content>
+<tf-chosen
+    *ngIf="data.access"
+    [appendToBody]="true"
+    dropdownWidth="400px"
+    [data]="items"
+    [(ngModel)]="value">
+    <ng-template 
+        #itemTemplate
+        let-data
+        let-option="option">
+       <ng-container [ngTemplateOutlet]="myItemTemplate" [ngTemplateOutletContext]="{ $implicit: data }"></ng-container>
+    </ng-template>
+</tf-chosen>

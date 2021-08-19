@@ -1,1 +1,67 @@
 /* You can add global styles to this file, and also import other style files */
+.ag-header-cell.left-alignment .ag-header-cell-label {
+    justify-content: flex-start;
+}
+.ag-header-cell.right-alignment .ag-header-cell-label {
+    justify-content: flex-end;
+}
+.ag-header-cell.center-alignment .ag-header-cell-label {
+    justify-content: center;
+}
+
+tac-data-grid {
+    width: 100%;
+}
+
+.tac-data-grid-toolbar > .tf-panel-container {
+    border: 0 !important;
+    background: none !important;
+}
+
+tf-simple-panel.tac-pixel-perfect > div {
+    padding: 2px;
+}
+
+#view-iframe {
+    border: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#view-iframe-wrapper {
+    position: absolute; 
+    margin-top: 50px;
+    right: 0;    
+    top: 0; 
+    bottom: 0; 
+    padding-bottom: 50px;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+#view-iframe-wrapper:not(.menu-toggled) {
+    left: 220px;
+    padding-right: 220px;
+}
+
+#view-iframe-wrapper.menu-toggled {
+    left: 50px;
+    padding-right: 50px;
+}
+
+@media only screen and (min-width: 479px) and (max-width: 1223px) {
+    #view-iframe-wrapper:not(.menu-toggled) {
+        left: 50px;
+        padding-right: 50px;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    #view-iframe-wrapper.menu-toggled,
+    #view-iframe-wrapper:not(.menu-toggled)
+    {
+        left: 0;
+        padding-right: 0;
+    }
+}

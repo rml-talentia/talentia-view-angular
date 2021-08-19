@@ -23,13 +23,71 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
+              {
+                "glob": "**/*",
+                "input": "node_modules/simple-line-icons/css",
+                "output": "/assets/simple-line-icons/css"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/simple-line-icons/fonts",
+                "output": "/assets/simple-line-icons/fonts"
+              },
+              {
+                "glob": "theme*-library.css",
+                "input": "node_modules/@talentia/styles",
+                "output": "./themes/"
+              },
+              {
+                "glob": "*.*",
+                "input": "node_modules/@talentia/styles/assets/fonts/Epilogue",
+                "output": "./themes/"
+              },
+              {
+                "glob": "*.png",
+                "input": "node_modules/@talentia/styles",
+                "output": "./themes/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@talentia/styles/assets",
+                "output": "./assets/"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor/min",
+                "output": "/assets/monaco"
+              },
               "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
+              "node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker3.min.css",
+              "node_modules/clockpicker/dist/bootstrap-clockpicker.min.css",
+              "node_modules/jvectormap-next/jquery-jvectormap.css",
+              "node_modules/@circlon/angular-tree-component/css/angular-tree-component.css",
+              "node_modules/angular2-draggable/css/resizable.min.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/tether/dist/js/tether.min.js",
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "node_modules/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.it.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.en-GB.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.de.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.ru.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.es.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.pt.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.fr.min.js",
+              "node_modules/bootstrap-datepicker/dist/locales/bootstrap-datepicker.el.min.js",
+              "node_modules/clockpicker/dist/bootstrap-clockpicker.min.js",
+              "node_modules/jvectormap-next/jquery-jvectormap.min.js",
+              "node_modules/jvectormap-next/tests/assets/jquery-jvectormap-world-mill-en.js",
+              "node_modules/chart.js/dist/Chart.bundle.min.js",
+              "node_modules/monaco-editor/min/vs/loader.js"
+            ]
           },
           "configurations": {
             "production": {
