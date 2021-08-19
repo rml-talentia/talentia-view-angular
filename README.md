@@ -71,13 +71,8 @@ A meaningful part of code :
         component
       ],
       imports: [ 
-        TacModule,
-        FormsModule
-      ],
-      exports: [
-        FormsModule
-      ],
-      schemas: []
+        TacModule
+      ]
     })(class AnonymousModule {});
     this
       .compiler
