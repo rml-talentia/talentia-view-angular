@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { DataService } from '../service/DataService';
 import { ViewComponent, ViewService } from '../view/view.component';
 
 @Component({
@@ -7,8 +6,7 @@ import { ViewComponent, ViewService } from '../view/view.component';
   templateUrl: './page-content.component.html',
   styleUrls: ['./page-content.component.css'],
   providers: [
-    ViewService,
-    DataService
+    ViewService
   ]
 })
 export class PageContentComponent extends ViewComponent {

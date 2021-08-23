@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from '../service/DataService';
 import { ViewComponent, ViewService } from '../view/view.component';
 
 @Component({
@@ -7,8 +6,7 @@ import { ViewComponent, ViewService } from '../view/view.component';
   templateUrl: './commands-panel.component.html',
   styleUrls: ['./commands-panel.component.css'],
   providers: [
-    ViewService,
-    DataService
+    ViewService
   ]
 })
 export class CommandsPanelComponent extends ViewComponent {

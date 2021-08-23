@@ -1,5 +1,4 @@
 import { Component } from "@angular/core";
-import { DataService } from "../service/DataService";
 import { ViewComponent, ViewService } from "../view/view.component";
 
 
@@ -8,8 +7,7 @@ import { ViewComponent, ViewService } from "../view/view.component";
   templateUrl: './aside-panel.component.html',
   styleUrls: ['./aside-panel.component.css'],
   providers: [
-    ViewService,
-    DataService
+    ViewService
   ]
 })
 export class AsidePanelComponent extends ViewComponent {

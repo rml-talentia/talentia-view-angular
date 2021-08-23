@@ -9,6 +9,7 @@ import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
 import { TemplateService } from './service/TemplateService';
 import { toArray } from 'rxjs/operators';
+import { findByComponentName } from './tac/util';
 
 @Component({
   selector: 'app-root',
@@ -136,9 +137,9 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
     if (!!view.legacy) {
       this.navigationHistory = this.createNavigationHistory(view);
       concat(
-        this.asidePanel.open({ data: [] }),
-        this.commandsPanel.open({ data: [] }),
-        this.pageContent.open({ data: [] })
+        this.asidePanel.open({ components: [] }),
+        this.commandsPanel.open({ components: [] }),
+        this.pageContent.open({ components: [] })
         )
         .pipe(toArray())
         .subscribe({
@@ -161,8 +162,8 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
     const asidePanel = findByComponentName(view, 'AsidePanel');
 
     concat(
-      this.asidePanel.open( { data: !asidePanel ? [] : [asidePanel] }),
-      this.commandsPanel.open({ data: !commandsPanel ? [] : [commandsPanel] }),
+      this.asidePanel.open( { components: !asidePanel ? [] : [asidePanel] }),
+      this.commandsPanel.open({ components: !commandsPanel ? [] : [commandsPanel] }),
       this.pageContent.open(view))
       .pipe(toArray())
       .subscribe({
@@ -281,48 +282,3 @@ function sequencial<T>(...factories: ObservableFactory<T>[])  {
 }
 
 
-function findByComponentName(view: any, componentName: string): any {
-  return findInView(view, 
-    (component: any, parent: any, index: Number, start: Boolean) => componentName === component.componentName ? component : undefined);
-}
-
-function findInView(view: any, finder: Function) {
-  let value;
-  visitView(view, (component: any, parent: any, index: Number, start: Boolean) => {
-    return undefined === (value = finder(component, parent, index, start));
-  });
-  return value;
-}
-
-function visitView(view: any, visitor: Function) {
-  const components = view
-    .data
-    .filter((component: any) => null !== component);
-  for (let i = 0; i < components.length; i++) {
-    let component = components[i];
-    if (false === visit(component, visitor, null, i)) {
-      return;
-    }
-  }
-}
-
-function visit(component: any, visitor: Function, parent?: any, index?: Number) {
-  if (false === visitor(component, 
-    'object' === typeof parent ? parent : null, 
-    'number' === typeof index ? index : 0,
-    true)) {
-    return false;
-  }
-  for (let i = 0; i < component.components.length; i++) {
-    if (false === visit(component.components[i], visitor, parent, index)) {
-      return false;
-    }
-  }
-  if (false === visitor(component, 
-    'object' === typeof parent ? parent : null, 
-    'number' === typeof index ? index : 0,
-    false)) {
-      return false;
-    }
-    return true;
-}

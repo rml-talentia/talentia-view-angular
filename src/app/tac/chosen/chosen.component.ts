@@ -48,19 +48,21 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
   onchange: any;
   ontouched: any;
 
+  @ContentChild('myItemTemplate', { read: TemplateRef})
+  myItemTemplate!: TemplateRef<any>;
+
   ngAfterContentInit(): void {
-    console.log('myItemTemplate:', this.myItemTemplate);
+  
   }
 
 
-  @ContentChild('myItemTemplate', { read: TemplateRef})
-  myItemTemplate!: TemplateRef<any>;
+
 
   ngOnInit(): void {
     this.text = '';
    
 
-    console.log('this.data: ', this.data);
+   // console.log('this.data: ', this.data);
 
  
     const payload = this.data.model.payload;
@@ -105,7 +107,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
 
 
   writeValue(value: any): void {
-    console.log('writeValue(value:', value, ')');
+   // console.log('writeValue(value:', value, ')');
   }
 
   registerOnChange(onchange: any): void {

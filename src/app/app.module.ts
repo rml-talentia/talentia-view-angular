@@ -19,6 +19,7 @@ import { ContextService } from './service/ContextService';
 import { PageContentComponent } from './page-content/page-content.component';
 import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
+import { TemplateService } from '@ag-grid-enterprise/all-modules';
 
 export function createCompiler(compilerFactory: CompilerFactory) {
   return compilerFactory.createCompiler();
@@ -47,6 +48,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     MenuService,
     ContextService,
     ViewService,
+    TemplateService,
     {
       provide: COMPILER_OPTIONS,
       useValue: {},
