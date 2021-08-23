@@ -10,12 +10,33 @@ import { AppService } from './service/AppService';
 import { TemplateService } from './service/TemplateService';
 import { toArray } from 'rxjs/operators';
 import { findByComponentName } from './tac/util';
+import { TFLocalizationService } from '@talentia/components';
+
+export function localizationServiceFactory() {
+  const localizationService: TFLocalizationService = new TFLocalizationService();
+
+  localizationService.culture = 'fr-FR';
+  localizationService.dateFormat = 'dd/mm/yyyy';
+  localizationService.dateSeparator = '/';
+  localizationService.decimalSeparator = ',';
+  localizationService.groupSeparator = ' ';
+  localizationService.numberDecimalPlaces = 3;
+  localizationService.timeFormat = 'HH:mm:ss';
+  localizationService.timeSeparator = ':'
+
+  return localizationService;
+}
+
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   providers: [
+    {
+      provide: TFLocalizationService,
+      useFactory: localizationServiceFactory
+    },
     AppService,
     TemplateService
   ]

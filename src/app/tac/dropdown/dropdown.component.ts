@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectorRef, Component, forwardRef, Injector, Input, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { AfterContentInit } from '@angular/core';
+import { ChangeDetectorRef, Component, forwardRef, Injector, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {  TFDropdownItem, TFEvent } from '@talentia/components';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -10,21 +11,26 @@ import { ViewService } from 'src/app/view/view.component';
   selector: 'tac-dropdown',
   templateUrl: './dropdown.component.html',
   styleUrls: ['./dropdown.component.css'],
-//  encapsulation: ViewEncapsulation.None,
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     multi: true,
     useExisting: forwardRef(() => DropdownComponent)
-  }]
+  }],
+  encapsulation: ViewEncapsulation.None
 })
-export class DropdownComponent implements OnInit, ControlValueAccessor {
+export class DropdownComponent implements OnInit, ControlValueAccessor, AfterContentInit {
 
   constructor(
     private http: HttpClient,
     private viewService: ViewService,
     private changeDetectorRef: ChangeDetectorRef,
     private injector: Injector) { }
+  ngAfterContentInit(): void {
+    console.log('form: ', this.form);
+  }
 
+    @Input()
+    form!: FormGroup;
 
 
   @Input()
@@ -33,6 +39,7 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   title!: string;
   items!: TFDropdownItem[];
   itemsSubscription!: Subscription | null;
+  @Input()
   value!: string | null;
   text: string  = '';
   onchange: any;
@@ -98,6 +105,8 @@ export class DropdownComponent implements OnInit, ControlValueAccessor {
   }
 
   valueChanged(event: TFEvent) {
-    this.onchange(event.source.selectedItem?.name || null);
+    if (!!this.onchange) {
+      this.onchange(event.source.selectedItem?.name || null);
+    }
   }
 }

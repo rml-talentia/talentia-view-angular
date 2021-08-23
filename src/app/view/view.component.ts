@@ -19,6 +19,7 @@ import { AppService } from '../service/AppService';
 import { visit } from '../tac/util';
 import { TemplateService } from '../service/TemplateService';
 import { FormService } from '../service/FormService';
+import { TFEvent } from '@talentia/components';
 
 
 @Injectable()
@@ -128,6 +129,88 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
         this.componentRef.instance.componentByIndex = this.componentByIndex = this.createComponentByIndex();
         this.componentRef.instance.forms = this.forms = this.createForms();
         this.componentRef.instance.submit = this.submit.bind(this);
+
+        this.componentRef.instance.dummy = { 
+          field: {
+            selected: (event: TFEvent) => {
+              console.log('field selected: ', event);
+            }
+          },
+          dropdown: {
+            value: null,
+            data: [
+              {
+                name: 'debits',
+                label: 'Débits'
+              },
+              {
+                name: 'encaissements',
+                label: 'Encaissements'
+              }
+            ]
+          },
+          chosen: {
+            value: null,
+            focus: (event: TFEvent) => {
+              console.log('focus this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+             // this.componentRef.instance.dummy.chosen.value = [];
+            //  event.source.onTouchedCallback();
+
+    //        event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component.setFocus();
+             const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
+             console.log(chosen);
+            // chosen.onChangeCallback();
+
+          //   chosen.open();
+             setTimeout(() => {
+            //  chosen.el.nativeElement.querySelector('input').focus()
+             });
+             //this.componentRef.changeDetectorRef.markForCheck();
+
+            },
+            blur: (event: TFEvent) => {
+              console.log('blur this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+             // this.componentRef.instance.dummy.chosen.value = [];
+       //      this.componentRef.changeDetectorRef.markForCheck();
+
+              const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
+              chosen.onTouchedCallback();
+              
+            },
+            removed: (event: TFEvent) => {
+              setTimeout(() => {
+              console.log('remove this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+              this.componentRef.instance.dummy.chosen.value = null;
+              this.componentRef.changeDetectorRef.markForCheck();
+              }, 2000);
+            },
+            data: [
+              {
+                  id: 1,
+                  text: 'Vienna',
+                  group: 'Austria'
+              },
+              {
+                  id: 2,
+                  text: 'Brussels',
+                  group: 'Belgium'
+              },
+              {
+                  id: 3,
+                  text: 'Antwerp',
+                  group: 'Belgium'
+              },
+              {
+                  id: 4,
+                  text: 'Sofia',
+                  group: 'Bulgaria'
+              }
+            ]
+          } 
+        };
+
+        
+
         this.componentRef.changeDetectorRef.detectChanges();
         //this.componentRef.injector.get(ChangeDetectorRef).reattach();
       });
@@ -183,6 +266,8 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
     let ignoredComponent: any = null;
     let form: any = null;
 
+    let dataBind: string;
+
     components
       .forEach((component: any) => {
         visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
@@ -202,33 +287,43 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
           if (start) {
             componentIndex++;
           }
+
+
+          const required = !!parent && 'Field' === parent.componentName && parent.required;
+
           const componentBind = `componentByIndex[${componentIndex}]`;
+          const formControlBind = !component.name ? '' : `                
+            #inputbase
+            #formControl="ngModel"
+            [form]="form"
+            name="${component.name}"
+            [(ngModel)]="${dataBind}.${component.name}"
+            ${required ? 'required' : ''}
+          `.split(/ *\n */).join(' ');
+
+
           switch (component.componentName) {
             case 'Transaction':
               template.push(start ? `
                 <input 
                   type="hidden" 
-                  name="sessionId" 
-                  formControlName="sessionId" />
+                  name="sessionId" />
                 <input 
                   type="hidden" 
-                  name="_currentSessionId" 
-                  formControlName="_currentSessionId" />
+                  name="_currentSessionId" />
                 <input 
                   type="hidden" 
-                  name="_currentTransaction" 
-                  formControlName="_currentTransaction" />
+                  name="_currentTransaction" />
                 <input 
                   type="hidden" 
-                  name="_currentOption" 
-                  formControlName="_currentOption" />
+                  name="_currentOption" />
                 <input 
                   type="hidden" 
-                  name="_currentPath" 
-                  formControlName="_currentPath" />
+                  name="_currentPath" />
                 <input 
                   type="hidden" 
-                  [formControlName]="${componentBind}.csrfTokenName" />` : ``);
+                   />` : ``);
+                   // [formControlName]="${componentBind}.csrfTokenName"
               break;
             case 'GridLayout':
               template.push(start ? `<tf-grid-layout>` : '</tf-grid-layout>');
@@ -308,7 +403,8 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
               <tf-field 
                 addClasses="${!!component.title.text && !!component.title.text.trim() ? 'tf-bold' : ''}"
                 title="${!!component.title.text && !!component.title.text.trim() ? component.title.text : '&nbsp;'}" 
-                cols="${!!component.cols ? component.cols : 4}">
+                cols="${!!component.cols ? component.cols : 4}"
+                (selected)="dummy.field.selected($event)">
               ` : `
               </tf-field>`);
               break;
@@ -316,11 +412,16 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
               // template.push(start ? `
               //   <form class="form" method="POST" action="${component.action}" onsubmit="TalentiaViewBridge.submit(event);"><i>Form</i>` : '</form>');
                 this.formByIndex.push(component);
+                // template.push(start 
+                //   ? `<tac-form
+                //       [data]="${componentBind}"
+                //       [formGroup]="forms[0]"
+                //       #form="ngForm">` : '</tac-form>');
                 template.push(start 
-                  ? `<tac-form
-                      [data]="${componentBind}"
-                      [formGroup]="forms[0]"
-                      #form="ngForm">` : '</tac-form>');
+                  ? `<form
+                      
+                      #form="ngForm">` : '</form>');
+                dataBind = componentBind + '.data';
               break;
             case 'Button':
               //template.push(start ? `<button type="submit" class="button" name="${component.action.name}" value="${component.action.name}"><i class="${component.action.icon}"></i>${component.action.name}</button>` : ``);
@@ -356,23 +457,40 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                       type="hidden" 
                       name="${component.name}" 
                       value="${!!component.value ? component.value.value : ''}" 
-                      formControlName="${component.name}" />` : ``);
+                       />` : ``);
                 break;
             case 'Text':
               // template.push(start ?
               //   (!!component.title.text ? `<label>${component.title.text}</label>` : ``) 
               //   + `<input class="text" type="text" name="${component.name}"  />` : ``);
-              const required = !!parent && 'Field' === parent.componentName && parent.required;
               // formControlName="${component.name}"
               template.push(start 
                 ? `<tf-input 
                     #inputbase
+                    #formControl="ngModel"
+                    [form]="form"
+                    [(ngModel)]="${dataBind}.${component.name}"
+                    ${required ? 'required' : ''}
+                    name="${component.name}"
                     class="text" 
                     typeinput="text" 
                     [disabled]="!${componentBind}.access"
-                    name="${component.name}"
-                    formControlName="${component.name}"
-                    >` : `</tf-input>`);
+                    
+                   >` : `</tf-input>`);
+              break;
+            case 'DatePicker':
+              template.push(start 
+                ? `
+                <tf-datetime-picker
+                  ${formControlBind}
+                  [timepicker]="false"
+                  [todayBtn]="true"
+                  [datepicker]="{ showOnFocus: false }"
+                  class="text" 
+                  typeinput="text" 
+                  [disabled]="!${componentBind}.access">
+                ` : `
+                </tf-datetime-picker>`);
               break;
             case 'Checkbox':
               // template.push(start ? 
@@ -384,26 +502,28 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                     <tf-checkbox 
                       [toggle]="true"
                       title="${component.title.text}"
-                      formControlName="${component.name}">` 
+                      ${this.toInputAttributes(component)}
+                      [(ngModel)]="${dataBind}.${component.name}">` 
                 : ` </tf-checkbox>
                   </tf-field>`);
               break;
             case 'Dropdown':
               template.push(start 
-                ? `<tac-dropdown     
+                ? `
+                <tac-dropdown     
+                    ${formControlBind}
                     [data]="${componentBind}"
-                    title="${component.title.text}"
-                    formControlName="${component.name}">` 
-                : `</tac-dropdown>`);
+                    title="${component.title.text}">` 
+                : `
+                </tac-dropdown>`);
               break;
             case 'Chosen':
               template.push(start 
                 ? `           
-                <tac-chosen     
+                <tac-chosen          
+                  ${formControlBind}                  
                   [data]="${componentBind}"
-                  [value]="${componentBind}.selection"
-                  title="${component.title.text}"
-                  formControlName="${component.name}">
+                  title="${component.title.text}">
                   <ng-template 
                     #myItemTemplate
                     let-data>
@@ -429,6 +549,14 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
     return template.join('\n');
   }
 
+  private toInputAttributes(component: any) {
+    return `                
+      #inputbase
+      #formControl="ngModel"
+      [form]="form"
+      name="${component.name}"
+    `;
+  }
 
   
   createForms(): FormGroup[] {
@@ -487,6 +615,7 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                         break;
                       case 'Hidden':
                       case 'Text':
+                      case 'DatePicker':
                       case 'Dropdown':
                       case 'Chosen': 
                         // if ('compteDebut' === component.name) {
@@ -545,6 +674,7 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                 break;
               case 'Hidden':
               case 'Text':
+              case 'DatePicker':
                 if ('compteDebut' === component.name) {
                   controls[component.name] = new FormControl('101300');
                   break;

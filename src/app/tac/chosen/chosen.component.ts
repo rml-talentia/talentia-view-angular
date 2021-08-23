@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { AfterContentInit, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { TFChosenComponent } from '@talentia/components';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -28,12 +29,17 @@ import { ViewService } from 'src/app/view/view.component';
     useExisting: forwardRef(() => ChosenComponent)
   }]
 })
-export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAccessor {
+export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,  AfterViewChecked, ControlValueAccessor {
 
   constructor(
+    private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
     private viewService: ViewService) { }
 
+  @Input()
+  form!: FormGroup;
+  @Input()
+  name!: string;
   
   @Input()
   data!: any;
@@ -51,8 +57,23 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
   @ContentChild('myItemTemplate', { read: TemplateRef})
   myItemTemplate!: TemplateRef<any>;
 
+  @ViewChild(TFChosenComponent)
+  tfChosen!: TFChosenComponent;
+
+  ngAfterViewChecked(): void {
+   
+  }
+
+
+  ngAfterViewInit(): void {
+    this.workaroundTAC2786();
+   
+  }
+
   ngAfterContentInit(): void {
-  
+    // Array.prototype.forEach.call(document.querySelectorAll('tf-chosen > div.dropdown'), element => { element.addEventListener('focus', event => {  var chosen = event.target.parentElement.__component; chosen.form.controls[chosen.name].markAsTouched();   }); })
+ 
+
   }
 
 
@@ -108,6 +129,10 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
 
   writeValue(value: any): void {
    // console.log('writeValue(value:', value, ')');
+//    if (value !== this.value) {
+//     this.value = value;
+//     this.cd.markForCheck();
+// }
   }
 
   registerOnChange(onchange: any): void {
@@ -116,6 +141,33 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
 
   registerOnTouched(ontouched: any): void {
     this.ontouched = ontouched;
+  }
+
+
+  private workaroundTAC2786(): void {
+     // TAC-2786 : workaround.
+     function isDescendant(element: any, parent: any) {
+      for (let current = element.parentNode; !!current; current = current.parentNode) {
+        if (current === parent) {
+          return true;
+        }
+      }
+      return false;
+    }
+    this
+      .tfChosen
+      .element
+      .nativeElement
+      .querySelector('div.dropdown')
+      .addEventListener('blur', (event: any) => {
+        if (!!event.relatedTarget && isDescendant(event.relatedTarget, event.target)) {
+          return;
+        }
+        this
+          .form
+          .controls[this.name]
+          .markAsTouched();
+      });
   }
 
 }

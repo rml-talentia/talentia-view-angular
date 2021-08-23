@@ -15,6 +15,7 @@ export class TemplateService {
     private injector: Injector) {}
 
   getComponentFactory(template: string): Observable<ComponentFactory<any>> {
+    console.log('template:', template);
     const templateKey = crypto
       .createHash('md5')
       .update(template)
