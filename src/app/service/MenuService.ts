@@ -33,6 +33,11 @@ export class MenuService {
                             title: 'CGCCG',
                             uri: '/function/CGCCG',
                             data: { option: 'CGCCG' }
+                        },
+                        {
+                            title: 'CGCBL',
+                            uri: '/function/CGCBL',
+                            data: { option: 'CGCBL' }
                         }
                     ])
                     .concat(data.map(function m(option: any) {

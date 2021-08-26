@@ -99,6 +99,10 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
     }
 
 
+    this.items = [];
+
+    if (true) return;
+
     this.itemsSubscription = this
         .http
         .post(

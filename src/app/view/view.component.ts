@@ -485,7 +485,8 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                   ${formControlBind}
                   [timepicker]="false"
                   [todayBtn]="true"
-                  [datepicker]="{ showOnFocus: false }"
+                  [autoCompletion]="true"
+                  [datepicker]="{ showOnFocus: false, autoclose: true, format: 'dd/mm/yyyy' }"
                   class="text" 
                   typeinput="text" 
                   [disabled]="!${componentBind}.access">
