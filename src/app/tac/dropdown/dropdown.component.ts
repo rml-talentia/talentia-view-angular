@@ -26,7 +26,7 @@ export class DropdownComponent implements OnInit, ControlValueAccessor, AfterCon
     private changeDetectorRef: ChangeDetectorRef,
     private injector: Injector) { }
   ngAfterContentInit(): void {
-    console.log('form: ', this.form);
+   // console.log('form: ', this.form);
   }
 
     @Input()

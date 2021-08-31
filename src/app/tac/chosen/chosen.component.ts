@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFChosenComponent } from '@talentia/components';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
@@ -40,19 +40,19 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
   form!: FormGroup;
   @Input()
   name!: string;
-  
   @Input()
-  data!: any;
+  value!: string;
+  @Input()
+  data!: any;  
   @Input()
   title!: string;
-  @Input()
-  value!: any[];
-  items!: any[];  
+
+  selection: any[] = [];
+  items: any[] = [];  
   itemsSubscription!: Subscription | null;
 
-  text!: string;
-  onchange: any;
-  ontouched: any;
+  private onchange: any;
+  private ontouched: any;
 
   @ContentChild('myItemTemplate', { read: TemplateRef})
   myItemTemplate!: TemplateRef<any>;
@@ -66,7 +66,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
 
   ngAfterViewInit(): void {
-    this.workaroundTAC2786();
+  //  this.workaroundTAC2786();
    
   }
 
@@ -80,9 +80,10 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
 
   ngOnInit(): void {
-    this.text = '';
+    //this.text = '';
    
-
+    console.log('[CHOSEN] value: ', this.value);
+    console.log('[CHOSEN] data: ', this.data);
    // console.log('this.data: ', this.data);
 
  
@@ -94,12 +95,17 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
     const key = payload.criterias[0].name;
 
 
-    if (this.value) {
-      this.value[0] = { id: this.value[0][key], text: this.value[0][key] };
-    }
+    // if (this.value) {
+     
+    //   this.value[0] = { id: this.value[0][key], text: this.value[0][key] };
+    // }
 
 
-    this.items = [];
+    // this.items = [];
+    // const value = this.data.value.value;
+    // console.log('[CHOSEN] value: ', value);
+    // this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
+    // this.items = this.selection.slice(0);
 
     if (true) return;
 
@@ -137,6 +143,21 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 //     this.value = value;
 //     this.cd.markForCheck();
 // }
+
+
+    //const payload = this.data.model.payload;
+    //const key = payload.criterias[0].name;
+    console.log('[CHOSEN] writeValue value:', value);
+    this.value = value;
+    this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
+    this.items = this.selection;
+
+    // if (!!this.onchange) {
+    //   this.onchange(value);
+    // }
+  //  this.tfChosen.c
+    //this.cd.markForCheck();
+
   }
 
   registerOnChange(onchange: any): void {

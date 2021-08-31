@@ -23,16 +23,21 @@ import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { CellEditorComponent } from './cell-editor/cell-editor.component';
 import { DropdownComponent } from './dropdown/dropdown.component';
 import { ChosenComponent } from './chosen/chosen.component';
+import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
+import { ButtonComponent } from './button/button.component';
 
 
 
 @NgModule({
   declarations: [
+    ButtonComponent,
     FormComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,
-    ChosenComponent//,
+    ChosenComponent,
+    DatetimePickerComponent
+    //,
     //CellEditorComponent
   ],
   imports: [
@@ -62,11 +67,13 @@ import { ChosenComponent } from './chosen/chosen.component';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    ButtonComponent,
     FormComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,
-    ChosenComponent
+    ChosenComponent,
+    DatetimePickerComponent
   ]
 })
 export class TacModule { 

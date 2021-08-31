@@ -201,7 +201,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
 
     switch(this.data.model.modelType) {
-      case 'ListDataGridModel':
+      case 'FinanceListDataGridModel':
         const query = {
           model: this.data.model,
           page: 0,
@@ -233,7 +233,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
               }
             });
         break;
-      case 'TableDataGridModel':
+      case 'FinanceTableDataGridModel':
         const payload = {
           "collectionName": "com.lswe.generale.gene.ecritureComptableTravailList",
           "filterable": "false",

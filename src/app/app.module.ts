@@ -21,6 +21,14 @@ import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
 import { TemplateService } from '@ag-grid-enterprise/all-modules';
 
+/*
+Licence ag-Grid
+
+CompanyName=TALENTIA SOFTWARE FRANCE,LicensedGroup=R&D,LicenseType=MultipleApplications,LicensedConcurrentDeveloperCount=5,LicensedProductionInstancesCount=50,AssetReference=AG-015029,ExpiryDate=5_July_2022_[v2]_MTY1Njk3NTYwMDAwMA==27a33a25fbcf6f91189a022d63c7d5a4
+
+*/
+
+
 export function createCompiler(compilerFactory: CompilerFactory) {
   return compilerFactory.createCompiler();
 }

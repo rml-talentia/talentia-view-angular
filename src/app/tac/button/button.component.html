@@ -1,0 +1,18 @@
+<tf-flat-button
+    *ngIf="icon"
+    mode="light" 
+    [name]="name"
+    [icon]="icon" 
+    text="" 
+    size="md" 
+    margin="sm"
+    (selected)="onSelected($event)"></tf-flat-button>
+<tf-button 
+    *ngIf="!icon"
+    addClasses="tf-width-full"
+    [block]="true"
+    [name]="name"
+    [text]="text" 
+    size="sm" 
+    margin="sm"
+    (selected)="onSelected($event)">

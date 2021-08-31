@@ -130,84 +130,84 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
         this.componentRef.instance.forms = this.forms = this.createForms();
         this.componentRef.instance.submit = this.submit.bind(this);
 
-        this.componentRef.instance.dummy = { 
-          field: {
-            selected: (event: TFEvent) => {
-              console.log('field selected: ', event);
-            }
-          },
-          dropdown: {
-            value: null,
-            data: [
-              {
-                name: 'debits',
-                label: 'Débits'
-              },
-              {
-                name: 'encaissements',
-                label: 'Encaissements'
-              }
-            ]
-          },
-          chosen: {
-            value: null,
-            focus: (event: TFEvent) => {
-              console.log('focus this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
-             // this.componentRef.instance.dummy.chosen.value = [];
-            //  event.source.onTouchedCallback();
+    //     this.componentRef.instance.dummy = { 
+    //       field: {
+    //         selected: (event: TFEvent) => {
+    //           console.log('field selected: ', event);
+    //         }
+    //       },
+    //       dropdown: {
+    //         value: null,
+    //         data: [
+    //           {
+    //             name: 'debits',
+    //             label: 'Débits'
+    //           },
+    //           {
+    //             name: 'encaissements',
+    //             label: 'Encaissements'
+    //           }
+    //         ]
+    //       },
+    //       chosen: {
+    //         value: null,
+    //         focus: (event: TFEvent) => {
+    //           console.log('focus this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+    //          // this.componentRef.instance.dummy.chosen.value = [];
+    //         //  event.source.onTouchedCallback();
 
-    //        event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component.setFocus();
-             const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
-             console.log(chosen);
-            // chosen.onChangeCallback();
+    // //        event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component.setFocus();
+    //          const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
+    //          console.log(chosen);
+    //         // chosen.onChangeCallback();
 
-          //   chosen.open();
-             setTimeout(() => {
-            //  chosen.el.nativeElement.querySelector('input').focus()
-             });
-             //this.componentRef.changeDetectorRef.markForCheck();
+    //       //   chosen.open();
+    //          setTimeout(() => {
+    //         //  chosen.el.nativeElement.querySelector('input').focus()
+    //          });
+    //          //this.componentRef.changeDetectorRef.markForCheck();
 
-            },
-            blur: (event: TFEvent) => {
-              console.log('blur this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
-             // this.componentRef.instance.dummy.chosen.value = [];
-       //      this.componentRef.changeDetectorRef.markForCheck();
+    //         },
+    //         blur: (event: TFEvent) => {
+    //           console.log('blur this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+    //          // this.componentRef.instance.dummy.chosen.value = [];
+    //    //      this.componentRef.changeDetectorRef.markForCheck();
 
-              const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
-              chosen.onTouchedCallback();
+    //           const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
+    //           chosen.onTouchedCallback();
               
-            },
-            removed: (event: TFEvent) => {
-              setTimeout(() => {
-              console.log('remove this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
-              this.componentRef.instance.dummy.chosen.value = null;
-              this.componentRef.changeDetectorRef.markForCheck();
-              }, 2000);
-            },
-            data: [
-              {
-                  id: 1,
-                  text: 'Vienna',
-                  group: 'Austria'
-              },
-              {
-                  id: 2,
-                  text: 'Brussels',
-                  group: 'Belgium'
-              },
-              {
-                  id: 3,
-                  text: 'Antwerp',
-                  group: 'Belgium'
-              },
-              {
-                  id: 4,
-                  text: 'Sofia',
-                  group: 'Bulgaria'
-              }
-            ]
-          } 
-        };
+    //         },
+    //         removed: (event: TFEvent) => {
+    //           setTimeout(() => {
+    //           console.log('remove this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+    //           this.componentRef.instance.dummy.chosen.value = null;
+    //           this.componentRef.changeDetectorRef.markForCheck();
+    //           }, 2000);
+    //         },
+    //         data: [
+    //           {
+    //               id: 1,
+    //               text: 'Vienna',
+    //               group: 'Austria'
+    //           },
+    //           {
+    //               id: 2,
+    //               text: 'Brussels',
+    //               group: 'Belgium'
+    //           },
+    //           {
+    //               id: 3,
+    //               text: 'Antwerp',
+    //               group: 'Belgium'
+    //           },
+    //           {
+    //               id: 4,
+    //               text: 'Sofia',
+    //               group: 'Bulgaria'
+    //           }
+    //         ]
+    //       } 
+    //     };
 
         
 
@@ -403,8 +403,7 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
               <tf-field 
                 addClasses="${!!component.title.text && !!component.title.text.trim() ? 'tf-bold' : ''}"
                 title="${!!component.title.text && !!component.title.text.trim() ? component.title.text : '&nbsp;'}" 
-                cols="${!!component.cols ? component.cols : 4}"
-                (selected)="dummy.field.selected($event)">
+                cols="${!!component.cols ? component.cols : 4}">
               ` : `
               </tf-field>`);
               break;
@@ -419,37 +418,39 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                 //       #form="ngForm">` : '</tac-form>');
                 template.push(start 
                   ? `<form
-                      
                       #form="ngForm">` : '</form>');
                 dataBind = componentBind + '.data';
               break;
             case 'Button':
               //template.push(start ? `<button type="submit" class="button" name="${component.action.name}" value="${component.action.name}"><i class="${component.action.icon}"></i>${component.action.name}</button>` : ``);
-              if (!!component.action.icon) {
-                // tf-flat-button mode="light" 
-
-                template.push(start 
-                  ? `<tf-flat-button
-                      mode="light" 
-                      name="${component.action.name}"
-                      icon="${component.action.icon}" 
-                      text="" 
-                      size="md" 
-                      margin="sm"
-                      (selected)="submit()">` : `</tf-flat-button>`);
-                break;
-              }
-             
               template.push(start 
-                ? `<tf-button 
-                    addClasses="tf-width-full"
-                    [block]="true"
-                    name="${component.action.name}"
-                    icon="${component.action.icon}" 
-                    text="${!component.action.title ? '' : component.action.title.text}" 
-                    size="sm" 
-                    margin="sm"
-                    (selected)="form.doSubmit()">` : `</tf-button>`);
+                ? `<tac-button 
+                    [data]="${componentBind}">` : `</tac-button>`);
+          
+              // if (!!component.action.icon) {
+              //   // tf-flat-button mode="light" 
+
+              //   template.push(start 
+              //     ? `<tf-flat-button
+              //         mode="light" 
+              //         name="${component.action.name}"
+              //         icon="${component.action.icon}" 
+              //         text="" 
+              //         size="md" 
+              //         margin="sm"
+              //         (selected)="submit()">` : `</tf-flat-button>`);
+              //   break;
+              // }             
+              // template.push(start 
+              //   ? `<tf-button 
+              //       addClasses="tf-width-full"
+              //       [block]="true"
+              //       name="${component.action.name}"
+              //       icon="${component.action.icon}" 
+              //       text="${!component.action.title ? '' : component.action.title.text}" 
+              //       size="sm" 
+              //       margin="sm"
+              //       (selected)="form.doSubmit()">` : `</tf-button>`);
               break;
             case 'Hidden':
                 template.push(start 
@@ -481,17 +482,11 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
             case 'DatePicker':
               template.push(start 
                 ? `
-                <tf-datetime-picker
+                <tac-datetime-picker
                   ${formControlBind}
-                  [timepicker]="false"
-                  [todayBtn]="true"
-                  [autoCompletion]="true"
-                  [datepicker]="{ showOnFocus: false, autoclose: true, format: 'dd/mm/yyyy' }"
-                  class="text" 
-                  typeinput="text" 
-                  [disabled]="!${componentBind}.access">
+                  [data]="${componentBind}">
                 ` : `
-                </tf-datetime-picker>`);
+                </tac-datetime-picker>`);
               break;
             case 'Checkbox':
               // template.push(start ? 
@@ -528,6 +523,7 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                   <ng-template 
                     #myItemTemplate
                     let-data>
+                    {{ data | json }}
                     <tf-h-layout grow="end" spacing="sm">                    
                       <tf-text
                         *ngFor="let cell of data.cells; let isFirst=first"
@@ -643,7 +639,7 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
         });
       });
 
-      console.log('forms:', forms);
+     // console.log('forms:', forms);
 
       if (!!forms.length) {
         return forms;
