@@ -25,6 +25,7 @@ import { DropdownComponent } from './dropdown/dropdown.component';
 import { ChosenComponent } from './chosen/chosen.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { ButtonComponent } from './button/button.component';
+import { ViewComponent } from './view/view.component';
 
 
 
@@ -36,7 +37,8 @@ import { ButtonComponent } from './button/button.component';
     BreadcrumbComponent,
     DropdownComponent,
     ChosenComponent,
-    DatetimePickerComponent
+    DatetimePickerComponent,
+    ViewComponent
     //,
     //CellEditorComponent
   ],
@@ -67,6 +69,7 @@ import { ButtonComponent } from './button/button.component';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    ViewComponent,
     ButtonComponent,
     FormComponent,
     DataGridComponent,

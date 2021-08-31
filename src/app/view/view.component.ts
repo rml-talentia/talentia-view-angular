@@ -11,9 +11,11 @@ import {
   SimpleChanges,
   OnDestroy,
   Injectable,
-  ElementRef
+  ElementRef,
+  ViewChildren,
+  QueryList
 } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, FormGroupDirective, NgForm, ValidatorFn, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { AppService } from '../service/AppService';
 import { visit } from '../tac/util';
@@ -59,7 +61,7 @@ export class ViewService {
     ViewService
   ]
 })
-export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
+export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
 
   @ViewChild(
     'container',
@@ -72,6 +74,13 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
   iframe!: ElementRef<any>;
   @ViewChild('iframeWrapper', { read: ElementRef })
   iframeWrapper!: ElementRef<any>;
+
+
+  @ViewChildren('form', { read: NgForm  })
+  formElements!: QueryList<NgForm>;
+
+  @ViewChild('form', { read: NgForm  })
+  formElement!: NgForm;
 
   formGroup!: FormGroup;  
   forms: Array<FormGroup> = [];
@@ -268,6 +277,8 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
 
     let dataBind: string;
 
+    template.push(`<tac-view>`);
+
     components
       .forEach((component: any) => {
         visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
@@ -408,14 +419,7 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
               </tf-field>`);
               break;
             case 'Form':
-              // template.push(start ? `
-              //   <form class="form" method="POST" action="${component.action}" onsubmit="TalentiaViewBridge.submit(event);"><i>Form</i>` : '</form>');
                 this.formByIndex.push(component);
-                // template.push(start 
-                //   ? `<tac-form
-                //       [data]="${componentBind}"
-                //       [formGroup]="forms[0]"
-                //       #form="ngForm">` : '</tac-form>');
                 template.push(start 
                   ? `<form
                       #form="ngForm">` : '</form>');
@@ -426,31 +430,6 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
               template.push(start 
                 ? `<tac-button 
                     [data]="${componentBind}">` : `</tac-button>`);
-          
-              // if (!!component.action.icon) {
-              //   // tf-flat-button mode="light" 
-
-              //   template.push(start 
-              //     ? `<tf-flat-button
-              //         mode="light" 
-              //         name="${component.action.name}"
-              //         icon="${component.action.icon}" 
-              //         text="" 
-              //         size="md" 
-              //         margin="sm"
-              //         (selected)="submit()">` : `</tf-flat-button>`);
-              //   break;
-              // }             
-              // template.push(start 
-              //   ? `<tf-button 
-              //       addClasses="tf-width-full"
-              //       [block]="true"
-              //       name="${component.action.name}"
-              //       icon="${component.action.icon}" 
-              //       text="${!component.action.title ? '' : component.action.title.text}" 
-              //       size="sm" 
-              //       margin="sm"
-              //       (selected)="form.doSubmit()">` : `</tf-button>`);
               break;
             case 'Hidden':
                 template.push(start 
@@ -461,23 +440,16 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                        />` : ``);
                 break;
             case 'Text':
-              // template.push(start ?
-              //   (!!component.title.text ? `<label>${component.title.text}</label>` : ``) 
-              //   + `<input class="text" type="text" name="${component.name}"  />` : ``);
-              // formControlName="${component.name}"
               template.push(start 
-                ? `<tf-input 
-                    #inputbase
-                    #formControl="ngModel"
-                    [form]="form"
-                    [(ngModel)]="${dataBind}.${component.name}"
-                    ${required ? 'required' : ''}
-                    name="${component.name}"
-                    class="text" 
-                    typeinput="text" 
-                    [disabled]="!${componentBind}.access"
-                    
-                   >` : `</tf-input>`);
+                ? `
+                <tf-input 
+                  ${formControlBind}
+                  ${required ? 'required' : ''}
+                  name="${component.name}"
+                  class="text" 
+                  typeinput="text" 
+                  [disabled]="!${componentBind}.access"                    
+                  >` : `</tf-input>`);
               break;
             case 'DatePicker':
               template.push(start 
@@ -489,17 +461,12 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
                 </tac-datetime-picker>`);
               break;
             case 'Checkbox':
-              // template.push(start ? 
-              //   (!!component.title.text ? `<label>${component.title.text}</label>` : ``) 
-              //   + `<input class="text" type="checkbox" name="${component.name}"  />` : ``);
-              // size="lg"
               template.push(start 
                 ? `<tf-field cols="2">
                     <tf-checkbox 
+                      ${formControlBind}
                       [toggle]="true"
-                      title="${component.title.text}"
-                      ${this.toInputAttributes(component)}
-                      [(ngModel)]="${dataBind}.${component.name}">` 
+                      title="${component.title.text}">` 
                 : ` </tf-checkbox>
                   </tf-field>`);
               break;
@@ -543,6 +510,10 @@ export class ViewComponent  implements OnDestroy, AfterViewInit, OnChanges  {
           }
         });
     });
+
+
+    template.push(`</tac-view>`);
+
     return template.join('\n');
   }
 

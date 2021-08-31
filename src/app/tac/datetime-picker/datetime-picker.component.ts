@@ -41,8 +41,9 @@ export class DatetimePickerComponent implements OnInit, ControlValueAccessor {
 
   set value(value) {
     const date = this.dateTimeService.stringToDate(value, false, 'DD/MM/YYYY');
+    this._rawValue = this.dateTimeService.dateToString(date, false);
     this._value = value;
-    this._rawValue = this.dateTimeService.dateToString(date, false) 
+    this.fireChange(value);
   }
 
   get rawValue() {
@@ -53,13 +54,19 @@ export class DatetimePickerComponent implements OnInit, ControlValueAccessor {
     const date = this.dateTimeService.stringToDate(rawValue);
     this._rawValue = rawValue;
     this._value = this.dateTimeService.dateToString(date, false, 'DD/MM/YYYY');
+    this.fireChange(this._value);
   }
-
-
+  
+  private fireChange(newValue: any): void {
+    if (!!this.onchange) {
+      this.onchange(newValue);
+    }
+  }
+ 
   writeValue(value: any): void {
     this.value = value;
   }
- 
+
   registerOnChange(onchange: any): void {
     this.onchange = onchange;
   }

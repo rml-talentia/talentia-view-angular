@@ -11,6 +11,7 @@ import { TemplateService } from './service/TemplateService';
 import { toArray } from 'rxjs/operators';
 import { findByComponentName } from './tac/util';
 import { TFLocalizationService } from '@talentia/components';
+import { FormService } from './service/FormService';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -38,12 +39,19 @@ export function localizationServiceFactory() {
       useFactory: localizationServiceFactory
     },
     AppService,
+    FormService,
     TemplateService
   ]
 })
-export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
+export class AppComponent implements OnInit {
 
-
+  pageLoading: boolean = false;
+  showTitlebar: boolean = true;
+  userInfo!: TFUserInfo;
+  navigationHistory: TFNavigationItem[] = [];
+  private _menu!: Observable<any>;
+  private _options!: TFShellOptions;
+  
   @ViewChild(CommandsPanelComponent)
   commandsPanel!: CommandsPanelComponent;
   @ViewChild(AsidePanelComponent)
@@ -51,15 +59,112 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
   @ViewChild(PageContentComponent)
   pageContent!: PageContentComponent;
 
-  showTitlebar: boolean = true;
-  userInfo!: TFUserInfo;
+  constructor(
+    private applicationRef: ApplicationRef,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private changeDetectorRef: ChangeDetectorRef,
+    private menuService: MenuService,
+    private contextService: ContextService,
+    private appService: AppService,
+    private formService: FormService) {
+      this.appService.postConstruct(this);
+      this.formService.postConstruct(this);
+    }
 
-  private _menu!: Observable<any>;
+  ngOnInit(): void {
+    console.log('[APP] ngOnInit()');
+    window.TalentiaViewBridge._appComponent = this;   
+
+    // userInfo doesn't support async.
+    const self = this;
+    this
+      .contextService
+      .getUserInfo()
+      .subscribe({
+        next(userInfo: TFUserInfo) {
+          self.userInfo = userInfo;
+        }
+      });
+  }
+
+
+  openView(view: any): void {
+    console.log('[APP] openView(', view, ')');
+    const 
+      self = this,
+      iframe = this.pageContent.iframe.nativeElement;
+
+    // Shell loading state.
+    self.pageLoading = true;
+
+    if (!!view.legacy) {
+      this.navigationHistory = this.createNavigationHistory(view);
+      this
+        .clearView()
+        .subscribe({
+          next(componentRefs: ComponentRef<any>[]) {
+            iframe.src = view.legacy.src;
+          }
+        });
+      return;
+    }
+
+    
+    this.hideLegacyView();
+    this.navigationHistory = this.createNavigationHistory(view);
+    this
+      .showView(view)
+      .subscribe({
+        next(componentRefs: ComponentRef<any>[]) {
+          console.log('[APP] views:', componentRefs);
+        }
+      });
+    
+  }
+
+  showView(view: any): Observable<any> {
+    const commandsPanel = findByComponentName(view, 'CommandsPanel');
+    const asidePanel = findByComponentName(view, 'AsidePanel');
+    return concat(
+        this.asidePanel.open( { components: !asidePanel ? [] : [asidePanel] }),
+        this.commandsPanel.open({ components: !commandsPanel ? [] : [commandsPanel] }),
+        this.pageContent.open(view))
+      .pipe(toArray());
+  }
+
+  clearView(): Observable<any> {
+    return this.showView({ components: [] });
+  }
+
+  showLegacyView(): void {
+    const 
+      iframeWrapper = this.pageContent.iframeWrapper.nativeElement,
+      contentWrapper = iframeWrapper.ownerDocument.querySelector('#tf-page-content-wrapper');
+    if (contentWrapper !== iframeWrapper.parentElement) {
+        contentWrapper.appendChild(iframeWrapper);
+    }
+    this.showTitlebar = false;
+    // TODO : angularize
+    iframeWrapper.style.setProperty('display', 'block');
+    window.document.body.style.setProperty('overflow', 'hidden');
+
+    this.pageLoading = false;
+  }
+
+  hideLegacyView(): void {
+    this.showTitlebar = true;
+    this.pageLoading = false;
+    const 
+      iframeWrapper = this.pageContent.iframeWrapper.nativeElement;  
+    // TODO : angularize
+    iframeWrapper.style.setProperty('display', 'none');
+    window.document.body.style.removeProperty('overflow');
+  }
+
   get menu(): Observable<any> {
     return !!this._menu ? this._menu : (this._menu = this.menuService.getMenu());
   }
 
-  private _options!: TFShellOptions;
   get options(): TFShellOptions {
     if (!!this._options) {
       return this._options;
@@ -72,11 +177,6 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
 
     return this._options;
   }
-
-  navigationHistory: TFNavigationItem[] = [];
-
-
-  pageLoading: boolean = false;
 
   createNavigationHistory(view: any): TFNavigationItem[] {
     if (!!view.legacy) {
@@ -99,151 +199,6 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
           uri: data.url
         };
       }));
-  }
-
-  constructor(
-    private applicationRef: ApplicationRef,
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private changeDetectorRef: ChangeDetectorRef,
-    private menuService: MenuService,
-    private contextService: ContextService,
-    private appService: AppService) {
-
-      this.appService.initialize(this);
-    }
-
-    updateView: boolean = false;
-
-
-  ngOnInit(): void {
-    console.log('[APP] ngOnInit()');
-    window.TalentiaViewBridge._appComponent = this;
-  //  this.doRendering();
-
-    const self = this;
-
-    // userInfo doesn't support async.
-    this
-      .contextService
-      .getUserInfo()
-      .subscribe({
-        next(userInfo: TFUserInfo) {
-          self.userInfo = userInfo;
-        }
-      })
-
-
-  }
-
-  ngAfterViewInit(): void {
-    console.log('[APP] ngAfterViewInit()');
-   // console.log('this.viewRef: ', this.viewRef);
-   // this.viewRef.nativeElement.doViewRendering();
-
-
-   this.doRendering();
-  }
-
-  ngAfterViewChecked(): void {
-  }
-
-  openView(view: any): void {
-    console.log('[APP] openView(', view, ')');
-    const 
-      self = this,
-      iframe = this.pageContent.iframe.nativeElement;
-
-    self.pageLoading = true;
-
-    if (!!view.legacy) {
-      this.navigationHistory = this.createNavigationHistory(view);
-      concat(
-        this.asidePanel.open({ components: [] }),
-        this.commandsPanel.open({ components: [] }),
-        this.pageContent.open({ components: [] })
-        )
-        .pipe(toArray())
-        .subscribe({
-          //complete() {
-          next(componentRefs: ComponentRef<any>[]) {
-            iframe.src = view.legacy.src;
-          }
-        });
-
-      
-      return;
-    }
-
-    //if (true) return;
-    
-    this.hideLegacyView();
-    this.navigationHistory = this.createNavigationHistory(view);
-
-    const commandsPanel = findByComponentName(view, 'CommandsPanel');
-    const asidePanel = findByComponentName(view, 'AsidePanel');
-
-    concat(
-      this.asidePanel.open( { components: !asidePanel ? [] : [asidePanel] }),
-      this.commandsPanel.open({ components: !commandsPanel ? [] : [commandsPanel] }),
-      this.pageContent.open(view))
-      .pipe(toArray())
-      .subscribe({
-        //complete() {
-        next(componentRefs: ComponentRef<any>[]) {
-        //  self.pageLoading = false;
-        }
-      })
-    
-  }
-
-  showLegacyView(): void {
-    const 
-      iframeWrapper = this.pageContent.iframeWrapper.nativeElement,
-      contentWrapper = iframeWrapper.ownerDocument.querySelector('#tf-page-content-wrapper');
-    if (contentWrapper !== iframeWrapper.parentElement) {
-        contentWrapper.appendChild(iframeWrapper);
-    }
-    this.showTitlebar = false;
-    iframeWrapper.style.setProperty('display', 'block');
-    window.document.body.style.setProperty('overflow', 'hidden');
-
-    this.pageLoading = false;
-  }
-
-  hideLegacyView(): void {
-    this.showTitlebar = true;
-    this.pageLoading = false;
-    const 
-      iframeWrapper = this.pageContent.iframeWrapper.nativeElement;  
-    iframeWrapper.style.setProperty('display', 'none');
-    window.document.body.style.removeProperty('overflow');
-  }
-
-  doRendering(): void {
-  
-    if(true)return;
-
-    // console.log('[APP] doRendering()');
-
-    // // <ng-template #wrapper></ng-template>
-
-    // if (!!this.oldViewRef) {
-    //   console.log('[APP] doRendering() oldViewRef.destroy()');
-    //   this.oldViewRef.destroy();
-    // }
-    // this.changeDetectorRef.detectChanges();  
-
-
-    // this.wrapper.clear();
-    // const factory = this.componentFactoryResolver.resolveComponentFactory(ViewComponent);
-    // const componentRef = this.wrapper.createComponent(factory);
-    // console.log('componentRef:', componentRef);
-
-    // this.oldViewRef = componentRef;
-    // componentRef.instance.view = this.currentView;
-
-    // this.changeDetectorRef.detectChanges();  
-
   }
 
   menuItemSelected(item: any) {

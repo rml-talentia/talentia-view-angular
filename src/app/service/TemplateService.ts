@@ -28,7 +28,7 @@ export class TemplateService {
     const component = Component({
       selector: `generated-component-${templateKey}`,
       template: template
-    })(class AnonymousComponent {});
+    })(class AnonymousComponent{});
     const module = NgModule({
       id: `generated-module-${templateKey}`,
       declarations: [

@@ -6,7 +6,7 @@ export class AppService {
 
     private appComponent!: AppComponent;
 
-    initialize(appComponent: any) {
+    postConstruct(appComponent: AppComponent): void {
         this.appComponent = appComponent;
     }
 

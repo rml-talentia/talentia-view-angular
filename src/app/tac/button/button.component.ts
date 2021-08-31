@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import { TFEvent } from '@talentia/components';
+import { FormService } from 'src/app/service/FormService';
 
 @Component({
   selector: 'tac-button',
@@ -9,9 +11,13 @@ import { TFEvent } from '@talentia/components';
 export class ButtonComponent implements OnInit {
 
   @Input()
+  form!: FormGroup;
+  @Input()
   data!: any;
 
-  constructor() { }
+  constructor(
+    private formService: FormService
+  ) { }
 
   ngOnInit(): void {
   }
@@ -30,6 +36,8 @@ export class ButtonComponent implements OnInit {
 
   onSelected(event: TFEvent) {
     console.log(event);
+   // this.form.markAllAsTouched();
+    this.formService.submit();
   }
 
 }

@@ -1,11 +1,29 @@
 import { Injectable } from "@angular/core";
+import { AppComponent } from "../app.component";
 import { visitView } from "../tac/util";
 
 
 @Injectable()
 export class FormService {
 
-    createForm(view: any): any {
+    private appComponent!: AppComponent;
+
+    postConstruct(appComponent: AppComponent): void {
+        this.appComponent = appComponent;
+    }
+
+    submit(): void {
+       // this.appComponent.pageContent.submit();
+
+        //console.log('[FormService] this.appComponent.pageContent.formElements: ', this.appComponent.pageContent.formElements);
+        console.log('[FormService] this.appComponent.pageContent:  ', this.appComponent.pageContent);
+       
+    }
+
+
+
+   /*  
+   createForm(view: any): any {
 
         
         const root = { };
@@ -42,6 +60,6 @@ export class FormService {
             }
         });
 
-    }
+    } */
 
 }

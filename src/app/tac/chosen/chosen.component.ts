@@ -82,8 +82,8 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
   ngOnInit(): void {
     //this.text = '';
    
-    console.log('[CHOSEN] value: ', this.value);
-    console.log('[CHOSEN] data: ', this.data);
+  //  console.log('[CHOSEN] value: ', this.value);
+ //   console.log('[CHOSEN] data: ', this.data);
    // console.log('this.data: ', this.data);
 
  
@@ -147,7 +147,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
     //const payload = this.data.model.payload;
     //const key = payload.criterias[0].name;
-    console.log('[CHOSEN] writeValue value:', value);
+   // console.log('[CHOSEN] writeValue value:', value);
     this.value = value;
     this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
     this.items = this.selection;
