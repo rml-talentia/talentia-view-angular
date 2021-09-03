@@ -37,7 +37,10 @@ export class ButtonComponent implements OnInit {
   onSelected(event: TFEvent) {
     console.log(event);
    // this.form.markAllAsTouched();
-    this.formService.submit();
+    this.formService.submit({
+      name: this.name,
+      text: this.text
+    });
   }
 
 }

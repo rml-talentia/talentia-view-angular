@@ -22,11 +22,13 @@ export class DatetimePickerComponent implements OnInit, ControlValueAccessor {
   data!: any;  
   @Input()
   title!: string;
+  private onchange: any;
+  private ontouched: any;
 
   private _value: string = '';
   private _rawValue: string = '';
-  private onchange: any;
-  private ontouched: any;
+
+
 
   constructor(private dateTimeService: TFDateTimeService) {
   }

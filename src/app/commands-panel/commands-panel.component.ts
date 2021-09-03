@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ViewComponent, ViewService } from '../view/view.component';
+import { ViewContainerComponent, ViewService } from '../view-container/view-container.component';
 
 @Component({
   selector: 'app-commands-panel',
@@ -9,6 +9,6 @@ import { ViewComponent, ViewService } from '../view/view.component';
     ViewService
   ]
 })
-export class CommandsPanelComponent extends ViewComponent {
+export class CommandsPanelComponent extends ViewContainerComponent {
 }
 

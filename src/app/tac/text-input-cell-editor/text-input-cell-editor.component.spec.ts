@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ViewComponent } from './view.component';
+import { TextInputCellEditor } from './text-input-cell-editor.component';
 
-describe('ViewComponent', () => {
-  let component: ViewComponent;
-  let fixture: ComponentFixture<ViewComponent>;
+describe('TextInputCellEditorComponent', () => {
+  let component: TextInputCellEditor;
+  let fixture: ComponentFixture<TextInputCellEditor>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ViewComponent ]
+      declarations: [ TextInputCellEditor ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ViewComponent);
+    fixture = TestBed.createComponent(TextInputCellEditor);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,23 +1,66 @@
-import { AfterContentInit, Component, ContentChildren, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, ContentChildren, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { FormService } from 'src/app/service/FormService';
+import { ICellEditorAngularComp } from "@ag-grid-community/angular";
+import { IAfterGuiAttachedParams } from 'ag-grid-community';
 
 @Component({
   selector: 'tac-view',
   templateUrl: './view.component.html',
   styleUrls: ['./view.component.css']
 })
-export class ViewComponent implements OnInit, AfterContentInit {
+export class ViewComponent implements OnInit, AfterContentInit, AfterViewInit {
 
   @ContentChildren(NgForm)
   formElements!: QueryList<NgForm>;
 
-  constructor() { }
+  @Input()
+  parent!: any; // Look at TemplateService
+
+  constructor(
+    private formService: FormService,
+    private changeDetectorRef: ChangeDetectorRef,
+  ) {
+
+   }
+
+  value: any = 'empty';
+
+  ngAfterViewInit(): void {
+    
+  }
   
   ngAfterContentInit(): void {
-   console.log('[tac-view] formElements:', this.formElements);
+ //  console.log('[tac-view] formElements:', this.formElements);
+   this.formService.setForm(this.formElements.first?.form);
+
+
+   
   }
 
   ngOnInit(): void {
+    if (this.parent && 'cellEditor' in this.parent) {
+      console.log('[tac-view] in an editor');
+
+
+      this.parent.cellEditor = <ICellEditorAngularComp> {       
+        
+        agInit: (params) => {
+          console.log('[tac-view] agInit(params:', params, ')');
+          this.value = params.value;
+      //    this.changeDetectorRef.detectChanges();
+        },
+
+        afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+        },
+
+        getValue: () => {
+          return this.value;
+        }
+
+
+      };
+    }
   }
 
 }

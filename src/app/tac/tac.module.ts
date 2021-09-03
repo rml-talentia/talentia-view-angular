@@ -26,6 +26,8 @@ import { ChosenComponent } from './chosen/chosen.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { ButtonComponent } from './button/button.component';
 import { ViewComponent } from './view/view.component';
+import { TextInputComponent } from './text-input/text-input.component';
+import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-editor/text-input-cell-editor.component';
 
 
 
@@ -38,7 +40,9 @@ import { ViewComponent } from './view/view.component';
     DropdownComponent,
     ChosenComponent,
     DatetimePickerComponent,
-    ViewComponent
+    TextInputComponent,
+    ViewComponent,
+    TextInputCellEditor
     //,
     //CellEditorComponent
   ],
@@ -61,6 +65,8 @@ import { ViewComponent } from './view/view.component';
       TFAdvancedDatagridImagePathRenderer,
       TFAdvancedDatagridInputEditor,
       TFAdvancedDatagridDateFilter
+      // ,
+      // TextInputCellEditor
     ])
   ],
   exports: [    
@@ -76,7 +82,9 @@ import { ViewComponent } from './view/view.component';
     BreadcrumbComponent,
     DropdownComponent,
     ChosenComponent,
-    DatetimePickerComponent
+    DatetimePickerComponent,
+    TextInputComponent,
+    TextInputCellEditor
   ]
 })
 export class TacModule { 
@@ -96,7 +104,10 @@ export class TacModule {
     datetimeEditor: TFAdvancedDatagridDatetimeEditor,
     inputEditor: TFAdvancedDatagridInputEditor,
     /* Filter */
-    agDateInput: TFAdvancedDatagridDateFilter
+    agDateInput: TFAdvancedDatagridDateFilter,
 
+
+    /* Tac Editor */
+    tacTextInput: TextInputCellEditor
   };
 }

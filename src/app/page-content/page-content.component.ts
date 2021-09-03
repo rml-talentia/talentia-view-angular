@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ViewComponent, ViewService } from '../view/view.component';
+import { ViewContainerComponent, ViewService } from '../view-container/view-container.component';
 
 @Component({
   selector: 'app-page-content',
@@ -9,7 +9,7 @@ import { ViewComponent, ViewService } from '../view/view.component';
     ViewService
   ]
 })
-export class PageContentComponent extends ViewComponent {
+export class PageContentComponent extends ViewContainerComponent {
 
   isIgnoredComponent(component: any): boolean {
     switch(component.componentName) {

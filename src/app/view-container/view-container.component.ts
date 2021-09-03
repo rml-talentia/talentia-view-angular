@@ -15,13 +15,11 @@ import {
   ViewChildren,
   QueryList
 } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, FormGroupDirective, NgForm, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, NgForm, ValidatorFn, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { AppService } from '../service/AppService';
 import { visit } from '../tac/util';
 import { TemplateService } from '../service/TemplateService';
-import { FormService } from '../service/FormService';
-import { TFEvent } from '@talentia/components';
 
 
 @Injectable()
@@ -54,14 +52,14 @@ export class ViewService {
 
 
 @Component({
-  selector: 'app-view',
-  templateUrl: './view.component.html',
-  styleUrls: ['./view.component.css'],
+  selector: 'app-view-container',
+  templateUrl: './view-container.component.html',
+  styleUrls: ['./view-container.component.css'],
   providers: [
     ViewService
   ]
 })
-export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
+export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChanges  {
 
   @ViewChild(
     'container',
@@ -273,9 +271,8 @@ export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
     let componentIndex = -1;
 
     let ignoredComponent: any = null;
-    let form: any = null;
-
     let dataBind: string;
+    let form: any;
 
     template.push(`<tac-view>`);
 
@@ -303,7 +300,7 @@ export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
           const required = !!parent && 'Field' === parent.componentName && parent.required;
 
           const componentBind = `componentByIndex[${componentIndex}]`;
-          const formControlBind = !component.name ? '' : `                
+          const formControlBind = !form || !component.name ? '' : `                
             #inputbase
             #formControl="ngModel"
             [form]="form"
@@ -346,7 +343,12 @@ export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
               template.push(start ? `<tf-grid-col cols="${component.cols}" margin="md">` : '</tf-grid-col>');
               break;
             case 'Panel':
-              
+              if (1 === component.components.length 
+                && 0 === component.components[0].components.length) {
+                // Empty panel.
+                // TODO : should be resolved in server side
+                break;
+              }
               if (component.title && component.title.text !== '&nbsp;') {
                 template.push(start ? `
                 <tf-panel 
@@ -393,9 +395,9 @@ export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
                       [isCollapse]="true"
                       [dropshadow]="false"
                       layout="advanced">
-                      <tac-form [data]="{errors:[]}" [formGroup]="forms[0]">
+                    
                 ` : `
-                      </tac-form>
+                      
                     </tf-section>
                   </tf-simple-panel>
                 </tf-grid-layout>`);
@@ -422,8 +424,10 @@ export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
                 this.formByIndex.push(component);
                 template.push(start 
                   ? `<form
+                      novalidate
                       #form="ngForm">` : '</form>');
                 dataBind = componentBind + '.data';
+                form = !start ? null : component;
               break;
             case 'Button':
               //template.push(start ? `<button type="submit" class="button" name="${component.action.name}" value="${component.action.name}"><i class="${component.action.icon}"></i>${component.action.name}</button>` : ``);
@@ -440,16 +444,23 @@ export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
                        />` : ``);
                 break;
             case 'Text':
-              template.push(start 
+              // template.push(start 
+              //   ? `
+              //   <tf-input 
+              //     ${formControlBind}
+              //     name="${component.name}"
+              //     class="text" 
+              //     typeinput="text" 
+              //     [disabled]="!${componentBind}.access"                    
+              //     >` : `</tf-input>`);
+              template.push(start
                 ? `
-                <tf-input 
+                <tac-text-input
                   ${formControlBind}
-                  ${required ? 'required' : ''}
-                  name="${component.name}"
-                  class="text" 
-                  typeinput="text" 
-                  [disabled]="!${componentBind}.access"                    
-                  >` : `</tf-input>`);
+                  [data]="${componentBind}">                
+                ` : `
+                </tac-text-input>
+                `);
               break;
             case 'DatePicker':
               template.push(start 
@@ -504,7 +515,18 @@ export class ViewComponent implements OnDestroy, AfterViewInit, OnChanges  {
               break;
             case 'DataGrid':
               template.push(start
-                ? `<tac-data-grid [data]="${componentBind}">` 
+                ? `<tac-data-grid [data]="${componentBind}">
+                  <ng-template 
+                    #customEditor 
+                    let-item 
+                    let-stopEditing="stopEditing">
+                    <tf-input
+                        style="width: 100%;"
+                        [standalone]="true"
+                        (blur)="stopEditing($event)"
+                        #input></tf-input>
+                  </ng-template>
+                ` 
                 : `</tac-data-grid>`);
               break;
           }

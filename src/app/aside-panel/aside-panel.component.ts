@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { ViewComponent, ViewService } from "../view/view.component";
+import { ViewContainerComponent, ViewService } from "../view-container/view-container.component";
 
 
 @Component({
@@ -10,6 +10,6 @@ import { ViewComponent, ViewService } from "../view/view.component";
     ViewService
   ]
 })
-export class AsidePanelComponent extends ViewComponent {
+export class AsidePanelComponent extends ViewContainerComponent {
 }
 

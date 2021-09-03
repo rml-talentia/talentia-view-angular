@@ -5,7 +5,7 @@ import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/for
 import {  TFDropdownItem, TFEvent } from '@talentia/components';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ViewService } from 'src/app/view/view.component';
+import { ViewService } from 'src/app/view-container/view-container.component';
 
 @Component({
   selector: 'tac-dropdown',

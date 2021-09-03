@@ -59,6 +59,8 @@ export class AppComponent implements OnInit {
   @ViewChild(PageContentComponent)
   pageContent!: PageContentComponent;
 
+  currentView: any;
+
   constructor(
     private applicationRef: ApplicationRef,
     private componentFactoryResolver: ComponentFactoryResolver,
@@ -112,6 +114,7 @@ export class AppComponent implements OnInit {
     
     this.hideLegacyView();
     this.navigationHistory = this.createNavigationHistory(view);
+    this.currentView = view;
     this
       .showView(view)
       .subscribe({

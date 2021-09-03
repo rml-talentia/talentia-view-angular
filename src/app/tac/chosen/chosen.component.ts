@@ -1,3 +1,4 @@
+import { ICellEditorAngularComp } from '@ag-grid-community/angular';
 import { HttpClient } from '@angular/common/http';
 import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -5,7 +6,7 @@ import { TFChosenComponent } from '@talentia/components';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ViewService } from 'src/app/view/view.component';
+import { ViewService } from 'src/app/view-container/view-container.component';
 
 
 // class ExtendedSelectItem extends SelectItem {
@@ -66,7 +67,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
 
   ngAfterViewInit(): void {
-  //  this.workaroundTAC2786();
+    this.workaroundTAC2786();
    
   }
 
@@ -185,14 +186,42 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
       .nativeElement
       .querySelector('div.dropdown')
       .addEventListener('blur', (event: any) => {
-        if (!!event.relatedTarget && isDescendant(event.relatedTarget, event.target)) {
+        console.log('blur: ', event);
+        if (!event.relatedTarget || isDescendant(event.relatedTarget, event.target)) {
           return;
         }
+        console.log('blur');
         this
           .form
           .controls[this.name]
           .markAsTouched();
       });
+    // this
+    //   .tfChosen
+    //   .element
+    //   .nativeElement
+    //   .querySelector('div.dropdown > input')
+    //   .addEventListener('blur', (event: any) => {
+    //     console.log('blur: ', event);
+    //     if (!event.relatedTarget || isDescendant(event.relatedTarget, event.target)) {
+    //       return;
+    //     }
+    //     console.log('blur');
+    //     this
+    //       .form
+    //       .controls[this.name]
+    //       .markAsTouched();
+    //   });
+
+
+    // https://github.com/angular/angular/issues/10887
+    // this.form.statusChanges.subscribe({
+    //   next(status: any) {
+        
+    //   }
+    // });
   }
 
 }
+
+
