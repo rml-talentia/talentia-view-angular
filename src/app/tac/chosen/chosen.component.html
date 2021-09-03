@@ -3,14 +3,15 @@
     class="text" 
     typeinput="text" 
     [disabled]="true"
-    [(ngModel)]="text"></tf-input>
+    [(ngModel)]="value"></tf-input>
 <ng-content></ng-content>
 <tf-chosen
     *ngIf="data.access"
     [appendToBody]="true"
     dropdownWidth="400px"
+    [standalone]="true"
     [data]="items"
-    [(ngModel)]="value">
+    [active]="selection">
     <ng-template 
         #itemTemplate
         let-data

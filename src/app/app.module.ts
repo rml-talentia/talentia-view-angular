@@ -10,7 +10,7 @@ import {JitCompilerFactory} from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
-import { ViewComponent, ViewService } from './view/view.component';
+import { ViewContainerComponent, ViewService } from './view-container/view-container.component';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { TFUILibraryModule } from '@talentia/components';
 import { TFShellLibraryModule } from '@talentia/components/shell';
@@ -19,6 +19,15 @@ import { ContextService } from './service/ContextService';
 import { PageContentComponent } from './page-content/page-content.component';
 import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
+import { TemplateService } from '@ag-grid-enterprise/all-modules';
+
+/*
+Licence ag-Grid
+
+CompanyName=TALENTIA SOFTWARE FRANCE,LicensedGroup=R&D,LicenseType=MultipleApplications,LicensedConcurrentDeveloperCount=5,LicensedProductionInstancesCount=50,AssetReference=AG-015029,ExpiryDate=5_July_2022_[v2]_MTY1Njk3NTYwMDAwMA==27a33a25fbcf6f91189a022d63c7d5a4
+
+*/
+
 
 export function createCompiler(compilerFactory: CompilerFactory) {
   return compilerFactory.createCompiler();
@@ -27,7 +36,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
 @NgModule({
   declarations: [
     AppComponent,
-    ViewComponent,
+    ViewContainerComponent,
     PageContentComponent,
     AsidePanelComponent,
     CommandsPanelComponent
@@ -47,6 +56,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     MenuService,
     ContextService,
     ViewService,
+    TemplateService,
     {
       provide: COMPILER_OPTIONS,
       useValue: {},

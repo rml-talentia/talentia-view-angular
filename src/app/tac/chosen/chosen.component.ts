@@ -1,10 +1,12 @@
+import { ICellEditorAngularComp } from '@ag-grid-community/angular';
 import { HttpClient } from '@angular/common/http';
-import { AfterContentInit, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { TFChosenComponent } from '@talentia/components';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ViewService } from 'src/app/view/view.component';
+import { ViewService } from 'src/app/view-container/view-container.component';
 
 
 // class ExtendedSelectItem extends SelectItem {
@@ -28,39 +30,62 @@ import { ViewService } from 'src/app/view/view.component';
     useExisting: forwardRef(() => ChosenComponent)
   }]
 })
-export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAccessor {
+export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,  AfterViewChecked, ControlValueAccessor {
 
   constructor(
+    private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
     private viewService: ViewService) { }
 
-  
   @Input()
-  data!: any;
+  form!: FormGroup;
+  @Input()
+  name!: string;
+  @Input()
+  value!: string;
+  @Input()
+  data!: any;  
   @Input()
   title!: string;
-  @Input()
-  value!: any[];
-  items!: any[];  
+
+  selection: any[] = [];
+  items: any[] = [];  
   itemsSubscription!: Subscription | null;
 
-  text!: string;
-  onchange: any;
-  ontouched: any;
-
-  ngAfterContentInit(): void {
-    console.log('myItemTemplate:', this.myItemTemplate);
-  }
-
+  private onchange: any;
+  private ontouched: any;
 
   @ContentChild('myItemTemplate', { read: TemplateRef})
   myItemTemplate!: TemplateRef<any>;
 
-  ngOnInit(): void {
-    this.text = '';
-   
+  @ViewChild(TFChosenComponent)
+  tfChosen!: TFChosenComponent;
 
-    console.log('this.data: ', this.data);
+  ngAfterViewChecked(): void {
+   
+  }
+
+
+  ngAfterViewInit(): void {
+    this.workaroundTAC2786();
+   
+  }
+
+  ngAfterContentInit(): void {
+    // Array.prototype.forEach.call(document.querySelectorAll('tf-chosen > div.dropdown'), element => { element.addEventListener('focus', event => {  var chosen = event.target.parentElement.__component; chosen.form.controls[chosen.name].markAsTouched();   }); })
+ 
+
+  }
+
+
+
+
+  ngOnInit(): void {
+    //this.text = '';
+   
+  //  console.log('[CHOSEN] value: ', this.value);
+ //   console.log('[CHOSEN] data: ', this.data);
+   // console.log('this.data: ', this.data);
 
  
     const payload = this.data.model.payload;
@@ -71,10 +96,19 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
     const key = payload.criterias[0].name;
 
 
-    if (this.value) {
-      this.value[0] = { id: this.value[0][key], text: this.value[0][key] };
-    }
+    // if (this.value) {
+     
+    //   this.value[0] = { id: this.value[0][key], text: this.value[0][key] };
+    // }
 
+
+    // this.items = [];
+    // const value = this.data.value.value;
+    // console.log('[CHOSEN] value: ', value);
+    // this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
+    // this.items = this.selection.slice(0);
+
+    if (true) return;
 
     this.itemsSubscription = this
         .http
@@ -105,7 +139,26 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
 
 
   writeValue(value: any): void {
-    console.log('writeValue(value:', value, ')');
+   // console.log('writeValue(value:', value, ')');
+//    if (value !== this.value) {
+//     this.value = value;
+//     this.cd.markForCheck();
+// }
+
+
+    //const payload = this.data.model.payload;
+    //const key = payload.criterias[0].name;
+   // console.log('[CHOSEN] writeValue value:', value);
+    this.value = value;
+    this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
+    this.items = this.selection;
+
+    // if (!!this.onchange) {
+    //   this.onchange(value);
+    // }
+  //  this.tfChosen.c
+    //this.cd.markForCheck();
+
   }
 
   registerOnChange(onchange: any): void {
@@ -116,4 +169,59 @@ export class ChosenComponent implements OnInit, AfterContentInit, ControlValueAc
     this.ontouched = ontouched;
   }
 
+
+  private workaroundTAC2786(): void {
+     // TAC-2786 : workaround.
+     function isDescendant(element: any, parent: any) {
+      for (let current = element.parentNode; !!current; current = current.parentNode) {
+        if (current === parent) {
+          return true;
+        }
+      }
+      return false;
+    }
+    this
+      .tfChosen
+      .element
+      .nativeElement
+      .querySelector('div.dropdown')
+      .addEventListener('blur', (event: any) => {
+        console.log('blur: ', event);
+        if (!event.relatedTarget || isDescendant(event.relatedTarget, event.target)) {
+          return;
+        }
+        console.log('blur');
+        this
+          .form
+          .controls[this.name]
+          .markAsTouched();
+      });
+    // this
+    //   .tfChosen
+    //   .element
+    //   .nativeElement
+    //   .querySelector('div.dropdown > input')
+    //   .addEventListener('blur', (event: any) => {
+    //     console.log('blur: ', event);
+    //     if (!event.relatedTarget || isDescendant(event.relatedTarget, event.target)) {
+    //       return;
+    //     }
+    //     console.log('blur');
+    //     this
+    //       .form
+    //       .controls[this.name]
+    //       .markAsTouched();
+    //   });
+
+
+    // https://github.com/angular/angular/issues/10887
+    // this.form.statusChanges.subscribe({
+    //   next(status: any) {
+        
+    //   }
+    // });
+  }
+
 }
+
+

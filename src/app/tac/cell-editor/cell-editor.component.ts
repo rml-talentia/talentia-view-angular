@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
-import { ViewComponent } from 'src/app/view/view.component';
+import { ViewContainerComponent } from 'src/app/view-container/view-container.component';
 
 @Component({
   selector: 'tac-cell-editor',
   templateUrl: './cell-editor.component.html',
   styleUrls: ['./cell-editor.component.css']
 })
-export class CellEditorComponent extends ViewComponent implements ControlValueAccessor {
+export class CellEditorComponent extends ViewContainerComponent implements ControlValueAccessor {
 
   writeValue(newValues: any): void {
     throw new Error('Method not implemented.');

@@ -1,16 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { DataService } from '../service/DataService';
-import { ViewComponent, ViewService } from '../view/view.component';
+import { ViewContainerComponent, ViewService } from '../view-container/view-container.component';
 
 @Component({
   selector: 'app-commands-panel',
   templateUrl: './commands-panel.component.html',
   styleUrls: ['./commands-panel.component.css'],
   providers: [
-    ViewService,
-    DataService
+    ViewService
   ]
 })
-export class CommandsPanelComponent extends ViewComponent {
+export class CommandsPanelComponent extends ViewContainerComponent {
 }
 

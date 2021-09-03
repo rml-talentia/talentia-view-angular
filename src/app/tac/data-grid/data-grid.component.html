@@ -1,4 +1,5 @@
 <tf-simple-panel 
+    *ngIf="frameworkComponents"
     [cols]="12"
     margin="none">
     <tf-grid-row>
@@ -35,7 +36,4 @@
         </tf-grid-col>
     </tf-grid-row>
 </tf-simple-panel>
-
-<ng-template #customEditor>
-    <tf-text></tf-text> OLOL
-</ng-template>
+<ng-content></ng-content>

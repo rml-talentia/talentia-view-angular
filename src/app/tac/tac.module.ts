@@ -23,16 +23,27 @@ import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { CellEditorComponent } from './cell-editor/cell-editor.component';
 import { DropdownComponent } from './dropdown/dropdown.component';
 import { ChosenComponent } from './chosen/chosen.component';
+import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
+import { ButtonComponent } from './button/button.component';
+import { ViewComponent } from './view/view.component';
+import { TextInputComponent } from './text-input/text-input.component';
+import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-editor/text-input-cell-editor.component';
 
 
 
 @NgModule({
   declarations: [
+    ButtonComponent,
     FormComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,
-    ChosenComponent//,
+    ChosenComponent,
+    DatetimePickerComponent,
+    TextInputComponent,
+    ViewComponent,
+    TextInputCellEditor
+    //,
     //CellEditorComponent
   ],
   imports: [
@@ -54,6 +65,8 @@ import { ChosenComponent } from './chosen/chosen.component';
       TFAdvancedDatagridImagePathRenderer,
       TFAdvancedDatagridInputEditor,
       TFAdvancedDatagridDateFilter
+      // ,
+      // TextInputCellEditor
     ])
   ],
   exports: [    
@@ -62,11 +75,16 @@ import { ChosenComponent } from './chosen/chosen.component';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    ViewComponent,
+    ButtonComponent,
     FormComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,
-    ChosenComponent
+    ChosenComponent,
+    DatetimePickerComponent,
+    TextInputComponent,
+    TextInputCellEditor
   ]
 })
 export class TacModule { 
@@ -86,7 +104,10 @@ export class TacModule {
     datetimeEditor: TFAdvancedDatagridDatetimeEditor,
     inputEditor: TFAdvancedDatagridInputEditor,
     /* Filter */
-    agDateInput: TFAdvancedDatagridDateFilter
+    agDateInput: TFAdvancedDatagridDateFilter,
 
+
+    /* Tac Editor */
+    tacTextInput: TextInputCellEditor
   };
 }

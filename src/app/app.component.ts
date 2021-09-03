@@ -9,19 +9,49 @@ import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
 import { TemplateService } from './service/TemplateService';
 import { toArray } from 'rxjs/operators';
+import { findByComponentName } from './tac/util';
+import { TFLocalizationService } from '@talentia/components';
+import { FormService } from './service/FormService';
+
+export function localizationServiceFactory() {
+  const localizationService: TFLocalizationService = new TFLocalizationService();
+
+  localizationService.culture = 'fr-FR';
+  localizationService.dateFormat = 'dd/mm/yyyy';
+  localizationService.dateSeparator = '/';
+  localizationService.decimalSeparator = ',';
+  localizationService.groupSeparator = ' ';
+  localizationService.numberDecimalPlaces = 3;
+  localizationService.timeFormat = 'HH:mm:ss';
+  localizationService.timeSeparator = ':'
+
+  return localizationService;
+}
+
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   providers: [
+    {
+      provide: TFLocalizationService,
+      useFactory: localizationServiceFactory
+    },
     AppService,
+    FormService,
     TemplateService
   ]
 })
-export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
+export class AppComponent implements OnInit {
 
-
+  pageLoading: boolean = false;
+  showTitlebar: boolean = true;
+  userInfo!: TFUserInfo;
+  navigationHistory: TFNavigationItem[] = [];
+  private _menu!: Observable<any>;
+  private _options!: TFShellOptions;
+  
   @ViewChild(CommandsPanelComponent)
   commandsPanel!: CommandsPanelComponent;
   @ViewChild(AsidePanelComponent)
@@ -29,15 +59,115 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
   @ViewChild(PageContentComponent)
   pageContent!: PageContentComponent;
 
-  showTitlebar: boolean = true;
-  userInfo!: TFUserInfo;
+  currentView: any;
 
-  private _menu!: Observable<any>;
+  constructor(
+    private applicationRef: ApplicationRef,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private changeDetectorRef: ChangeDetectorRef,
+    private menuService: MenuService,
+    private contextService: ContextService,
+    private appService: AppService,
+    private formService: FormService) {
+      this.appService.postConstruct(this);
+      this.formService.postConstruct(this);
+    }
+
+  ngOnInit(): void {
+    console.log('[APP] ngOnInit()');
+    window.TalentiaViewBridge._appComponent = this;   
+
+    // userInfo doesn't support async.
+    const self = this;
+    this
+      .contextService
+      .getUserInfo()
+      .subscribe({
+        next(userInfo: TFUserInfo) {
+          self.userInfo = userInfo;
+        }
+      });
+  }
+
+
+  openView(view: any): void {
+    console.log('[APP] openView(', view, ')');
+    const 
+      self = this,
+      iframe = this.pageContent.iframe.nativeElement;
+
+    // Shell loading state.
+    self.pageLoading = true;
+
+    if (!!view.legacy) {
+      this.navigationHistory = this.createNavigationHistory(view);
+      this
+        .clearView()
+        .subscribe({
+          next(componentRefs: ComponentRef<any>[]) {
+            iframe.src = view.legacy.src;
+          }
+        });
+      return;
+    }
+
+    
+    this.hideLegacyView();
+    this.navigationHistory = this.createNavigationHistory(view);
+    this.currentView = view;
+    this
+      .showView(view)
+      .subscribe({
+        next(componentRefs: ComponentRef<any>[]) {
+          console.log('[APP] views:', componentRefs);
+        }
+      });
+    
+  }
+
+  showView(view: any): Observable<any> {
+    const commandsPanel = findByComponentName(view, 'CommandsPanel');
+    const asidePanel = findByComponentName(view, 'AsidePanel');
+    return concat(
+        this.asidePanel.open( { components: !asidePanel ? [] : [asidePanel] }),
+        this.commandsPanel.open({ components: !commandsPanel ? [] : [commandsPanel] }),
+        this.pageContent.open(view))
+      .pipe(toArray());
+  }
+
+  clearView(): Observable<any> {
+    return this.showView({ components: [] });
+  }
+
+  showLegacyView(): void {
+    const 
+      iframeWrapper = this.pageContent.iframeWrapper.nativeElement,
+      contentWrapper = iframeWrapper.ownerDocument.querySelector('#tf-page-content-wrapper');
+    if (contentWrapper !== iframeWrapper.parentElement) {
+        contentWrapper.appendChild(iframeWrapper);
+    }
+    this.showTitlebar = false;
+    // TODO : angularize
+    iframeWrapper.style.setProperty('display', 'block');
+    window.document.body.style.setProperty('overflow', 'hidden');
+
+    this.pageLoading = false;
+  }
+
+  hideLegacyView(): void {
+    this.showTitlebar = true;
+    this.pageLoading = false;
+    const 
+      iframeWrapper = this.pageContent.iframeWrapper.nativeElement;  
+    // TODO : angularize
+    iframeWrapper.style.setProperty('display', 'none');
+    window.document.body.style.removeProperty('overflow');
+  }
+
   get menu(): Observable<any> {
     return !!this._menu ? this._menu : (this._menu = this.menuService.getMenu());
   }
 
-  private _options!: TFShellOptions;
   get options(): TFShellOptions {
     if (!!this._options) {
       return this._options;
@@ -50,11 +180,6 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
 
     return this._options;
   }
-
-  navigationHistory: TFNavigationItem[] = [];
-
-
-  pageLoading: boolean = false;
 
   createNavigationHistory(view: any): TFNavigationItem[] {
     if (!!view.legacy) {
@@ -77,151 +202,6 @@ export class AppComponent implements OnInit, AfterViewInit, AfterViewChecked {
           uri: data.url
         };
       }));
-  }
-
-  constructor(
-    private applicationRef: ApplicationRef,
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private changeDetectorRef: ChangeDetectorRef,
-    private menuService: MenuService,
-    private contextService: ContextService,
-    private appService: AppService) {
-
-      this.appService.initialize(this);
-    }
-
-    updateView: boolean = false;
-
-
-  ngOnInit(): void {
-    console.log('[APP] ngOnInit()');
-    window.TalentiaViewBridge._appComponent = this;
-  //  this.doRendering();
-
-    const self = this;
-
-    // userInfo doesn't support async.
-    this
-      .contextService
-      .getUserInfo()
-      .subscribe({
-        next(userInfo: TFUserInfo) {
-          self.userInfo = userInfo;
-        }
-      })
-
-
-  }
-
-  ngAfterViewInit(): void {
-    console.log('[APP] ngAfterViewInit()');
-   // console.log('this.viewRef: ', this.viewRef);
-   // this.viewRef.nativeElement.doViewRendering();
-
-
-   this.doRendering();
-  }
-
-  ngAfterViewChecked(): void {
-  }
-
-  openView(view: any): void {
-    console.log('[APP] openView(', view, ')');
-    const 
-      self = this,
-      iframe = this.pageContent.iframe.nativeElement;
-
-    self.pageLoading = true;
-
-    if (!!view.legacy) {
-      this.navigationHistory = this.createNavigationHistory(view);
-      concat(
-        this.asidePanel.open({ data: [] }),
-        this.commandsPanel.open({ data: [] }),
-        this.pageContent.open({ data: [] })
-        )
-        .pipe(toArray())
-        .subscribe({
-          //complete() {
-          next(componentRefs: ComponentRef<any>[]) {
-            iframe.src = view.legacy.src;
-          }
-        });
-
-      
-      return;
-    }
-
-    //if (true) return;
-    
-    this.hideLegacyView();
-    this.navigationHistory = this.createNavigationHistory(view);
-
-    const commandsPanel = findByComponentName(view, 'CommandsPanel');
-    const asidePanel = findByComponentName(view, 'AsidePanel');
-
-    concat(
-      this.asidePanel.open( { data: !asidePanel ? [] : [asidePanel] }),
-      this.commandsPanel.open({ data: !commandsPanel ? [] : [commandsPanel] }),
-      this.pageContent.open(view))
-      .pipe(toArray())
-      .subscribe({
-        //complete() {
-        next(componentRefs: ComponentRef<any>[]) {
-        //  self.pageLoading = false;
-        }
-      })
-    
-  }
-
-  showLegacyView(): void {
-    const 
-      iframeWrapper = this.pageContent.iframeWrapper.nativeElement,
-      contentWrapper = iframeWrapper.ownerDocument.querySelector('#tf-page-content-wrapper');
-    if (contentWrapper !== iframeWrapper.parentElement) {
-        contentWrapper.appendChild(iframeWrapper);
-    }
-    this.showTitlebar = false;
-    iframeWrapper.style.setProperty('display', 'block');
-    window.document.body.style.setProperty('overflow', 'hidden');
-
-    this.pageLoading = false;
-  }
-
-  hideLegacyView(): void {
-    this.showTitlebar = true;
-    this.pageLoading = false;
-    const 
-      iframeWrapper = this.pageContent.iframeWrapper.nativeElement;  
-    iframeWrapper.style.setProperty('display', 'none');
-    window.document.body.style.removeProperty('overflow');
-  }
-
-  doRendering(): void {
-  
-    if(true)return;
-
-    // console.log('[APP] doRendering()');
-
-    // // <ng-template #wrapper></ng-template>
-
-    // if (!!this.oldViewRef) {
-    //   console.log('[APP] doRendering() oldViewRef.destroy()');
-    //   this.oldViewRef.destroy();
-    // }
-    // this.changeDetectorRef.detectChanges();  
-
-
-    // this.wrapper.clear();
-    // const factory = this.componentFactoryResolver.resolveComponentFactory(ViewComponent);
-    // const componentRef = this.wrapper.createComponent(factory);
-    // console.log('componentRef:', componentRef);
-
-    // this.oldViewRef = componentRef;
-    // componentRef.instance.view = this.currentView;
-
-    // this.changeDetectorRef.detectChanges();  
-
   }
 
   menuItemSelected(item: any) {
@@ -281,48 +261,3 @@ function sequencial<T>(...factories: ObservableFactory<T>[])  {
 }
 
 
-function findByComponentName(view: any, componentName: string): any {
-  return findInView(view, 
-    (component: any, parent: any, index: Number, start: Boolean) => componentName === component.componentName ? component : undefined);
-}
-
-function findInView(view: any, finder: Function) {
-  let value;
-  visitView(view, (component: any, parent: any, index: Number, start: Boolean) => {
-    return undefined === (value = finder(component, parent, index, start));
-  });
-  return value;
-}
-
-function visitView(view: any, visitor: Function) {
-  const components = view
-    .data
-    .filter((component: any) => null !== component);
-  for (let i = 0; i < components.length; i++) {
-    let component = components[i];
-    if (false === visit(component, visitor, null, i)) {
-      return;
-    }
-  }
-}
-
-function visit(component: any, visitor: Function, parent?: any, index?: Number) {
-  if (false === visitor(component, 
-    'object' === typeof parent ? parent : null, 
-    'number' === typeof index ? index : 0,
-    true)) {
-    return false;
-  }
-  for (let i = 0; i < component.components.length; i++) {
-    if (false === visit(component.components[i], visitor, parent, index)) {
-      return false;
-    }
-  }
-  if (false === visitor(component, 
-    'object' === typeof parent ? parent : null, 
-    'number' === typeof index ? index : 0,
-    false)) {
-      return false;
-    }
-    return true;
-}

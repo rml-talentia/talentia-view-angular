@@ -11,5 +11,9 @@
     [allowNull]="true"
     [data]="items"
     [title]="title"
+    #inputbase
+    #formControl="ngModel"
+    required
+    [form]="form"
     [(ngModel)]="value"
     (changed)="valueChanged($event)"></tf-dropdown>

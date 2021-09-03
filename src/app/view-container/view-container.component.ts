@@ -1,38 +1,26 @@
 import {
   AfterViewInit,
-  Compiler,
   Component,
   OnInit,
   ViewChild,
   ViewContainerRef,
-  NgModule,
-  AfterViewChecked,
   ChangeDetectorRef,
   ComponentRef,
   Input,
   OnChanges,
   SimpleChanges,
-  Injector,
   OnDestroy,
-  ApplicationRef,
   Injectable,
-  ComponentFactory,
-  AfterContentInit,
   ElementRef,
-  Directive
+  ViewChildren,
+  QueryList
 } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, FormsModule, ValidatorFn, Validators } from '@angular/forms';
-import { TacModule } from '../tac/tac.module';
-import * as crypto from 'crypto';
-import { Observable, ReplaySubject, Subject, Subscriber } from 'rxjs';
-import { map, share } from 'rxjs/operators';
+import { AbstractControl, FormControl, FormGroup, NgForm, ValidatorFn, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { AppService } from '../service/AppService';
-import { DataService } from '../service/DataService';
-import { HttpClient } from '@angular/common/http';
-import { TFInputComponent } from '@talentia/components';
+import { visit } from '../tac/util';
+import { TemplateService } from '../service/TemplateService';
 
-const COMPONENT_FACTORIES: {[key: string]: ComponentFactory<any>} = {};
-const COMPONENT_FACTORY_OBSERVABLES: {[key: string]: Subject<ComponentFactory<any>>} = {};
 
 @Injectable()
 export class ViewService {
@@ -41,8 +29,6 @@ export class ViewService {
 
   postConstruct(view: any) {
     this.view = view;
-   // const transaction = findByComponentName(this.view, 'Transaction');
-    //console.log('[ViewService] postConstruct transaction:', view.transaction);
   }
 
   get contextPath(): string {
@@ -66,14 +52,14 @@ export class ViewService {
 
 
 @Component({
-  selector: 'app-view',
-  templateUrl: './view.component.html',
-  styleUrls: ['./view.component.css'],
+  selector: 'app-view-container',
+  templateUrl: './view-container.component.html',
+  styleUrls: ['./view-container.component.css'],
   providers: [
     ViewService
   ]
 })
-export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterContentInit, AfterViewChecked, OnChanges  {
+export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChanges  {
 
   @ViewChild(
     'container',
@@ -87,52 +73,33 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
   @ViewChild('iframeWrapper', { read: ElementRef })
   iframeWrapper!: ElementRef<any>;
 
+
+  @ViewChildren('form', { read: NgForm  })
+  formElements!: QueryList<NgForm>;
+
+  @ViewChild('form', { read: NgForm  })
+  formElement!: NgForm;
+
   formGroup!: FormGroup;  
   forms: Array<FormGroup> = [];
 
   formByIndex: Array<any> = [];
   componentByIndex: Array<any> = [];
 
-  templateKey: string | null = null;
+  componentRef!: ComponentRef<any>;
  
   constructor(
-    private compiler: Compiler,
-    private injector: Injector,
-    private applicationRef: ApplicationRef,
     public changeDetectorRef: ChangeDetectorRef,
-    private http: HttpClient,
-    private dataService: DataService,
     private viewService: ViewService,
-    private appService: AppService) {
-      //console.log('[VIEW] constructor()');
-    }
-
-  
-  componentRef!: ComponentRef<any>;
- // moduleRef!: NgModuleRef<any>;
-
-  
-
-  ngAfterViewChecked () {
-    //console.log('[VIEW] ngAfterViewChecked()');
-  }
-
-  ngAfterContentInit(): void {
-    //console.log('[VIEW] ngAfterContentInit()');
-  }
+    private appService: AppService,
+    private templateService: TemplateService) {}
 
   ngAfterViewInit() {
-    //console.log('[VIEW] ngAfterViewInit()');
-    //  ng build --watch --poll 2000 --configuration=development --output-path=/c/dev/projects/talentia-accounting/applications/iris.ear/iris.war/talentia-view-angular
     window.TalentiaViewBridge._viewComponent = this;
   }
 
   ngOnDestroy(): void {
       this.componentRef.destroy();
-  }
-
-  ngOnInit(): void {
-    //console.log('[VIEW] ngOnInit()');
   }
 
   doAction(data: any): void {
@@ -145,11 +112,6 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
     } 
   }
 
-  // close(): void {
-  //   this.open({
-  //     data: []
-  //   });
-  // }
 
   submit(): void {
     this.appService.submit();
@@ -166,6 +128,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
     this.formByIndex = [];
 
     const opening = this
+      .templateService
       .getComponentFactory(this.createContentTemplate());
     const subscription = opening
       .subscribe(componentFactory => {
@@ -173,7 +136,88 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
         this.componentRef.instance.componentByIndex = this.componentByIndex = this.createComponentByIndex();
         this.componentRef.instance.forms = this.forms = this.createForms();
         this.componentRef.instance.submit = this.submit.bind(this);
-        this.componentRef.instance.dataService = new DataService(this.http, this.viewService);
+
+    //     this.componentRef.instance.dummy = { 
+    //       field: {
+    //         selected: (event: TFEvent) => {
+    //           console.log('field selected: ', event);
+    //         }
+    //       },
+    //       dropdown: {
+    //         value: null,
+    //         data: [
+    //           {
+    //             name: 'debits',
+    //             label: 'Débits'
+    //           },
+    //           {
+    //             name: 'encaissements',
+    //             label: 'Encaissements'
+    //           }
+    //         ]
+    //       },
+    //       chosen: {
+    //         value: null,
+    //         focus: (event: TFEvent) => {
+    //           console.log('focus this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+    //          // this.componentRef.instance.dummy.chosen.value = [];
+    //         //  event.source.onTouchedCallback();
+
+    // //        event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component.setFocus();
+    //          const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
+    //          console.log(chosen);
+    //         // chosen.onChangeCallback();
+
+    //       //   chosen.open();
+    //          setTimeout(() => {
+    //         //  chosen.el.nativeElement.querySelector('input').focus()
+    //          });
+    //          //this.componentRef.changeDetectorRef.markForCheck();
+
+    //         },
+    //         blur: (event: TFEvent) => {
+    //           console.log('blur this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+    //          // this.componentRef.instance.dummy.chosen.value = [];
+    //    //      this.componentRef.changeDetectorRef.markForCheck();
+
+    //           const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
+    //           chosen.onTouchedCallback();
+              
+    //         },
+    //         removed: (event: TFEvent) => {
+    //           setTimeout(() => {
+    //           console.log('remove this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
+    //           this.componentRef.instance.dummy.chosen.value = null;
+    //           this.componentRef.changeDetectorRef.markForCheck();
+    //           }, 2000);
+    //         },
+    //         data: [
+    //           {
+    //               id: 1,
+    //               text: 'Vienna',
+    //               group: 'Austria'
+    //           },
+    //           {
+    //               id: 2,
+    //               text: 'Brussels',
+    //               group: 'Belgium'
+    //           },
+    //           {
+    //               id: 3,
+    //               text: 'Antwerp',
+    //               group: 'Belgium'
+    //           },
+    //           {
+    //               id: 4,
+    //               text: 'Sofia',
+    //               group: 'Bulgaria'
+    //           }
+    //         ]
+    //       } 
+    //     };
+
+        
+
         this.componentRef.changeDetectorRef.detectChanges();
         //this.componentRef.injector.get(ChangeDetectorRef).reattach();
       });
@@ -189,7 +233,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
     let ignoredComponent: any = null;
     this
       .view
-      .data
+      .components
       .filter((component: any) => null !== component)
       .forEach((component: any) => {
         visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
@@ -219,7 +263,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
   createContentTemplate(): string {
     return !this.view 
       ? '' 
-      : this.createTemplate(this.view.data.filter((component: any) => null !== component));
+      : this.createTemplate(this.view.components.filter((component: any) => null !== component));
   }
   
   createTemplate(components: any[]): string {
@@ -227,7 +271,10 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
     let componentIndex = -1;
 
     let ignoredComponent: any = null;
-    let form: any = null;
+    let dataBind: string;
+    let form: any;
+
+    template.push(`<tac-view>`);
 
     components
       .forEach((component: any) => {
@@ -248,64 +295,43 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
           if (start) {
             componentIndex++;
           }
+
+
+          const required = !!parent && 'Field' === parent.componentName && parent.required;
+
           const componentBind = `componentByIndex[${componentIndex}]`;
+          const formControlBind = !form || !component.name ? '' : `                
+            #inputbase
+            #formControl="ngModel"
+            [form]="form"
+            name="${component.name}"
+            [(ngModel)]="${dataBind}.${component.name}"
+            ${required ? 'required' : ''}
+          `.split(/ *\n */).join(' ');
+
+
           switch (component.componentName) {
             case 'Transaction':
-              /*  <input type="hidden" name="__formJveName" id="__formJveName" value="consultationComptesGenerauxForm">
-                <input type="hidden" name="validate" value="Valider" />
-                              <input type="hidden" name="fkSociete1" value="" />
-                <input type="hidden" name="fkSociete2" value="" />
-                <input type="hidden" name="fkSociete3" value="" />
-                <input type="hidden" name="fkSociete4" value="" />
-                <input type="hidden" name="fkSociete5" value="" />
-                <input type="hidden" name="fkSociete6" value="" />
-                <input type="hidden" name="fkEtablissement1" value="" />
-                <input type="hidden" name="fkEtablissement2" value="" />
-                <input type="hidden" name="fkEtablissement3" value="" />
-                <input type="hidden" name="fkEtablissement4" value="" />
-                <input type="hidden" name="fkEtablissement5" value="" />
-                <input type="hidden" name="fkEtablissement6" value="" />
-
-
-
-
-                                <input type="hidden" name="sessionId" value="${component.currentSessionId}" />
-                <input type="hidden" name="_currentSessionId" value="${component.currentSessionId}" />
-                <input type="hidden" name="_currentTransaction" value="${component.currentTransaction}" />
-                <input type="hidden" name="_currentOption" value="${component.currentOption}" />
-                <input type="hidden" name="_currentPath" value="${component.currentPath}" />
-                <input type="hidden" name="${component.csrfTokenName}" value="${component.csrfTokenValue}" />
-
-
-                
-                <input type="hidden" name="isEcritureExtraComptables" value="off" />
-                <input type="hidden" name="isEcritureExtraComptablesSansClasse" value="off" />
-                <input type="hidden" name="isEcritureStandardSansClasse" value="off" />
-              */
               template.push(start ? `
                 <input 
                   type="hidden" 
-                  name="sessionId" 
-                  formControlName="sessionId" />
+                  name="sessionId" />
                 <input 
                   type="hidden" 
-                  name="_currentSessionId" 
-                  formControlName="_currentSessionId" />
+                  name="_currentSessionId" />
                 <input 
                   type="hidden" 
-                  name="_currentTransaction" 
-                  formControlName="_currentTransaction" />
+                  name="_currentTransaction" />
                 <input 
                   type="hidden" 
-                  name="_currentOption" 
-                  formControlName="_currentOption" />
+                  name="_currentOption" />
                 <input 
                   type="hidden" 
-                  name="_currentPath" 
-                  formControlName="_currentPath" />
+                  name="_currentPath" />
                 <input 
                   type="hidden" 
-                  [formControlName]="${componentBind}.csrfTokenName" />` : ``);
+                   />` : ``);
+                   // [formControlName]="${componentBind}.csrfTokenName"
               break;
             case 'GridLayout':
               template.push(start ? `<tf-grid-layout>` : '</tf-grid-layout>');
@@ -317,6 +343,12 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
               template.push(start ? `<tf-grid-col cols="${component.cols}" margin="md">` : '</tf-grid-col>');
               break;
             case 'Panel':
+              if (1 === component.components.length 
+                && 0 === component.components[0].components.length) {
+                // Empty panel.
+                // TODO : should be resolved in server side
+                break;
+              }
               if (component.title && component.title.text !== '&nbsp;') {
                 template.push(start ? `
                 <tf-panel 
@@ -347,25 +379,8 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
               template.push(start 
                 ? `<div style="margin-right: 1rem;">`
                 : '</div>');
-              // template.push(start 
-              //   ? `
-              //     <tf-grid-layout addClasses="tf-width-full">
-              //       <tf-grid-row>
-              //         <tf-grid-col [cols]="12" margin="md">
-              //   ` 
-              //   : `
-              //         </tf-grid-col>    
-              //       </tf-grid-row>
-              //     </tf-grid-layout>`);
               break;
             case 'Breadcrumb':
-                //this.breadcrumbData = componentByIndex[componentByIndex.length - 1];
-                // template.push(start 
-                //   ? `
-                //   <tac-breadcrumb
-                //     [data]="${componentCode}">` 
-                //   : `
-                //   </tac-breadcrumb>`);  
                 break;
             case 'Section':
               template.push(start 
@@ -380,9 +395,9 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
                       [isCollapse]="true"
                       [dropshadow]="false"
                       layout="advanced">
-                      <tac-form [data]="{errors:[]}" [formGroup]="forms[0]">` 
-                : `
-                      </tac-form>
+                    
+                ` : `
+                      
                     </tf-section>
                   </tf-simple-panel>
                 </tf-grid-layout>`);
@@ -392,8 +407,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
                 ? `
                   <tf-grid-row horizontalAlignment="end">
                     <tf-grid-col [cols]="4" style="text-align: right;">
-                ` 
-                : `
+                ` : `
                     </tf-grid-col>    
                   </tf-grid-row>`);
               break;
@@ -407,42 +421,19 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
               </tf-field>`);
               break;
             case 'Form':
-              // template.push(start ? `
-              //   <form class="form" method="POST" action="${component.action}" onsubmit="TalentiaViewBridge.submit(event);"><i>Form</i>` : '</form>');
                 this.formByIndex.push(component);
                 template.push(start 
-                  ? `<tac-form
-                      [data]="${componentBind}"
-                      [formGroup]="forms[0]"
-                      #form="ngForm">` : '</tac-form>');
+                  ? `<form
+                      novalidate
+                      #form="ngForm">` : '</form>');
+                dataBind = componentBind + '.data';
+                form = !start ? null : component;
               break;
             case 'Button':
               //template.push(start ? `<button type="submit" class="button" name="${component.action.name}" value="${component.action.name}"><i class="${component.action.icon}"></i>${component.action.name}</button>` : ``);
-              if (!!component.action.icon) {
-                // tf-flat-button mode="light" 
-
-                template.push(start 
-                  ? `<tf-flat-button
-                      mode="light" 
-                      name="${component.action.name}"
-                      icon="${component.action.icon}" 
-                      text="" 
-                      size="md" 
-                      margin="sm"
-                      (selected)="submit()">` : `</tf-flat-button>`);
-                break;
-              }
-             
               template.push(start 
-                ? `<tf-button 
-                    addClasses="tf-width-full"
-                    [block]="true"
-                    name="${component.action.name}"
-                    icon="${component.action.icon}" 
-                    text="${!component.action.title ? '' : component.action.title.text}" 
-                    size="sm" 
-                    margin="sm"
-                    (selected)="form.doSubmit()">` : `</tf-button>`);
+                ? `<tac-button 
+                    [data]="${componentBind}">` : `</tac-button>`);
               break;
             case 'Hidden':
                 template.push(start 
@@ -450,57 +441,67 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
                       type="hidden" 
                       name="${component.name}" 
                       value="${!!component.value ? component.value.value : ''}" 
-                      formControlName="${component.name}" />` : ``);
+                       />` : ``);
                 break;
             case 'Text':
-              // template.push(start ?
-              //   (!!component.title.text ? `<label>${component.title.text}</label>` : ``) 
-              //   + `<input class="text" type="text" name="${component.name}"  />` : ``);
-              const required = !!parent && 'Field' === parent.componentName && parent.required;
-              // formControlName="${component.name}"
+              // template.push(start 
+              //   ? `
+              //   <tf-input 
+              //     ${formControlBind}
+              //     name="${component.name}"
+              //     class="text" 
+              //     typeinput="text" 
+              //     [disabled]="!${componentBind}.access"                    
+              //     >` : `</tf-input>`);
+              template.push(start
+                ? `
+                <tac-text-input
+                  ${formControlBind}
+                  [data]="${componentBind}">                
+                ` : `
+                </tac-text-input>
+                `);
+              break;
+            case 'DatePicker':
               template.push(start 
-                ? `<tf-input 
-                    #inputbase
-                    class="text" 
-                    typeinput="text" 
-                    [disabled]="!${componentBind}.access"
-                    name="${component.name}"
-                    formControlName="${component.name}"
-                    >` : `</tf-input>`);
+                ? `
+                <tac-datetime-picker
+                  ${formControlBind}
+                  [data]="${componentBind}">
+                ` : `
+                </tac-datetime-picker>`);
               break;
             case 'Checkbox':
-              // template.push(start ? 
-              //   (!!component.title.text ? `<label>${component.title.text}</label>` : ``) 
-              //   + `<input class="text" type="checkbox" name="${component.name}"  />` : ``);
-              // size="lg"
               template.push(start 
                 ? `<tf-field cols="2">
                     <tf-checkbox 
+                      ${formControlBind}
                       [toggle]="true"
-                      title="${component.title.text}"
-                      formControlName="${component.name}">` 
+                      title="${component.title.text}">` 
                 : ` </tf-checkbox>
                   </tf-field>`);
               break;
             case 'Dropdown':
               template.push(start 
-                ? `<tac-dropdown     
+                ? `
+                <tac-dropdown     
+                    ${formControlBind}
                     [data]="${componentBind}"
-                    title="${component.title.text}"
-                    formControlName="${component.name}">` 
-                : `</tac-dropdown>`);
+                    title="${component.title.text}">` 
+                : `
+                </tac-dropdown>`);
               break;
             case 'Chosen':
               template.push(start 
                 ? `           
-                <tac-chosen     
+                <tac-chosen          
+                  ${formControlBind}                  
                   [data]="${componentBind}"
-                  [value]="${componentBind}.selection"
-                  title="${component.title.text}"
-                  formControlName="${component.name}">
+                  title="${component.title.text}">
                   <ng-template 
                     #myItemTemplate
                     let-data>
+                    {{ data | json }}
                     <tf-h-layout grow="end" spacing="sm">                    
                       <tf-text
                         *ngFor="let cell of data.cells; let isFirst=first"
@@ -514,22 +515,45 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
               break;
             case 'DataGrid':
               template.push(start
-                ? `<tac-data-grid [data]="${componentBind}">` 
+                ? `<tac-data-grid [data]="${componentBind}">
+                  <ng-template 
+                    #customEditor 
+                    let-item 
+                    let-stopEditing="stopEditing">
+                    <tf-input
+                        style="width: 100%;"
+                        [standalone]="true"
+                        (blur)="stopEditing($event)"
+                        #input></tf-input>
+                  </ng-template>
+                ` 
                 : `</tac-data-grid>`);
               break;
           }
         });
     });
+
+
+    template.push(`</tac-view>`);
+
     return template.join('\n');
   }
 
+  private toInputAttributes(component: any) {
+    return `                
+      #inputbase
+      #formControl="ngModel"
+      [form]="form"
+      name="${component.name}"
+    `;
+  }
 
   
   createForms(): FormGroup[] {
     const forms: FormGroup[] = [];
     this
       .view
-      .data
+      .components
       .filter((component: any) => null !== component)
       .forEach((component: any) => {
         visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
@@ -581,6 +605,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
                         break;
                       case 'Hidden':
                       case 'Text':
+                      case 'DatePicker':
                       case 'Dropdown':
                       case 'Chosen': 
                         // if ('compteDebut' === component.name) {
@@ -607,7 +632,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
         });
       });
 
-      console.log('forms:', forms);
+     // console.log('forms:', forms);
 
       if (!!forms.length) {
         return forms;
@@ -616,7 +641,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
       const controls: { [key: string]: AbstractControl; } = {};
       this
         .view
-        .data
+        .components
         .filter((component: any) => null !== component)
         .forEach((component: any) => {
           visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
@@ -639,6 +664,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
                 break;
               case 'Hidden':
               case 'Text':
+              case 'DatePicker':
                 if ('compteDebut' === component.name) {
                   controls[component.name] = new FormControl('101300');
                   break;
@@ -660,97 +686,7 @@ export class ViewComponent  implements OnInit, OnDestroy, AfterViewInit, AfterCo
       return forms;
   }
 
-  
-  getComponentFactory(template: string): Observable<ComponentFactory<any>> {
-    const templateKey = crypto
-      .createHash('md5')
-      .update(template)
-      .digest('hex');
-    let subject = COMPONENT_FACTORY_OBSERVABLES[templateKey];
-    if (!!subject) {
-      return subject;
-    }
-    COMPONENT_FACTORY_OBSERVABLES[templateKey] = subject = new ReplaySubject<ComponentFactory<any>>(1);
-    const component = Component({
-      selector: `generated-component-${templateKey}`,
-      template: template
-    })(class AnonymousComponent {});
-    const module = NgModule({
-      id: `generated-module-${templateKey}`,
-      declarations: [
-        component
-      ],
-      imports: [ 
-        TacModule,
-        FormsModule
-      ],
-      exports: [
-        FormsModule
-      ],
-      schemas: []
-    })(class AnonymousModule {});
-    this
-      .compiler
-      .compileModuleAsync(module)
-      .then(moduleFactory => {
-        const 
-          moduleRef = moduleFactory.create(this.injector),
-          componentFactory = moduleRef.componentFactoryResolver.resolveComponentFactory(component);
-        subject.next(componentFactory);
-        subject.complete();
-      });  
-    return subject;
-  }
- 
 }
 
 
 
-function findByComponentName(view: any, componentName: string): any {
-  return findInView(view, 
-    (component: any, parent: any, index: Number) => componentName === component.componentName ? component : undefined);
-}
-
-function findInView(view: any, finder: Function) {
-  let value;
-  visitView(view, (component: any, parent: any, index: Number, start: Boolean) => {
-    if (!start) {
-      return true;
-    }
-    return undefined === (value = finder(component, parent, index));
-  });
-  return value;
-}
-
-function visitView(view: any, visitor: Function) {
-  const components = view
-    .data
-    .filter((component: any) => null !== component);
-  for (let i = 0; i < components.length; i++) {
-    let component = components[i];
-    if (false === visit(component, visitor, null, i)) {
-      return;
-    }
-  }
-}
-
-function visit(component: any, visitor: Function, parent?: any, index?: Number) {
-  if (false === visitor(component, 
-    'object' === typeof parent ? parent : null, 
-    'number' === typeof index ? index : 0,
-    true)) {
-    return false;
-  }
-  for (let i = 0; i < component.components.length; i++) {
-    if (false === visit(component.components[i], visitor, component, index)) {
-      return false;
-    }
-  }
-  if (false === visitor(component, 
-    'object' === typeof parent ? parent : null, 
-    'number' === typeof index ? index : 0,
-    false)) {
-      return false;
-    }
-    return true;
-}
