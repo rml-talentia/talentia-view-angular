@@ -5,7 +5,7 @@ import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/for
 import {  TFDropdownItem, TFEvent } from '@talentia/components';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ViewService } from 'src/app/view-container/view-container.component';
+import { TransactionService } from 'src/app/service/TransactionService';
 
 @Component({
   selector: 'tac-dropdown',
@@ -22,7 +22,7 @@ export class DropdownComponent implements OnInit, ControlValueAccessor, AfterCon
 
   constructor(
     private http: HttpClient,
-    private viewService: ViewService,
+    private transactionService: TransactionService,
     private changeDetectorRef: ChangeDetectorRef,
     private injector: Injector) { }
   ngAfterContentInit(): void {
@@ -56,12 +56,12 @@ export class DropdownComponent implements OnInit, ControlValueAccessor, AfterCon
     this.itemsSubscription = this
         .http
         .post(
-            `${this.viewService.contextPath}/services/private/api/consultation/all?sessionId=${this.viewService.sessionId}`,
+            `${this.transactionService.contextPath}/services/private/api/consultation/all?sessionId=${this.transactionService.sessionId}`,
             payload, 
             {
                 headers: {
                 // CSRF
-                [this.viewService.csrfTokenName]: this.viewService.csrfTokenValue
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
                 }
             })
         .pipe(map((response: any) => response

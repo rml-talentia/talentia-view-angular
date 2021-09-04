@@ -4,6 +4,11 @@ import { FormService } from 'src/app/service/FormService';
 import { ICellEditorAngularComp } from "@ag-grid-community/angular";
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
 
+/**
+ * This component is used as root component in dynamic templates compiled by TemplateService.
+ * 
+ * The purpose is to provide services which can't be done by the component created in TemplateService.
+ */
 @Component({
   selector: 'tac-view',
   templateUrl: './view.component.html',
@@ -27,7 +32,7 @@ export class ViewComponent implements OnInit, AfterContentInit, AfterViewInit {
   value: any = 'empty';
 
   ngAfterViewInit(): void {
-    
+   
   }
   
   ngAfterContentInit(): void {

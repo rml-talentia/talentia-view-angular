@@ -2,14 +2,12 @@ import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit,
 import { AllModules, ColGroupDef, GridApi, GridOptions, ICellEditorParams, Module, SideBarDef } from '@ag-grid-enterprise/all-modules';
 import { TacModule } from '../tac.module';
 import { HttpClient } from '@angular/common/http';
-import { ViewService } from 'src/app/view-container/view-container.component';
 import { map } from 'rxjs/operators';
 import { AgGridAngular, AgGridColumn } from '@ag-grid-community/angular';
 import { AppService } from 'src/app/service/AppService';
 import { ColDef, EditableCallbackParams } from 'ag-grid-community';
-import { TFTextComponent } from '@talentia/components';
-import { TextInputCellEditor } from '../text-input-cell-editor/text-input-cell-editor.component';
 import { TemplateService } from 'src/app/service/TemplateService';
+import { TransactionService } from 'src/app/service/TransactionService';
 
 
 @Component({
@@ -40,7 +38,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
   constructor(
     private http: HttpClient,
-    private viewService: ViewService,
+    private transactionService: TransactionService,
     private appService: AppService,
     private templateService: TemplateService,
     private ngZone: NgZone) { }
@@ -62,14 +60,15 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
       .subscribe({
         next: (result: any) => {
           this.frameworkComponents = { tacTextInput: result.component };
-          //setTimeout(() => {
-          
-          //}, 1000);
-          this.ngZone.onStable.subscribe({
-            next: (result: any) => {
-              this.initializeDataGrid();
-            }
+          setTimeout(() => {
+            this.initializeDataGrid();
           });
+          // const subscription = this.ngZone.onStable.subscribe({
+          //   next: (result: any) => {
+          //     this.initializeDataGrid();
+          //     //subscription.unsubscribe();
+          //   }
+          // });
         }
       })
   }
@@ -161,11 +160,11 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
         };
         this.http
           .post(
-            `${this.viewService.contextPath}/services/private/datagrid/read?__lookup2=true&sessionId=${this.viewService.sessionId}`, 
+            `${this.transactionService.contextPath}/services/private/datagrid/read?__lookup2=true&sessionId=${this.transactionService.sessionId}`, 
             query, {
               headers: {
                 // CSRF
-                [this.viewService.csrfTokenName]: this.viewService.csrfTokenValue
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
               }
             })
             .pipe(map((payload: any) => {
@@ -192,18 +191,18 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
           "isort": [],
           "page": 1,
           "pageSize": 5000,
-          "session": this.viewService.sessionId,
+          "session": this.transactionService.sessionId,
           "skip": 0,
           "take": 5000};
 
         this.http
           .post(
-            `${this.viewService.contextPath}/services/private/api/custom/cgsee/read?sessionId=${this.viewService.sessionId}`, 
+            `${this.transactionService.contextPath}/services/private/api/custom/cgsee/read?sessionId=${this.transactionService.sessionId}`, 
             payload, {
               responseType: 'text',
               headers: {
                 // CSRF
-                [this.viewService.csrfTokenName]: this.viewService.csrfTokenValue
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
               }
             })
             .pipe(map((payload: any) => {
@@ -329,12 +328,12 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
         self
           .http
-          .post(`${self.viewService.contextPath}/services/private/datagrid/menu?__lookup2=true&sessionId=${self.viewService.sessionId}`, 
+          .post(`${self.transactionService.contextPath}/services/private/datagrid/menu?__lookup2=true&sessionId=${self.transactionService.sessionId}`, 
             query, 
             {
               headers: {
                 // CSRF
-                [self.viewService.csrfTokenName]: self.viewService.csrfTokenValue
+                [self.transactionService.csrfTokenName]: self.transactionService.csrfTokenValue
               }
             })
             .pipe(map((menu: any) => {
@@ -345,7 +344,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
                   action: () => {
                     self.appService.open({
                       legacy: {
-                        src: `${self.viewService.contextPath}${menuItem.action.url}`
+                        src: `${self.transactionService.contextPath}${menuItem.action.url}`
                       }
                     })
                   }

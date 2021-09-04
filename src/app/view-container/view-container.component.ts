@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   Component,
-  OnInit,
   ViewChild,
   ViewContainerRef,
   ChangeDetectorRef,
@@ -20,44 +19,17 @@ import { Observable } from 'rxjs';
 import { AppService } from '../service/AppService';
 import { visit } from '../tac/util';
 import { TemplateService } from '../service/TemplateService';
+import { TransactionService } from '../service/TransactionService';
 
 
-@Injectable()
-export class ViewService {
 
-  private view: any;
-
-  postConstruct(view: any) {
-    this.view = view;
-  }
-
-  get contextPath(): string {
-    return this.view.contextPath;
-  }
-
-  get sessionId(): string {
-    return this.view.transaction.currentSessionId;
-  }
-
-  get csrfTokenName(): string {
-    return this.view.transaction.csrfTokenName;
-  }
-
-  get csrfTokenValue(): string {
-    return this.view.transaction.csrfTokenValue; 
-  }
-
-}
 
 
 
 @Component({
   selector: 'app-view-container',
   templateUrl: './view-container.component.html',
-  styleUrls: ['./view-container.component.css'],
-  providers: [
-    ViewService
-  ]
+  styleUrls: ['./view-container.component.css']
 })
 export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChanges  {
 
@@ -90,7 +62,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
  
   constructor(
     public changeDetectorRef: ChangeDetectorRef,
-    private viewService: ViewService,
+    private transactionService: TransactionService,
     private appService: AppService,
     private templateService: TemplateService) {}
 
@@ -119,11 +91,11 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
 
   open(view: any): Observable<any> {
 
-    this.viewService.postConstruct(this.view = view);
-
     if (!!this.componentRef) {
       this.componentRef.destroy();
     }
+
+    this.view = view;
 
     this.formByIndex = [];
 

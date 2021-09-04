@@ -12,6 +12,7 @@ import { toArray } from 'rxjs/operators';
 import { findByComponentName } from './tac/util';
 import { TFLocalizationService } from '@talentia/components';
 import { FormService } from './service/FormService';
+import { TransactionService, WritableTransactionService } from './service/TransactionService';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -39,6 +40,7 @@ export function localizationServiceFactory() {
       useFactory: localizationServiceFactory
     },
     AppService,
+    TransactionService,
     FormService,
     TemplateService
   ]
@@ -65,6 +67,7 @@ export class AppComponent implements OnInit {
     private applicationRef: ApplicationRef,
     private componentFactoryResolver: ComponentFactoryResolver,
     private changeDetectorRef: ChangeDetectorRef,
+    private transactionService: TransactionService,
     private menuService: MenuService,
     private contextService: ContextService,
     private appService: AppService,
@@ -115,6 +118,11 @@ export class AppComponent implements OnInit {
     this.hideLegacyView();
     this.navigationHistory = this.createNavigationHistory(view);
     this.currentView = view;
+
+    // Share view's transaction infos through other services and components.
+    (this.transactionService as WritableTransactionService)
+      .setView(view);
+
     this
       .showView(view)
       .subscribe({

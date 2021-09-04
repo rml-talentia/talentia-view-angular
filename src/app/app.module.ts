@@ -10,7 +10,7 @@ import {JitCompilerFactory} from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
-import { ViewContainerComponent, ViewService } from './view-container/view-container.component';
+import { ViewContainerComponent } from './view-container/view-container.component';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { TFUILibraryModule } from '@talentia/components';
 import { TFShellLibraryModule } from '@talentia/components/shell';
@@ -55,7 +55,6 @@ export function createCompiler(compilerFactory: CompilerFactory) {
   providers: [
     MenuService,
     ContextService,
-    ViewService,
     TemplateService,
     {
       provide: COMPILER_OPTIONS,

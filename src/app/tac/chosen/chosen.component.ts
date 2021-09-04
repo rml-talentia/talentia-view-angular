@@ -6,19 +6,9 @@ import { TFChosenComponent } from '@talentia/components';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ViewService } from 'src/app/view-container/view-container.component';
+import { TransactionService } from 'src/app/service/TransactionService';
 
 
-// class ExtendedSelectItem extends SelectItem {
-
-//   constructor(source: any) {
-//     super(source);
-//   }
-
-//   cells: any[] = [];
-
-  
-// }
 
 @Component({
   selector: 'tac-chosen',
@@ -35,7 +25,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
-    private viewService: ViewService) { }
+    private transactionService: TransactionService) { }
 
   @Input()
   form!: FormGroup;
@@ -113,12 +103,12 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
     this.itemsSubscription = this
         .http
         .post(
-            `${this.viewService.contextPath}/services/private/api/consultation/all?sessionId=${this.viewService.sessionId}`,
+            `${this.transactionService.contextPath}/services/private/api/consultation/all?sessionId=${this.transactionService.sessionId}`,
             payload, 
             {
                 headers: {
                 // CSRF
-                [this.viewService.csrfTokenName]: this.viewService.csrfTokenValue
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
                 }
             })
         .pipe(map((response: any) => response
