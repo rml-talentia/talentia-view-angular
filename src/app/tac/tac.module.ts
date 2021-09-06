@@ -28,6 +28,7 @@ import { ButtonComponent } from './button/button.component';
 import { ViewComponent } from './view/view.component';
 import { TextInputComponent } from './text-input/text-input.component';
 import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-editor/text-input-cell-editor.component';
+import { TransactionComponent } from './transaction/transaction.component';
 
 
 
@@ -35,6 +36,7 @@ import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-ed
   declarations: [
     ButtonComponent,
     FormComponent,
+    TransactionComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,
@@ -69,6 +71,9 @@ import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-ed
       // TextInputCellEditor
     ])
   ],
+  /**
+   * This module export every components used inside dynamic template views.
+   */
   exports: [    
     TFUILibraryModule,
     TFShellLibraryModule,
@@ -78,6 +83,7 @@ import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-ed
     ViewComponent,
     ButtonComponent,
     FormComponent,
+    TransactionComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,

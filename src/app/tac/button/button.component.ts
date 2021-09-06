@@ -11,7 +11,7 @@ import { FormService } from 'src/app/service/FormService';
 export class ButtonComponent implements OnInit {
 
   @Input()
-  form!: FormGroup;
+  formName!: string;
   @Input()
   data!: any;
 
@@ -35,11 +35,21 @@ export class ButtonComponent implements OnInit {
   }
 
   onSelected(event: TFEvent) {
-    console.log(event);
+    console.log('submit:', {
+      form: this.formName,
+      button: {
+        name: this.name,
+        text: this.text
+      }
+    });
    // this.form.markAllAsTouched();
+
     this.formService.submit({
-      name: this.name,
-      text: this.text
+      form: this.formName,
+      button: {
+        name: this.name,
+        text: this.text
+      }
     });
   }
 

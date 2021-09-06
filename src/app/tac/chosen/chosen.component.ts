@@ -57,7 +57,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
 
   ngAfterViewInit(): void {
-    this.workaroundTAC2786();
+//    this.workaroundTAC2786();
    
   }
 

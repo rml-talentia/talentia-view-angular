@@ -137,9 +137,9 @@ export class AppComponent implements OnInit {
     const commandsPanel = findByComponentName(view, 'CommandsPanel');
     const asidePanel = findByComponentName(view, 'AsidePanel');
     return concat(
-        this.asidePanel.open( { components: !asidePanel ? [] : [asidePanel] }),
-        this.commandsPanel.open({ components: !commandsPanel ? [] : [commandsPanel] }),
-        this.pageContent.open(view))
+        this.asidePanel.open({ name: 'asidePanel', components: !asidePanel ? [] : [asidePanel] }),
+        this.commandsPanel.open({ name: 'commandsPanel', components: !commandsPanel ? [] : [commandsPanel] }),
+        this.pageContent.open({ name: 'pageContent', components: view.components }))
       .pipe(toArray());
   }
 

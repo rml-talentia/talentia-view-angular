@@ -7,45 +7,80 @@ import { findByComponentName, visitView } from "../tac/util";
 let previousIframe: any;
 
 
-interface SubmitOptions {
-    name: string;
-    text: string;
+export interface Form {
+
+    group: FormGroup;
+    data: any;
+    
 }
+
+export interface Submit {
+    
+    form: string;
+
+    button: {
+        name: string;
+        text: string;
+    }
+
+}
+
+
 
 @Injectable()
 export class FormService {
 
     private appComponent!: AppComponent;
+    private forms: { [name: string]: Form } = {};
 
-    private form!: FormGroup;
+   // private form!: FormGroup;
 
     postConstruct(appComponent: AppComponent): void {
         this.appComponent = appComponent;
     }
 
-    submit(options: SubmitOptions): void {
+    register(form: Form): void {
+        console.log('[FormService] register(form:', form, ')');
+        this.forms[form.data.name] = form;
+    } 
+
+    unregister(form: Form): boolean {
+        console.log('[FormService] unregister(form:', form, ')');
+        return delete this.forms[form.data.name];
+    }
+
+    submit(options: Submit): void {
        // this.appComponent.pageContent.submit();
 
         //console.log('[FormService] this.appComponent.pageContent.formElements: ', this.appComponent.pageContent.formElements);
        // console.log('[FormService] this.appComponent.pageContent:  ', this.appComponent.pageContent);
        
         // Client side validation, typically required validator.
-        this.form.markAllAsTouched();
-        if (this.form.invalid) {
+        // this.form.markAllAsTouched();
+        // if (this.form.invalid) {
+        //     console.log('[FormService] form invalid.');
+        //     return;
+        // }
+
+        const form = this.forms[options.form];
+        console.log('form: ', form);
+        console.log('forms: ', this.forms);
+        form.group.markAllAsTouched();
+        if (form.group.invalid) {
             console.log('[FormService] form invalid.');
             return;
         }
-
         
         this.appComponent.pageLoading = true;
 
-        const action = this.appComponent.pageContent.formByIndex[0].action;
+        
+        const action = form.data.action; // this.appComponent.pageContent.formByIndex[0].action;
        
   
         const data: { [field: string]: any; } = {};
 
 
-        const buttonData = { [options.name]: options.text };
+        const buttonData = { [options.button.name]: options.button.text };
         const transactionData = this.appComponent.currentView.transaction;
         const formData = findByComponentName(this.appComponent.currentView, 'Form').data;
 
@@ -133,9 +168,9 @@ export class FormService {
        
     }
 
-    setForm(form: FormGroup): void {
-        this.form = form;
-    }
+    // setForm(form: FormGroup): void {
+    //     this.form = form;
+    // }
 
    /*  
    createForm(view: any): any {

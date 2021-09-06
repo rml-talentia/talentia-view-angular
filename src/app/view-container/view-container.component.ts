@@ -9,21 +9,14 @@ import {
   OnChanges,
   SimpleChanges,
   OnDestroy,
-  Injectable,
   ElementRef,
-  ViewChildren,
-  QueryList
 } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, NgForm, ValidatorFn, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { AppService } from '../service/AppService';
 import { visit } from '../tac/util';
 import { TemplateService } from '../service/TemplateService';
 import { TransactionService } from '../service/TransactionService';
-
-
-
-
+import { ViewService } from '../service/ViewService';
 
 
 @Component({
@@ -45,17 +38,6 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
   @ViewChild('iframeWrapper', { read: ElementRef })
   iframeWrapper!: ElementRef<any>;
 
-
-  @ViewChildren('form', { read: NgForm  })
-  formElements!: QueryList<NgForm>;
-
-  @ViewChild('form', { read: NgForm  })
-  formElement!: NgForm;
-
-  formGroup!: FormGroup;  
-  forms: Array<FormGroup> = [];
-
-  formByIndex: Array<any> = [];
   componentByIndex: Array<any> = [];
 
   componentRef!: ComponentRef<any>;
@@ -64,7 +46,8 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
     public changeDetectorRef: ChangeDetectorRef,
     private transactionService: TransactionService,
     private appService: AppService,
-    private templateService: TemplateService) {}
+    private templateService: TemplateService,
+    private viewService: ViewService) {}
 
   ngAfterViewInit() {
     window.TalentiaViewBridge._viewComponent = this;
@@ -84,11 +67,6 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
     } 
   }
 
-
-  submit(): void {
-    this.appService.submit();
-  }
-
   open(view: any): Observable<any> {
 
     if (!!this.componentRef) {
@@ -97,7 +75,12 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
 
     this.view = view;
 
-    this.formByIndex = [];
+   // this.formByIndex = [];
+
+    const context = this.viewService.open({
+      name: view.name,
+      components: view.components
+    });
 
     const opening = this
       .templateService
@@ -106,90 +89,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
       .subscribe(componentFactory => {
         this.componentRef = this.container.createComponent(componentFactory);
         this.componentRef.instance.componentByIndex = this.componentByIndex = this.createComponentByIndex();
-        this.componentRef.instance.forms = this.forms = this.createForms();
-        this.componentRef.instance.submit = this.submit.bind(this);
-
-    //     this.componentRef.instance.dummy = { 
-    //       field: {
-    //         selected: (event: TFEvent) => {
-    //           console.log('field selected: ', event);
-    //         }
-    //       },
-    //       dropdown: {
-    //         value: null,
-    //         data: [
-    //           {
-    //             name: 'debits',
-    //             label: 'Débits'
-    //           },
-    //           {
-    //             name: 'encaissements',
-    //             label: 'Encaissements'
-    //           }
-    //         ]
-    //       },
-    //       chosen: {
-    //         value: null,
-    //         focus: (event: TFEvent) => {
-    //           console.log('focus this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
-    //          // this.componentRef.instance.dummy.chosen.value = [];
-    //         //  event.source.onTouchedCallback();
-
-    // //        event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component.setFocus();
-    //          const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
-    //          console.log(chosen);
-    //         // chosen.onChangeCallback();
-
-    //       //   chosen.open();
-    //          setTimeout(() => {
-    //         //  chosen.el.nativeElement.querySelector('input').focus()
-    //          });
-    //          //this.componentRef.changeDetectorRef.markForCheck();
-
-    //         },
-    //         blur: (event: TFEvent) => {
-    //           console.log('blur this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
-    //          // this.componentRef.instance.dummy.chosen.value = [];
-    //    //      this.componentRef.changeDetectorRef.markForCheck();
-
-    //           const chosen = event.source.el.nativeElement.parentElement.querySelector('tf-chosen').__component;
-    //           chosen.onTouchedCallback();
-              
-    //         },
-    //         removed: (event: TFEvent) => {
-    //           setTimeout(() => {
-    //           console.log('remove this.componentRef.instance.dummy.chosen.value: ', this.componentRef.instance.dummy.chosen.value);
-    //           this.componentRef.instance.dummy.chosen.value = null;
-    //           this.componentRef.changeDetectorRef.markForCheck();
-    //           }, 2000);
-    //         },
-    //         data: [
-    //           {
-    //               id: 1,
-    //               text: 'Vienna',
-    //               group: 'Austria'
-    //           },
-    //           {
-    //               id: 2,
-    //               text: 'Brussels',
-    //               group: 'Belgium'
-    //           },
-    //           {
-    //               id: 3,
-    //               text: 'Antwerp',
-    //               group: 'Belgium'
-    //           },
-    //           {
-    //               id: 4,
-    //               text: 'Sofia',
-    //               group: 'Bulgaria'
-    //           }
-    //         ]
-    //       } 
-    //     };
-
-        
-
+        this.componentRef.instance.views = this.viewService.views;
         this.componentRef.changeDetectorRef.detectChanges();
         //this.componentRef.injector.get(ChangeDetectorRef).reattach();
       });
@@ -240,11 +140,13 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
   
   createTemplate(components: any[]): string {
     const template: string[] = [];
+
     let componentIndex = -1;
+    let formIndex = -1;
 
     let ignoredComponent: any = null;
-    let dataBind: string;
-    let form: any;
+    let formGroupBind: string | null = null;
+    let formBind: string | null = null;
 
     template.push(`<tac-view>`);
 
@@ -270,40 +172,39 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
 
 
           const required = !!parent && 'Field' === parent.componentName && parent.required;
-
           const componentBind = `componentByIndex[${componentIndex}]`;
-          const formControlBind = !form || !component.name ? '' : `                
+          const formControlBind = !formGroupBind || !component.name ? '' : `                
             #inputbase
             #formControl="ngModel"
-            [form]="form"
+            [form]="${formGroupBind}"
             name="${component.name}"
-            [(ngModel)]="${dataBind}.${component.name}"
+            [(ngModel)]="${formBind}.data.${component.name}"
             ${required ? 'required' : ''}
           `.split(/ *\n */).join(' ');
 
 
           switch (component.componentName) {
             case 'Transaction':
-              template.push(start ? `
-                <input 
-                  type="hidden" 
-                  name="sessionId" />
-                <input 
-                  type="hidden" 
-                  name="_currentSessionId" />
-                <input 
-                  type="hidden" 
-                  name="_currentTransaction" />
-                <input 
-                  type="hidden" 
-                  name="_currentOption" />
-                <input 
-                  type="hidden" 
-                  name="_currentPath" />
-                <input 
-                  type="hidden" 
-                   />` : ``);
-                   // [formControlName]="${componentBind}.csrfTokenName"
+              break;
+            case 'Form':
+                formGroupBind = !start ? null : `form`;// !start ? null : `form${++formIndex}`;
+                formBind = !start ? null : componentBind;
+                template.push(start 
+                  ? `
+                  <form
+                    novalidate
+                    #${formGroupBind}="ngForm">
+                    <tac-transaction 
+                      [formData]="${formBind}"
+                      [form]="${formGroupBind}.form"></tac-transaction>
+                  ` : `
+                  </form>`);
+              break;
+            case 'Button':
+              template.push(start 
+                ? `<tac-button 
+                    [data]="${componentBind}"
+                    [formName]="${componentBind}.action.form">` : `</tac-button>`);
               break;
             case 'GridLayout':
               template.push(start ? `<tf-grid-layout>` : '</tf-grid-layout>');
@@ -392,21 +293,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
               ` : `
               </tf-field>`);
               break;
-            case 'Form':
-                this.formByIndex.push(component);
-                template.push(start 
-                  ? `<form
-                      novalidate
-                      #form="ngForm">` : '</form>');
-                dataBind = componentBind + '.data';
-                form = !start ? null : component;
-              break;
-            case 'Button':
-              //template.push(start ? `<button type="submit" class="button" name="${component.action.name}" value="${component.action.name}"><i class="${component.action.icon}"></i>${component.action.name}</button>` : ``);
-              template.push(start 
-                ? `<tac-button 
-                    [data]="${componentBind}">` : `</tac-button>`);
-              break;
+
             case 'Hidden':
                 template.push(start 
                   ? `<input 
@@ -416,15 +303,6 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
                        />` : ``);
                 break;
             case 'Text':
-              // template.push(start 
-              //   ? `
-              //   <tf-input 
-              //     ${formControlBind}
-              //     name="${component.name}"
-              //     class="text" 
-              //     typeinput="text" 
-              //     [disabled]="!${componentBind}.access"                    
-              //     >` : `</tf-input>`);
               template.push(start
                 ? `
                 <tac-text-input
@@ -510,154 +388,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
 
     return template.join('\n');
   }
-
-  private toInputAttributes(component: any) {
-    return `                
-      #inputbase
-      #formControl="ngModel"
-      [form]="form"
-      name="${component.name}"
-    `;
-  }
-
   
-  createForms(): FormGroup[] {
-    const forms: FormGroup[] = [];
-    this
-      .view
-      .components
-      .filter((component: any) => null !== component)
-      .forEach((component: any) => {
-        visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
-          switch (component.componentName) {
-            case 'Form':
-              const controls: { [key: string]: AbstractControl; } = {};
-
-              /*
-                <input type="hidden" name="dateDebut" value="" />
-                <input type="hidden" name="dateFin" value="" />
-                  <input type="hidden" name="org.apache.struts.taglib.html.CANCEL" value="org.apache.struts.taglib.html.CANCEL" />
-              */
-              controls['validate'] = new FormControl('Valider');
-
-              // controls['dateDebut'] = new FormControl('');
-              // controls['dateFin'] = new FormControl('');
-              // controls['typeExercice'] = new FormControl('');
-              // controls['selectionName'] = new FormControl('com.lswe.exploitation.moteur.selectionSansTri.selectValeurActiveSaveList');
-              // controls['beanName'] = new FormControl('');
-              // controls['fkCodeFonction'] = new FormControl('CGCCG');
-
-
-              controls['explicitInjectionID'] = new FormControl('');
-              controls['beanName'] = new FormControl('com.lswe.generale.gene.pieceComptableTravail');
-              controls['fkCodeFonction'] = new FormControl('CGSEA');
-
-              component
-                .components
-                .forEach((component: any) => {
-                  visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
-                    const required = !!parent && 'Field' === parent.componentName && parent.required;
-                    const validators: ValidatorFn[] = required ? [Validators.required] : [];
-                    switch (component.componentName) {
-                      case 'Transaction':
-                        /*
-                          <input type="hidden" name="sessionId" value="${component.currentSessionId}" />
-                          <input type="hidden" name="_currentSessionId" value="${component.currentSessionId}" />
-                          <input type="hidden" name="_currentTransaction" value="${component.currentTransaction}" />
-                          <input type="hidden" name="_currentOption" value="${component.currentOption}" />
-                          <input type="hidden" name="_currentPath" value="${component.currentPath}" />
-                          <input type="hidden" name="${component.csrfTokenName}" value="${component.csrfTokenValue}" />
-                        */
-                        controls['sessionId'] = new FormControl(component.currentSessionId);
-                        controls['_currentSessionId'] = new FormControl(component.currentSessionId);
-                        controls['_currentTransaction'] = new FormControl(component.currentTransaction);
-                        controls['_currentOption'] = new FormControl(component.currentOption);
-                        controls['_currentPath'] = new FormControl(component.currentPath);
-                        controls[component.csrfTokenName] = new FormControl(component.csrfTokenValue);
-                        break;
-                      case 'Hidden':
-                      case 'Text':
-                      case 'DatePicker':
-                      case 'Dropdown':
-                      case 'Chosen': 
-                        // if ('compteDebut' === component.name) {
-                        //   controls[component.name] = new FormControl('101300', validators);
-                        //   break;
-                        // }
-                        // if ('compteFin' === component.name) {
-                        //   controls[component.name] = new FormControl('999999', validators);
-                        //   break;
-                        // }
-                        controls[component.name] = new FormControl(null !== component.value ? component.value.value : '', { validators: validators });
-                        break;
-                      case 'Checkbox':
-                        controls[component.name] = new FormControl(null !== component.value ? component.value.value : false, { validators: validators });
-                        break;
-                    }
-                  });
-                });
-              forms.push(new FormGroup(controls));
-              return false;
-            default:
-              return true;
-          }
-        });
-      });
-
-     // console.log('forms:', forms);
-
-      if (!!forms.length) {
-        return forms;
-      }
-
-      const controls: { [key: string]: AbstractControl; } = {};
-      this
-        .view
-        .components
-        .filter((component: any) => null !== component)
-        .forEach((component: any) => {
-          visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
-            switch (component.componentName) {
-              case 'Transaction':
-                /*
-                  <input type="hidden" name="sessionId" value="${component.currentSessionId}" />
-                  <input type="hidden" name="_currentSessionId" value="${component.currentSessionId}" />
-                  <input type="hidden" name="_currentTransaction" value="${component.currentTransaction}" />
-                  <input type="hidden" name="_currentOption" value="${component.currentOption}" />
-                  <input type="hidden" name="_currentPath" value="${component.currentPath}" />
-                  <input type="hidden" name="${component.csrfTokenName}" value="${component.csrfTokenValue}" />
-                */
-                controls['sessionId'] = new FormControl(component.currentSessionId);
-                controls['_currentSessionId'] = new FormControl(component.currentSessionId);
-                controls['_currentTransaction'] = new FormControl(component.currentTransaction);
-                controls['_currentOption'] = new FormControl(component.currentOption);
-                controls['_currentPath'] = new FormControl(component.currentPath);
-                controls[component.csrfTokenName] = new FormControl(component.csrfTokenValue);
-                break;
-              case 'Hidden':
-              case 'Text':
-              case 'DatePicker':
-                if ('compteDebut' === component.name) {
-                  controls[component.name] = new FormControl('101300');
-                  break;
-                }
-                if ('compteFin' === component.name) {
-                  controls[component.name] = new FormControl('999999');
-                  break;
-                }
-                controls[component.name] = new FormControl(null !== component.value ? component.value.value : '');
-                break;
-              case 'Checkbox':
-                controls[component.name] = new FormControl(null !== component.value ? component.value.value : false);
-                break;
-            }
-          });
-        });
-      forms.push(new FormGroup(controls));
-
-      return forms;
-  }
-
 }
 
 
