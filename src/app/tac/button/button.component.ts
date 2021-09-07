@@ -38,8 +38,7 @@ export class ButtonComponent implements OnInit {
     console.log('submit:', {
       form: this.formName,
       button: {
-        name: this.name,
-        text: this.text
+        data: this.data
       }
     });
    // this.form.markAllAsTouched();
@@ -47,8 +46,7 @@ export class ButtonComponent implements OnInit {
     this.formService.submit({
       form: this.formName,
       button: {
-        name: this.name,
-        text: this.text
+        data: this.data
       }
     });
   }

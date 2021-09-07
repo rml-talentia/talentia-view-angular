@@ -17,6 +17,7 @@ import { visit } from '../tac/util';
 import { TemplateService } from '../service/TemplateService';
 import { TransactionService } from '../service/TransactionService';
 import { ViewService } from '../service/ViewService';
+import { DataService } from '../service/DataService';
 
 
 @Component({
@@ -47,7 +48,8 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
     private transactionService: TransactionService,
     private appService: AppService,
     private templateService: TemplateService,
-    private viewService: ViewService) {}
+    private viewService: ViewService,
+    private dataService: DataService) {}
 
   ngAfterViewInit() {
     window.TalentiaViewBridge._viewComponent = this;
@@ -90,6 +92,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
         this.componentRef = this.container.createComponent(componentFactory);
         this.componentRef.instance.componentByIndex = this.componentByIndex = this.createComponentByIndex();
         this.componentRef.instance.views = this.viewService.views;
+        this.componentRef.instance.data = this.dataService.data;
         this.componentRef.changeDetectorRef.detectChanges();
         //this.componentRef.injector.get(ChangeDetectorRef).reattach();
       });
@@ -170,6 +173,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
             componentIndex++;
           }
 
+          // [(ngModel)]="${formBind}.data.${component.name}"
 
           const required = !!parent && 'Field' === parent.componentName && parent.required;
           const componentBind = `componentByIndex[${componentIndex}]`;
@@ -178,7 +182,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
             #formControl="ngModel"
             [form]="${formGroupBind}"
             name="${component.name}"
-            [(ngModel)]="${formBind}.data.${component.name}"
+            [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
             ${required ? 'required' : ''}
           `.split(/ *\n */).join(' ');
 

@@ -3,8 +3,7 @@ import { FormGroup } from "@angular/forms";
 import { TFEvent } from "@talentia/components";
 import { AppComponent } from "../app.component";
 import { findByComponentName, visitView } from "../tac/util";
-
-let previousIframe: any;
+import { DataService } from "./DataService";
 
 
 export interface Form {
@@ -17,11 +16,9 @@ export interface Form {
 export interface Submit {
     
     form: string;
-
     button: {
-        name: string;
-        text: string;
-    }
+        data: any;
+    };
 
 }
 
@@ -33,7 +30,9 @@ export class FormService {
     private appComponent!: AppComponent;
     private forms: { [name: string]: Form } = {};
 
-   // private form!: FormGroup;
+    constructor(
+        private dataService: DataService
+    ) {}
 
     postConstruct(appComponent: AppComponent): void {
         this.appComponent = appComponent;
@@ -50,48 +49,27 @@ export class FormService {
     }
 
     submit(options: Submit): void {
-       // this.appComponent.pageContent.submit();
+        console.log('[FormService] submit(options: ', options, ')');
 
-        //console.log('[FormService] this.appComponent.pageContent.formElements: ', this.appComponent.pageContent.formElements);
-       // console.log('[FormService] this.appComponent.pageContent:  ', this.appComponent.pageContent);
-       
-        // Client side validation, typically required validator.
-        // this.form.markAllAsTouched();
-        // if (this.form.invalid) {
-        //     console.log('[FormService] form invalid.');
-        //     return;
-        // }
-
+        // Client-side validation.
         const form = this.forms[options.form];
-        console.log('form: ', form);
-        console.log('forms: ', this.forms);
-        form.group.markAllAsTouched();
-        if (form.group.invalid) {
-            console.log('[FormService] form invalid.');
-            return;
+        if (options.button.data.action.validation) {
+            form.group.markAllAsTouched();
+            if (form.group.invalid) {
+                console.log('[FormService] form invalid.');
+                return;
+            }
         }
         
         this.appComponent.pageLoading = true;
 
-        
-        const action = form.data.action; // this.appComponent.pageContent.formByIndex[0].action;
        
   
         const data: { [field: string]: any; } = {};
-
-
-        const buttonData = { [options.button.name]: options.button.text };
+        const buttonData = { [options.button.data.action.name]: !options.button.data.action.title ? '' : options.button.data.action.title.text };
         const transactionData = this.appComponent.currentView.transaction;
-        const formData = findByComponentName(this.appComponent.currentView, 'Form').data;
+        const formData = this.dataService.data[options.form]; //findByComponentName(this.appComponent.currentView, 'Form').data;
 
-        
-
-        // controls['explicitInjectionID'] = new FormControl('');
-        // controls['beanName'] = new FormControl('com.lswe.generale.gene.pieceComptableTravail');
-        // controls['fkCodeFonction'] = new FormControl('CGSEA');
-
-
-       // findByComponentName(this.)
 
         for (let field in buttonData) {
             data[field] = buttonData[field];
@@ -125,48 +103,41 @@ export class FormService {
         data[transactionData.csrfTokenName] = transactionData.csrfTokenValue;
         
         console.log('[FormService] data:', data);
-        // setTimeout(() => {
-        //    window.TalentiaViewBridge.submitObject(action, data);
-        // });
-
-       console.log('zone:', window.TalentiaViewBridge.getZone());
-        
-        window.TalentiaViewBridge.getZone().runOutsideAngular(() => {
-            var legacyFrame: any = this.appComponent.pageContent.iframe.nativeElement;// window.document.querySelector('iframe#view-iframe');
-
-            if (previousIframe) {
-                if (legacyFrame !== previousIframe) {
-                    console.log('PREVIOUS FRAME is not the SAME');
-                }
-                previousIframe = legacyFrame;
-            }
-    
-            //var legacyFrame = document.querySelector('iframe[data-role="page-content-iframe"]');
-            var legacyDocument = legacyFrame.contentWindow.document;
-    
-            var form = legacyDocument.createElement('form');
-            form.style.display = 'hidden';
-            form.method = 'POST';
-            form.action = action + '?sessionId=' + transactionData.currentSessionId;
-    
-            for (var field in data) {
-                var input = legacyDocument.createElement('input');
-                input.type = 'hidden';
-                input.name = field;
-                input.value = data[field];
-                form.appendChild(input);
-            }
-            
-    
-            legacyDocument.body.appendChild(form);
-            console.log('iframes:', window.document.querySelectorAll('iframe'));
-            console.log('legacyFrame:', legacyFrame);
-            console.log('legacyDocument:', legacyDocument);
-            console.log('form:', form);
-            form.submit();
-        });
+        window.TalentiaViewBridge.submitObject(form.data.action, data);
        
     }
+
+
+
+/*
+<input 
+    type="hidden" 
+    name="sessionId" />
+<input 
+    type="hidden" 
+    name="_currentSessionId" />
+<input 
+    type="hidden" 
+    name="_currentTransaction" />
+<input 
+    type="hidden" 
+    name="_currentOption" />
+<input 
+    type="hidden" 
+    name="_currentPath" />
+<input 
+    type="hidden" 
+    />
+*/
+
+
+
+    
+        
+
+        // controls['explicitInjectionID'] = new FormControl('');
+        // controls['beanName'] = new FormControl('com.lswe.generale.gene.pieceComptableTravail');
+        // controls['fkCodeFonction'] = new FormControl('CGSEA');
 
     // setForm(form: FormGroup): void {
     //     this.form = form;

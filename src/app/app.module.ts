@@ -22,6 +22,7 @@ import { CommandsPanelComponent } from './commands-panel/commands-panel.componen
 import { TemplateService } from '@ag-grid-enterprise/all-modules';
 import { ViewService } from './service/ViewService';
 import { TransactionService } from './service/TransactionService';
+import { DataService } from './service/DataService';
 
 /*
 Licence ag-Grid
@@ -60,6 +61,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     TransactionService,
     TemplateService,
     ViewService,
+    DataService,
     {
       provide: COMPILER_OPTIONS,
       useValue: {},
