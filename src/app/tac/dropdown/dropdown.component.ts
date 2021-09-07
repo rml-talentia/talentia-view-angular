@@ -22,9 +22,7 @@ export class DropdownComponent implements OnInit, ControlValueAccessor, AfterCon
 
   constructor(
     private http: HttpClient,
-    private transactionService: TransactionService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private injector: Injector) { }
+    private transactionService: TransactionService) { }
   ngAfterContentInit(): void {
    // console.log('form: ', this.form);
   }

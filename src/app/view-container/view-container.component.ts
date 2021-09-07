@@ -18,6 +18,7 @@ import { TemplateService } from '../service/TemplateService';
 import { TransactionService } from '../service/TransactionService';
 import { ViewService } from '../service/ViewService';
 import { DataService } from '../service/DataService';
+import { tap } from 'rxjs/operators';
 
 
 @Component({
@@ -27,10 +28,7 @@ import { DataService } from '../service/DataService';
 })
 export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChanges  {
 
-  @ViewChild(
-    'container',
-    {read: ViewContainerRef, static: false}
-  ) container!: ViewContainerRef;
+
 
   @Input()
   view: any = null;
@@ -39,8 +37,10 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
   @ViewChild('iframeWrapper', { read: ElementRef })
   iframeWrapper!: ElementRef<any>;
 
-  componentByIndex: Array<any> = [];
-
+  @ViewChild(
+    'container',
+    {read: ViewContainerRef, static: false}
+  ) container!: ViewContainerRef;
   componentRef!: ComponentRef<any>;
  
   constructor(
@@ -77,29 +77,18 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
 
     this.view = view;
 
-   // this.formByIndex = [];
-
     const context = this.viewService.open({
       name: view.name,
       components: view.components
     });
-
-    const opening = this
-      .templateService
-      .getComponentFactory(this.createContentTemplate());
-    const subscription = opening
-      .subscribe(componentFactory => {
-        this.componentRef = this.container.createComponent(componentFactory);
-        this.componentRef.instance.componentByIndex = this.componentByIndex = this.createComponentByIndex();
-        this.componentRef.instance.views = this.viewService.views;
-        this.componentRef.instance.data = this.dataService.data;
-        this.componentRef.changeDetectorRef.detectChanges();
-        //this.componentRef.injector.get(ChangeDetectorRef).reattach();
-      });
-
-
     
-    return opening;
+    return this.viewService
+      .createAndCompileTemplate({
+        container: this.container,
+        components: [this.view],
+        isIgnoredComponent: this.isIgnoredComponent.bind(this)
+      })
+      .pipe(tap((componentRef: ComponentRef<any>) => this.componentRef = componentRef));
   }
 
 

@@ -1,10 +1,8 @@
-import { AfterViewInit, Compiler, Component, ComponentFactory, ElementRef, Injectable, Injector, NgModule, ViewChild } from "@angular/core";
+import { Compiler, Component, ComponentFactory, ElementRef, Injectable, Injector, NgModule } from "@angular/core";
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import * as crypto from 'crypto';
 import { TacModule } from "../tac/tac.module";
-import { ICellEditorAngularComp } from "@ag-grid-community/angular";
-import { ICellEditorParams } from "@ag-grid-community/core";
-import { IAfterGuiAttachedParams } from "ag-grid-community";
+import { CellEditorBaseComponent } from "../tac/base/cell-editor-base.component";
  
 interface WritableCellEditorContext {
 
@@ -86,82 +84,9 @@ export class TemplateService {
     }
     this.EDITOR_FACTORY_OBSERVABLES[templateKey] = subject = new ReplaySubject<any>(1);
     const component = Component({
-      selector: `generated-component-${templateKey}`,
+      selector: `generated-cell-editor-${templateKey}`,
       template: template
-    })(class AnonymousComponent implements ICellEditorAngularComp {
-      
-      private params!: ICellEditorParams;
-      parent!: any;
-      message: string = 'HELLO IN ANTI PATTERN WORLD';
-
-      constructor() {
-        this.parent = this;       
-        
-      }
-
-      // Delegate agGrid cell editor implementation to this instance.
-      // By this way, the implementation can be passed by editor component itself.
-      cellEditor: ICellEditorAngularComp = <ICellEditorAngularComp> {
-
-        agInit: (params: ICellEditorParams) => {
-          console.log('agInit this.cellEditor:' , this.cellEditor);
-          this.params = params; 
-          // if (!this.cellEditor) {
-          //   return;
-          // }
-          // this.cellEditor.agInit(this.params);
-        },
-  
-        afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
-        },
-  
-        getValue: () => {
-          return this.params.value;
-        },
-  
-        isCancelBeforeStart: () => {
-          return false;
-        },
-  
-        isCancelAfterEnd: () => {
-          return false;
-        },
-  
-        isPopup: () => {
-          return false;
-        }
-      };
-      
-      agInit(params: ICellEditorParams): void {
-        console.log('agInit this.cellEditor:' , this.cellEditor);
-        this.params = params; 
-      }
-
-      afterGuiAttached(params?: IAfterGuiAttachedParams): void {
-        console.log('afterGuiAttached this.cellEditor:' , this.cellEditor);
-        this.cellEditor.agInit(this.params);
-        if (this.cellEditor.afterGuiAttached) {
-          this.cellEditor.afterGuiAttached(params);
-        }
-      }    
-
-      getValue() {
-        return this.cellEditor.getValue();
-      }
-
-      isCancelBeforeStart(): boolean {
-        return !this.cellEditor.isCancelBeforeStart ? false : this.cellEditor.isCancelBeforeStart();
-      }
-
-      isCancelAfterEnd(): boolean {
-        return !this.cellEditor.isCancelAfterEnd ? false : this.cellEditor.isCancelAfterEnd();
-      }
-
-      isPopup(): boolean {
-        return !this.cellEditor.isPopup ? false : this.cellEditor.isPopup();
-      }
-   
-    });
+    })(class AnonymousCellEditorComponent extends CellEditorBaseComponent {});
     const module = NgModule({
       id: `generated-module-${templateKey}`,
       declarations: [

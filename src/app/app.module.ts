@@ -19,10 +19,10 @@ import { ContextService } from './service/ContextService';
 import { PageContentComponent } from './page-content/page-content.component';
 import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
-import { TemplateService } from '@ag-grid-enterprise/all-modules';
-import { ViewService } from './service/ViewService';
 import { TransactionService } from './service/TransactionService';
 import { DataService } from './service/DataService';
+import { TemplateService } from './service/TemplateService';
+import { ViewService } from './service/ViewService';
 
 /*
 Licence ag-Grid
@@ -58,10 +58,10 @@ export function createCompiler(compilerFactory: CompilerFactory) {
   providers: [
     MenuService,
     ContextService,
-    TransactionService,
+    TransactionService,   
     TemplateService,
-    ViewService,
     DataService,
+    ViewService,
     {
       provide: COMPILER_OPTIONS,
       useValue: {},

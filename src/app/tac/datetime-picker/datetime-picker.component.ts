@@ -1,6 +1,11 @@
 import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFDateTimeService } from '@talentia/components';
+import { InputBaseComponent } from '../base/input-base.component';
+
+import { ICellEditorAngularComp } from "ag-grid-angular";
+import { IAfterGuiAttachedParams } from '@ag-grid-community/core';
+
 
 @Component({
   selector: 'tac-datetime-picker',
@@ -12,18 +17,9 @@ import { TFDateTimeService } from '@talentia/components';
     useExisting: forwardRef(() => DatetimePickerComponent)
   }]
 })
-export class DatetimePickerComponent implements OnInit, ControlValueAccessor {
+export class DatetimePickerComponent extends InputBaseComponent  {
 
-  @Input()
-  form!: FormGroup;
-  @Input()
-  name!: string;
-  @Input()
-  data!: any;  
-  @Input()
-  title!: string;
-  private onchange: any;
-  private ontouched: any;
+
 
   private _value: string = '';
   private _rawValue: string = '';
@@ -31,10 +27,9 @@ export class DatetimePickerComponent implements OnInit, ControlValueAccessor {
 
 
   constructor(private dateTimeService: TFDateTimeService) {
+    super();
   }
 
-  ngOnInit(): void {
-  }
 
   @Input()
   get value() {
@@ -58,22 +53,27 @@ export class DatetimePickerComponent implements OnInit, ControlValueAccessor {
     this._value = this.dateTimeService.dateToString(date, false, 'DD/MM/YYYY');
     this.fireChange(this._value);
   }
-  
-  private fireChange(newValue: any): void {
-    if (!!this.onchange) {
-      this.onchange(newValue);
-    }
+
+  createCellEditor(): ICellEditorAngularComp {
+    return  <ICellEditorAngularComp> {       
+        
+      agInit: (params) => {
+        this.value = params.value;
+      },
+
+      afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+      },
+
+      getValue: () => {
+        return this.value;
+      }
+
+    };
   }
+
  
   writeValue(value: any): void {
     this.value = value;
   }
 
-  registerOnChange(onchange: any): void {
-    this.onchange = onchange;
-  }
- 
-  registerOnTouched(ontouched: any): void {
-    this.ontouched = ontouched;
-  }
 }

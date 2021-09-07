@@ -1,49 +1,47 @@
-import { ICellEditorAngularComp } from '@ag-grid-community/angular';
+
 import { HttpClient } from '@angular/common/http';
 import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFChosenComponent } from '@talentia/components';
+import { ICellEditorAngularComp } from 'ag-grid-angular';
+import { IAfterGuiAttachedParams } from 'ag-grid-community';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TransactionService } from 'src/app/service/TransactionService';
+import { InputBaseComponent } from '../base/input-base.component';
 
 
 
 @Component({
   selector: 'tac-chosen',
   templateUrl: './chosen.component.html',
-  styleUrls: ['./chosen.component.css'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    multi: true,
-    useExisting: forwardRef(() => ChosenComponent)
-  }]
+  styleUrls: ['./chosen.component.css']
+  // ,
+  // providers: [{
+  //   provide: NG_VALUE_ACCESSOR,
+  //   multi: true,
+  //   useExisting: forwardRef(() => ChosenComponent)
+  // }]
 })
-export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,  AfterViewChecked, ControlValueAccessor {
+export class ChosenComponent extends InputBaseComponent implements OnInit, AfterContentInit, AfterViewInit,  AfterViewChecked, ControlValueAccessor {
 
   constructor(
-    private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
-    private transactionService: TransactionService) { }
+    private transactionService: TransactionService) { 
+      super();
+    }
+
+
 
   @Input()
-  form!: FormGroup;
-  @Input()
-  name!: string;
-  @Input()
   value!: string;
-  @Input()
-  data!: any;  
-  @Input()
-  title!: string;
+
 
   selection: any[] = [];
   items: any[] = [];  
   itemsSubscription!: Subscription | null;
 
-  private onchange: any;
-  private ontouched: any;
 
   @ContentChild('myItemTemplate', { read: TemplateRef})
   myItemTemplate!: TemplateRef<any>;
@@ -127,6 +125,23 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
   }
 
+  createCellEditor(): ICellEditorAngularComp {
+    return  <ICellEditorAngularComp> {       
+        
+      agInit: (params) => {
+        this.value = params.value;
+      },
+
+      afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+      },
+
+      getValue: () => {
+        return this.value;
+      }
+
+    };
+  }
+
 
   writeValue(value: any): void {
    // console.log('writeValue(value:', value, ')');
@@ -151,13 +166,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
   }
 
-  registerOnChange(onchange: any): void {
-    this.onchange = onchange;
-  }
 
-  registerOnTouched(ontouched: any): void {
-    this.ontouched = ontouched;
-  }
 
 
   private workaroundTAC2786(): void {

@@ -1,6 +1,9 @@
 import { Component, ElementRef, EventEmitter, forwardRef, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFEvent, TFInputComponent } from '@talentia/components';
+import { ICellEditorAngularComp } from 'ag-grid-angular';
+import { IAfterGuiAttachedParams } from 'ag-grid-community';
+import { InputBaseComponent } from '../base/input-base.component';
 
 
 @Component({
@@ -13,19 +16,10 @@ import { TFEvent, TFInputComponent } from '@talentia/components';
     useExisting: forwardRef(() => TextInputComponent)
   }]
 })
-export class TextInputComponent implements OnInit, ControlValueAccessor  {
+export class TextInputComponent extends InputBaseComponent implements OnInit  {
 
-  @Input()
-  form!: FormGroup;
-  @Input()
-  name!: string;
-  _value!: string;
-  @Input()
-  data!: any;  
-  @Input()
-  title!: string;
-  private onchange: any;
-  private ontouched: any;
+
+
 
   typeinput!: 'text' | 'amount';
   decimals!: number;
@@ -33,16 +27,11 @@ export class TextInputComponent implements OnInit, ControlValueAccessor  {
   @ViewChild('input', { read: TFInputComponent })
   input!: TFInputComponent;
 
-
   @Output() 
   blur: EventEmitter<TFEvent> = new EventEmitter<TFEvent>();
 
-  constructor() { }
 
-
-  ngOnInit(): void {
-    this.configureFromFormat();
-  }
+  private _value!: string;
 
   @Input()
   get value() {
@@ -55,6 +44,8 @@ export class TextInputComponent implements OnInit, ControlValueAccessor  {
     this.fireChange(value);
   }
 
+
+  
   private configureFromFormat(): void {
     console.log('[text-input] formatType: ', !this.data.format ? '' : this.data.format.formatType);
     switch (!this.data.format ? '' : this.data.format.formatType) {
@@ -68,30 +59,28 @@ export class TextInputComponent implements OnInit, ControlValueAccessor  {
     }
   }
   
-  private fireChange(newValue: any): void {
-    if (!!this.onchange) {
-      this.onchange(newValue);
-    }
+  createCellEditor(): ICellEditorAngularComp {
+    return  <ICellEditorAngularComp> {       
+        
+      agInit: (params) => {
+        this.value = params.value;
+      },
+
+      afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+      },
+
+      getValue: () => {
+        return this.value;
+      }
+
+    };
   }
 
-
-  private fireTouched(): void {
-    if (!!this.ontouched) {
-      this.ontouched();
-    }
-  }
  
   writeValue(value: any): void {
     this.value = value;
   }
 
-  registerOnChange(onchange: any): void {
-    this.onchange = onchange;
-  }
- 
-  registerOnTouched(ontouched: any): void {
-    this.ontouched = ontouched;
-  }
 
   focus(): void {
     // Used in ag-grid cell editor.
