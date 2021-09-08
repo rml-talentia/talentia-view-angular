@@ -2,12 +2,13 @@
 import { HttpClient } from '@angular/common/http';
 import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { TFChosenComponent } from '@talentia/components';
+import { TFChosenComponent, TFEvent } from '@talentia/components';
+import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { TransactionService } from 'src/app/service/TransactionService';
 import { InputBaseComponent } from '../base/input-base.component';
 
@@ -16,15 +17,14 @@ import { InputBaseComponent } from '../base/input-base.component';
 @Component({
   selector: 'tac-chosen',
   templateUrl: './chosen.component.html',
-  styleUrls: ['./chosen.component.css']
-  // ,
-  // providers: [{
-  //   provide: NG_VALUE_ACCESSOR,
-  //   multi: true,
-  //   useExisting: forwardRef(() => ChosenComponent)
-  // }]
+  styleUrls: ['./chosen.component.css'],
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    multi: true,
+    useExisting: forwardRef(() => ChosenComponent)
+  }]
 })
-export class ChosenComponent extends InputBaseComponent implements OnInit, AfterContentInit, AfterViewInit,  AfterViewChecked, ControlValueAccessor {
+export class ChosenComponent extends InputBaseComponent implements AfterContentInit, AfterViewInit,  AfterViewChecked {
 
   constructor(
     private http: HttpClient,
@@ -32,6 +32,8 @@ export class ChosenComponent extends InputBaseComponent implements OnInit, After
       super();
     }
 
+  @ViewChild(TFChosenComponent)
+  chosen!: TFChosenComponent;
 
 
   @Input()
@@ -41,6 +43,7 @@ export class ChosenComponent extends InputBaseComponent implements OnInit, After
   selection: any[] = [];
   items: any[] = [];  
   itemsSubscription!: Subscription | null;
+  totalCount: number = 0;
 
 
   @ContentChild('myItemTemplate', { read: TemplateRef})
@@ -50,54 +53,40 @@ export class ChosenComponent extends InputBaseComponent implements OnInit, After
   tfChosen!: TFChosenComponent;
 
   ngAfterViewChecked(): void {
-   
   }
 
-
   ngAfterViewInit(): void {
-//    this.workaroundTAC2786();
-   
+//    this.workaroundTAC2786();  
   }
 
   ngAfterContentInit(): void {
-    // Array.prototype.forEach.call(document.querySelectorAll('tf-chosen > div.dropdown'), element => { element.addEventListener('focus', event => {  var chosen = event.target.parentElement.__component; chosen.form.controls[chosen.name].markAsTouched();   }); })
- 
-
   }
 
-
-
-
   ngOnInit(): void {
-    //this.text = '';
-   
-  //  console.log('[CHOSEN] value: ', this.value);
- //   console.log('[CHOSEN] data: ', this.data);
-   // console.log('this.data: ', this.data);
+    super.ngOnInit();
+  }
 
- 
+  onSelected(item: any): void {
+    console.log('[tac-chosen] onSelected(item:', item, ')');
+    this.fireChange(this.value = item.id);
+  }
+
+  onNeedData(event: TFEvent): void {
+   this.fetchData(0);
+  }
+
+  onNeedMoreData(event: TFEvent): void {
+    this.fetchData(Math.ceil(this.items.length / 30));
+  }
+
+  private fetchData(page: number): void {
     const payload = this.data.model.payload;
     payload.search = '';
     payload.pageSize = 30;
+    payload.page = page;
    // payload.excludedKeys = null;    
     
     const key = payload.criterias[0].name;
-
-
-    // if (this.value) {
-     
-    //   this.value[0] = { id: this.value[0][key], text: this.value[0][key] };
-    // }
-
-
-    // this.items = [];
-    // const value = this.data.value.value;
-    // console.log('[CHOSEN] value: ', value);
-    // this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
-    // this.items = this.selection.slice(0);
-
-    if (true) return;
-
     this.itemsSubscription = this
         .http
         .post(
@@ -109,20 +98,31 @@ export class ChosenComponent extends InputBaseComponent implements OnInit, After
                 [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
                 }
             })
-        .pipe(map((response: any) => response
-          .rows
-          .map((row: any, index: number) => <any> {
-              id:  row[key],
-              text: row[key],
-              cells: payload.criterias.map((criteria: any) => criteria.name).map((column:any) => row[column])
-          })))
+        .pipe(tap((response: any) => {
+          this.totalCount = response.total;
+        }))
+        .pipe(map((response: any) => { 
+          return response
+            .rows
+            .map((row: any, index: number) => <any> {
+                id:  row[key],
+                text: row[key],
+                cells: payload.criterias.map((criteria: any) => criteria.name).map((column:any) => row[column])
+            });
+        }))
         .subscribe({
           next: (items: any[]) => {
-            this.items = items;            
+            if (0 === page) {
+              this.items = items;
+            } else {
+              //this.items.push.apply(this.items, items);
+              //
+              this.items = this.items.concat(items);
+              this.chosen.refresh();
+            }           
           }
         })
         .add(() => this.itemsSubscription = null);
-
   }
 
   createCellEditor(): ICellEditorAngularComp {
@@ -153,10 +153,11 @@ export class ChosenComponent extends InputBaseComponent implements OnInit, After
 
     //const payload = this.data.model.payload;
     //const key = payload.criterias[0].name;
-   // console.log('[CHOSEN] writeValue value:', value);
-    this.value = value;
+    console.log('[CHOSEN] writeValue value:', value);
+    
     this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
     this.items = this.selection;
+    this.fireChange(this.value = value);
 
     // if (!!this.onchange) {
     //   this.onchange(value);

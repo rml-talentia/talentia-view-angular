@@ -21,7 +21,7 @@ import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
 import { TransactionService } from './service/TransactionService';
 import { DataService } from './service/DataService';
-import { TemplateService } from './service/TemplateService';
+import { CompilerService } from './service/CompilerService';
 import { ViewService } from './service/ViewService';
 
 /*
@@ -59,7 +59,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     MenuService,
     ContextService,
     TransactionService,   
-    TemplateService,
+    CompilerService,
     DataService,
     ViewService,
     {

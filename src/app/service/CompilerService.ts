@@ -2,34 +2,15 @@ import { Compiler, Component, ComponentFactory, ElementRef, Injectable, Injector
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import * as crypto from 'crypto';
 import { TacModule } from "../tac/tac.module";
-import { CellEditorBaseComponent } from "../tac/base/cell-editor-base.component";
  
-interface WritableCellEditorContext {
 
-  setParent(parent: any): void;
-}
-
-@Injectable()
-export class CellEditorContext implements WritableCellEditorContext {
-
-  private parent: any;
-
-  constructor() {
-  }
-
-  setParent(parent: any): void {
-    this.parent = parent;
-  }
-
-}
 
 
 @Injectable()
-export class TemplateService {
+export class CompilerService {
 
   COMPONENT_FACTORY_OBSERVABLES: {[key: string]: Subject<ComponentFactory<any>>} = {};
-
-  EDITOR_FACTORY_OBSERVABLES: {[key: string]: Subject<any>} = {};
+  EDITOR_FACTORY_OBSERVABLES: {[key: string]: Subject<ComponentFactory<any>[]>} = {};
 
   constructor(
     private compiler: Compiler,
@@ -72,26 +53,36 @@ export class TemplateService {
     return subject;
   }
   
-  getEditorFactory(template: string): Observable<any> {
-    console.log('template:', template);
-    const templateKey = crypto
-      .createHash('md5')
-      .update(template)
+  getEditorFactories(options: GetEditorFactory): Observable<ComponentFactory<any>[]> {
+
+    // templateKey is the sum of each template and column field name.
+    const hash = crypto
+      .createHash('md5');
+    options
+      .columns
+      .forEach(column => hash
+        .update(column.data.field)
+        .update(column.template));
+    const templateKey = hash
       .digest('hex');
+
+    // When templates are already compiled, return componentFactories.
     let subject = this.EDITOR_FACTORY_OBSERVABLES[templateKey];
     if (!!subject) {
       return subject;
     }
-    this.EDITOR_FACTORY_OBSERVABLES[templateKey] = subject = new ReplaySubject<any>(1);
-    const component = Component({
-      selector: `generated-cell-editor-${templateKey}`,
-      template: template
-    })(class AnonymousCellEditorComponent extends CellEditorBaseComponent {});
+    this.EDITOR_FACTORY_OBSERVABLES[templateKey] = subject = new ReplaySubject<ComponentFactory<any>[]>(1);
+
+    // Compile components.
+    const components = options
+      .columns
+      .map(column => Component({
+        selector: `generated-cell-editor-${templateKey}`,
+        template: column.template
+      })(class AnonymousCellEditorComponent {}));
     const module = NgModule({
-      id: `generated-module-${templateKey}`,
-      declarations: [
-        component
-      ],
+      id: `generated-data-grid-module-${templateKey}`,
+      declarations: components,
       imports: [ 
         TacModule
       ]
@@ -101,12 +92,9 @@ export class TemplateService {
       .compileModuleAsync(module)
       .then(moduleFactory => {
         const 
-          moduleRef = moduleFactory.create(this.injector),
-          componentFactory = moduleRef.componentFactoryResolver.resolveComponentFactory(component);
-        subject.next({
-          componentFactory,
-          Component,
-          component});
+          moduleRef = moduleFactory.create(this.injector);
+        subject.next(components
+          .map(component => moduleRef.componentFactoryResolver.resolveComponentFactory(component)));
         subject.complete();
       });  
     return subject;
@@ -114,5 +102,11 @@ export class TemplateService {
 
 }
 
+interface Column {
+  data: any,
+  template: string
+}
 
-
+interface GetEditorFactory {
+  columns: Column[];
+}

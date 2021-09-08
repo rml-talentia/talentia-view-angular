@@ -1,97 +1,31 @@
 
 import { ComponentFactory, ComponentRef, Injectable, ViewContainerRef } from "@angular/core";
-import { FormGroup } from "@angular/forms";
-import { Optional } from "ag-grid-community";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { visit } from "../tac/util";
 import { DataService } from "./DataService";
-import { TemplateService } from "./TemplateService";
+import { CompilerService } from "./CompilerService";
 
 
-// interface AppContext {
 
-//   views: { 
-//     [viewKey: string]: ViewContext 
-//   }
-
-// }
-
-// interface ViewContext {
-
-//   componentByIndex: any[];
-
-
-// }
-
-interface Form {
-
-  group: FormGroup;
-  data: any;
-  
-}
-
-export interface ViewContext {
-
-  name: string;
-  forms: { [key: string]: Form };
-  componentByIndex: any[];
-  data: any;
-
-}
-
-type ViewContexts = { [key: string]: ViewContext };
-
-interface Open {
-  name: string;
-  components: any[];
-}
-
-interface CreateTemplate {
-  components: any[];
-  isIgnoredComponent: (component: any) => boolean;
-}
-
-
-interface CreateComponentByIndex extends CreateTemplate {
-}
-
-interface CreateAndCompileTemplate extends CreateTemplate {
-  container: ViewContainerRef;
-}
 
 @Injectable()
-export class ViewService {
-    
-    private _views: ViewContexts = {};
-
+export class ViewService {    
+ 
     constructor(
-      private templateService: TemplateService,
+      private compilerService: CompilerService,
       private dataService: DataService) {}
-
-    get views(): ViewContexts {
-      return this._views; // should be immutable, but...
-    }
-
-    open(view: Open): ViewContext {
-      return this._views[view.name] = {
-        name: view.name,
-        forms: {},
-        componentByIndex: [],
-        data: view
-      };
-    }
 
     createAndCompileTemplate(options: CreateAndCompileTemplate): Observable<ComponentRef<any>> {
       const template = this.createTemplate(options);
       const componentByIndex = this.createComponentByIndex(options);
       return this
-        .templateService
+        .compilerService
         .getComponentFactory(template)
         .pipe(map((componentFactory: ComponentFactory<any>) => {
           const componentRef = options.container.createComponent(componentFactory);
           componentRef.instance.componentByIndex = componentByIndex;
-          componentRef.instance.views = this.views;
+          //componentRef.instance.views = this.views;
           componentRef.instance.data = this.dataService.data;
           componentRef.changeDetectorRef.detectChanges();
           return componentRef;
@@ -107,9 +41,7 @@ export class ViewService {
       let ignoredComponent: any = null;
       let formGroupBind: string | null = null;
       let formBind: string | null = null;
-  
-      template.push(`<tac-view>`);
-  
+    
       options
         .components
         .forEach((component: any) => {
@@ -122,7 +54,7 @@ export class ViewService {
               }
               return;
             }
-            if (options.isIgnoredComponent(component)) {
+            if (!!options.isIgnoredComponent && options.isIgnoredComponent(component)) {
               ignoredComponent = component;
               return;
             }
@@ -130,9 +62,7 @@ export class ViewService {
             if (start) {
               componentIndex++;
             }
-  
-            // [(ngModel)]="${formBind}.data.${component.name}"
-  
+    
             const required = !!parent && 'Field' === parent.componentName && parent.required;
             const componentBind = `componentByIndex[${componentIndex}]`;
             const formControlBind = !formGroupBind || !component.name ? '' : `                
@@ -141,11 +71,23 @@ export class ViewService {
               [form]="${formGroupBind}"
               name="${component.name}"
               [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
-              ${required ? 'required' : ''}
-            `.split(/ *\n */).join(' ');
+              ${!required ? '' : 'required'}
+            `;
   
+            const cellEditorControlBind = !options.cellEditor ? '' : `
+              [cellEditor]="cellEditor"
+              [(ngModel)]="value"
+            `;
+
+            const controlBind = `${formControlBind}${cellEditorControlBind}`.split(/ *\n */).join(' ');
   
             switch (component.componentName) {
+              case 'View':
+                template.push(start ? `
+                <tac-view>
+                ` : `
+                </tac-view>`);
+                break;
               case 'Transaction':
                 break;
               case 'Form':
@@ -268,7 +210,7 @@ export class ViewService {
                 template.push(start
                   ? `
                   <tac-text-input
-                    ${formControlBind}
+                    ${controlBind}
                     [data]="${componentBind}">                
                   ` : `
                   </tac-text-input>
@@ -278,7 +220,7 @@ export class ViewService {
                 template.push(start 
                   ? `
                   <tac-datetime-picker
-                    ${formControlBind}
+                    ${controlBind}
                     [data]="${componentBind}">
                   ` : `
                   </tac-datetime-picker>`);
@@ -287,7 +229,7 @@ export class ViewService {
                 template.push(start 
                   ? `<tf-field cols="2">
                       <tf-checkbox 
-                        ${formControlBind}
+                        ${controlBind}
                         [toggle]="true"
                         title="${component.title.text}">` 
                   : ` </tf-checkbox>
@@ -297,7 +239,7 @@ export class ViewService {
                 template.push(start 
                   ? `
                   <tac-dropdown     
-                      ${formControlBind}
+                      ${controlBind}
                       [data]="${componentBind}"
                       title="${component.title.text}">` 
                   : `
@@ -307,13 +249,12 @@ export class ViewService {
                 template.push(start 
                   ? `           
                   <tac-chosen          
-                    ${formControlBind}                  
+                    ${controlBind}                  
                     [data]="${componentBind}"
                     title="${component.title.text}">
                     <ng-template 
                       #myItemTemplate
                       let-data>
-                      {{ data | json }}
                       <tf-h-layout grow="end" spacing="sm">                    
                         <tf-text
                           *ngFor="let cell of data.cells; let isFirst=first"
@@ -345,9 +286,7 @@ export class ViewService {
           });
       });
   
-  
-      template.push(`</tac-view>`);
-  
+   
       return template.join('\n');
     }
 
@@ -367,7 +306,7 @@ export class ViewService {
             }
             return;
           }
-          if (options.isIgnoredComponent(component)) {
+          if (!!options.isIgnoredComponent && options.isIgnoredComponent(component)) {
             ignoredComponent = component;
             return;
           }
@@ -379,4 +318,18 @@ export class ViewService {
     return componentByIndex;
   }
 
+}
+
+
+interface CreateTemplate {
+  components: any[];
+  isIgnoredComponent?: (component: any) => boolean;
+  cellEditor?: boolean;
+}
+
+interface CreateComponentByIndex extends CreateTemplate {
+}
+
+interface CreateAndCompileTemplate extends CreateTemplate {
+  container: ViewContainerRef;
 }

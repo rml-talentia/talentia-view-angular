@@ -16,7 +16,7 @@ import { InputBaseComponent } from '../base/input-base.component';
     useExisting: forwardRef(() => TextInputComponent)
   }]
 })
-export class TextInputComponent extends InputBaseComponent implements OnInit  {
+export class TextInputComponent extends InputBaseComponent {
 
 
 
@@ -44,7 +44,10 @@ export class TextInputComponent extends InputBaseComponent implements OnInit  {
     this.fireChange(value);
   }
 
-
+  ngOnInit(): void {
+    super.ngOnInit();
+    this.configureFromFormat();
+  }
   
   private configureFromFormat(): void {
     console.log('[text-input] formatType: ', !this.data.format ? '' : this.data.format.formatType);

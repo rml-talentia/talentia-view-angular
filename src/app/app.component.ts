@@ -7,13 +7,11 @@ import { PageContentComponent } from './page-content/page-content.component';
 import { ContextService } from './service/ContextService';
 import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
-import { TemplateService } from './service/TemplateService';
 import { toArray } from 'rxjs/operators';
 import { findByComponentName } from './tac/util';
 import { TFLocalizationService } from '@talentia/components';
 import { FormService } from './service/FormService';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
-import { ViewService } from './service/ViewService';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -41,8 +39,7 @@ export function localizationServiceFactory() {
       useFactory: localizationServiceFactory
     },
     AppService,
-    FormService,
-    ViewService
+    FormService
   ]
 })
 export class AppComponent implements OnInit {

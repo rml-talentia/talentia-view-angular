@@ -5,15 +5,21 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { AgGridAngular, AgGridColumn } from '@ag-grid-community/angular';
 import { AppService } from 'src/app/service/AppService';
-import { ColDef, EditableCallbackParams } from 'ag-grid-community';
-import { TemplateService } from 'src/app/service/TemplateService';
+import { EditableCallbackParams } from 'ag-grid-community';
+import { CompilerService } from 'src/app/service/CompilerService';
 import { TransactionService } from 'src/app/service/TransactionService';
+import { ViewService } from 'src/app/service/ViewService';
+import { CellEditorComponent } from '../cell-editor/cell-editor.component';
+import { ColumnService } from 'src/app/service/ColumnService';
 
 
 @Component({
   selector: 'tac-data-grid',
   templateUrl: './data-grid.component.html',
-  styleUrls: ['./data-grid.component.css']
+  styleUrls: ['./data-grid.component.css'],
+  providers: [ 
+    ColumnService
+  ]
 })
 export class DataGridComponent implements OnInit, AfterViewInit, AfterContentInit {
 
@@ -28,49 +34,59 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
   gridOptions!: GridOptions;
 
   public modules: Module[] = AllModules;
-  public frameworkComponents: any;// = { tacTextInput: TextInputCellEditor}; // TacModule.AG_GRID_FRAMEWORK_COMPONENTS;
+  public frameworkComponents: any = { defaultCellEditor: CellEditorComponent }; // TacModule.AG_GRID_FRAMEWORK_COMPONENTS;
 
-  // @ViewChild('customEditor', { read: TemplateRef, static: false })
-  // customEditor!: TemplateRef<any>;
-
-  @ContentChild('customEditor', { read: TemplateRef, static: false })
-  customEditor!: TemplateRef<any>;
 
   constructor(
     private http: HttpClient,
     private transactionService: TransactionService,
     private appService: AppService,
-    private templateService: TemplateService,
-    private ngZone: NgZone) { }
+    private compilerService: CompilerService,
+    private viewService: ViewService,
+    private ngZone: NgZone,
+    private columnService: ColumnService) { }
 
 
   ngOnInit(): void {
-
-
-    // this
-    //   .data
-    //   .columns
-    //   .map((column: any) => this
-    //     .templateService
-    //     .getEditorFactory('<tac-view [parent]="parent" #p><b>- {{p.value}} -</b></tac-view>'));
-
     this
-      .templateService
-      .getEditorFactory('<tac-view [parent]="parent" #p><b>- {{p.value}} -</b></tac-view>')
+      .compilerService
+      .getEditorFactories({
+        columns: this
+          .data
+          .columns
+          .map((column: any) => ({
+            data: column,
+            template: this // TODO: duplicate code
+              .viewService
+              .createTemplate({
+                components: column.components,
+                cellEditor: true
+              })
+          }))
+      })
       .subscribe({
-        next: (result: any) => {
-          this.frameworkComponents = { tacTextInput: result.component };
+        next: (components: any) => {
+          this
+            .data
+            .columns
+            .forEach((column: any, index: number) => {
+              this.columnService.columns[column.field] = { 
+                componentFactory: components[index], 
+                data: column, 
+                template: this // TODO: duplicate code
+                  .viewService
+                  .createTemplate({
+                    components: column.components,
+                    cellEditor: true
+                  }),
+                index: index 
+              };
+            });          
           setTimeout(() => {
             this.initializeDataGrid();
           });
-          // const subscription = this.ngZone.onStable.subscribe({
-          //   next: (result: any) => {
-          //     this.initializeDataGrid();
-          //     //subscription.unsubscribe();
-          //   }
-          // });
         }
-      })
+      });
   }
 
 
@@ -115,42 +131,15 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
 
   ngAfterViewInit(): void {
-    
     //this.initializeDataGrid();
-
   }
 
   initializeDataGrid(): void {
     const self = this;       
-
-    
     self
       .agGrid
       .api
       .setColumnDefs(this.getColumnDefs());
-
-    // `${this.viewService.contextPath}/services/private/api/listviews?sessionId=${this.viewService.sessionId}`
-
-    //       .pipe(map((result: any) => {
-   //   console.log('result:', result);
-   //   return result.data;
-   // }))
-    // const payload = {
-    //   "componentId": "sousFichiersValue", 
-    //   "sessionId": this.viewService.sessionId, 
-    //   "sessionList":false,
-    //   "collectionName":"CGCCGListeSousFichiers3IHM3",
-    //   "filterable":"true","isort":[{"dir":"asc","field":"compte"}],
-    //   "formatters":[],
-    //   "take":"25",
-    //   "skip":0,
-    //   "page":1,
-    //   "pageSize":"25",
-    //   "defaultLoading":"ALL",
-    //   "visibleColumns":["compte","libelle","totalDebit","totalCredit","solde"]
-    // };
-
-
     switch(this.data.model.modelType) {
       case 'FinanceListDataGridModel':
         const query = {
@@ -281,29 +270,14 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
           }),
           headerClass: (params: any) => [
             `${column.alignment.toLowerCase()}-alignment`
-          ],            
+          ],
+          cellClass: (params: any) => { 
+            return `text-${column.alignment.toLowerCase()}`;
+          },            
           editable: (params: EditableCallbackParams) => {
             return true;//!!column.editor;
           },
-          // cellEditorSelector: (params: ICellEditorParams) => {
-          //   return 'inputEditor';
-          // },
-          // cellEditor: (params: ICellEditorParams) => {
-          // //  return TFTextComponent;
-          //   return 'customEditor';
-          // }
-          // cellEditor: 'customEditor',
-          // cellEditorParams: {
-          //   customTemplate: this.customEditor,
-          //   columnName: column.field            
-          // },
-          //cellEditorSelector: 'tac-text-input-cell-editor',
-          cellEditor: 'tacTextInput',
-                    cellEditorParams: {
-            customTemplate: this.customEditor,
-            columnName: column.field         ,
-               
-          },
+          cellEditor: 'defaultCellEditor',
           singleClickEdit: true
       }));
   }

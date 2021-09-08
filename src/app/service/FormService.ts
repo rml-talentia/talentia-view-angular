@@ -6,14 +6,14 @@ import { findByComponentName, visitView } from "../tac/util";
 import { DataService } from "./DataService";
 
 
-export interface Form {
+interface Form {
 
     group: FormGroup;
     data: any;
     
 }
 
-export interface Submit {
+interface Submit {
     
     form: string;
     button: {

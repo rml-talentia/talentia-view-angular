@@ -39,6 +39,7 @@ export abstract class InputBaseComponent implements OnInit, ControlValueAccessor
     }
 
     ngOnInit(): void {
+        console.log('this.cellEditor: ', this.cellEditor);
         if (this.cellEditor) {
             this.cellEditor.delegate = this.createCellEditor();
         }        

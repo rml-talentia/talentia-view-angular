@@ -1,5 +1,5 @@
 import { IAfterGuiAttachedParams } from "@ag-grid-enterprise/all-modules";
-import { Directive } from "@angular/core";
+import { Directive, OnInit } from "@angular/core";
 import { ICellEditorAngularComp } from "ag-grid-angular";
 import { ICellEditorParams } from "ag-grid-community";
 
@@ -7,79 +7,62 @@ import { ICellEditorParams } from "ag-grid-community";
 @Directive({
   selector: '[tac-cell-editor-base-component]'
 })
-export abstract class CellEditorBaseComponent implements ICellEditorAngularComp {
+export abstract class CellEditorBaseComponent implements ICellEditorAngularComp, OnInit {
       
     private params!: ICellEditorParams;
-    parent!: any;
-    message: string = 'HELLO IN ANTI PATTERN WORLD';
-
+    cellEditor!: CellEditorBaseComponent;
     delegate!: ICellEditorAngularComp;
 
-    constructor() {
-      this.parent = this;       
-      
+    // view column data (component data)
+    protected data!: any;
+
+    componentByIndex!: any[];
+
+    constructor() {  
+      this.cellEditor = this;
     }
 
-    // Delegate agGrid cell editor implementation to this instance.
-    // By this way, the implementation can be passed by editor component itself.
-    cellEditor: ICellEditorAngularComp = <ICellEditorAngularComp> {
+    ngOnInit(): void {
+      
+      this.componentByIndex = this.data.components;
 
-      agInit: (params: ICellEditorParams) => {
-        console.log('agInit this.cellEditor:' , this.cellEditor);
-        this.params = params; 
-        // if (!this.cellEditor) {
-        //   return;
-        // }
-        // this.cellEditor.agInit(this.params);
-      },
-
-      afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
-      },
-
-      getValue: () => {
-        return this.params.value;
-      },
-
-      isCancelBeforeStart: () => {
-        return false;
-      },
-
-      isCancelAfterEnd: () => {
-        return false;
-      },
-
-      isPopup: () => {
-        return false;
-      }
-    };
+    }
+  
     
     agInit(params: ICellEditorParams): void {
-      console.log('agInit this.cellEditor:' , this.cellEditor);
+      console.log('agInit this.delegate:' , this.delegate);
+      console.log('agInit params:' , params);
       this.params = params; 
+
+
+      //params.colDef.field;
+
+
+
     }
 
     afterGuiAttached(params?: IAfterGuiAttachedParams): void {
-      console.log('afterGuiAttached this.cellEditor:' , this.cellEditor);
-      this.cellEditor.agInit(this.params);
-      if (this.cellEditor.afterGuiAttached) {
-        this.cellEditor.afterGuiAttached(params);
+      console.log('afterGuiAttached this.delegate:' , this.delegate);
+      this.delegate.agInit(this.params);
+      if (this.delegate.afterGuiAttached) {
+        this.delegate.afterGuiAttached(params);
       }
     }    
 
-    getValue() {
-      return this.cellEditor.getValue();
+    getValue(): any {
+      return this.delegate.getValue();
     }
 
     isCancelBeforeStart(): boolean {
-      return !this.cellEditor.isCancelBeforeStart ? false : this.cellEditor.isCancelBeforeStart();
+      return !this.delegate.isCancelBeforeStart ? false : this.delegate.isCancelBeforeStart();
     }
 
     isCancelAfterEnd(): boolean {
-      return !this.cellEditor.isCancelAfterEnd ? false : this.cellEditor.isCancelAfterEnd();
+      return !this.delegate.isCancelAfterEnd ? false : this.delegate.isCancelAfterEnd();
     }
 
     isPopup(): boolean {
-      return !this.cellEditor.isPopup ? false : this.cellEditor.isPopup();
+      return !this.delegate.isPopup ? false : this.delegate.isPopup();
     }
  
   }

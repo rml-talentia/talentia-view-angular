@@ -11,7 +11,12 @@
     dropdownWidth="400px"
     [standalone]="true"
     [data]="items"
-    [active]="selection">
+    [active]="selection"
+    [lazyLoading]="true"
+    [totalCount]="totalCount"
+    (needData)="onNeedData($event)"
+    (needMoreData)="onNeedMoreData($event)"
+    (selected)="onSelected($event)">
     <ng-template 
         #itemTemplate
         let-data
