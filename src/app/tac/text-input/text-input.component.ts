@@ -30,7 +30,6 @@ export class TextInputComponent extends InputBaseComponent {
   @Output() 
   blur: EventEmitter<TFEvent> = new EventEmitter<TFEvent>();
 
-
   private _value!: string;
 
   @Input()
@@ -42,6 +41,10 @@ export class TextInputComponent extends InputBaseComponent {
     //console.log('[text-input] set value(value:', value, ')');
     this._value = value;
     this.fireChange(value);
+  }
+
+  get styleClasses() {
+    return `text-${(this.data.alignment || 'LEFT').toLowerCase()}`;
   }
 
   ngOnInit(): void {
@@ -69,7 +72,8 @@ export class TextInputComponent extends InputBaseComponent {
         this.value = params.value;
       },
 
-      afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+      afterGuiAttached: (params?: IAfterGuiAttachedParams) => { 
+        this.focus();
       },
 
       getValue: () => {
@@ -89,8 +93,9 @@ export class TextInputComponent extends InputBaseComponent {
     // Used in ag-grid cell editor.
     // setTimeout is mostly needed by select()...
     // This is a tweak but agGrid documentation himself uses it.
+    
+    this.input.input.nativeElement.focus();
     setTimeout(() => {
-      this.input.input.nativeElement.focus();
       this.input.input.nativeElement.select();
     });
   }

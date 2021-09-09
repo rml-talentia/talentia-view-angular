@@ -38,8 +38,11 @@ export class CellEditorComponent  implements ICellEditorAngularComp {
     if (!this.params.colDef.field) {
       return;
     }
+    if (this.componentRef) {
+      this.componentRef.destroy();
+    }
     const column = this.columnService.columns[this.params.colDef.field];
-    this.componentRef = this.container.createComponent(column.componentFactory);
+    this.componentRef = this.container.createComponent(column.editorFactory);
     this.componentRef.instance.componentByIndex = column.data.components;
     this.componentRef.instance.cellEditor = this;
     this.componentRef.instance.value = this.params.value;

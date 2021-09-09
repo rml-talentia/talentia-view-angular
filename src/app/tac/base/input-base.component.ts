@@ -3,7 +3,8 @@ import { IAfterGuiAttachedParams } from "@ag-grid-community/core";
 import { Directive, Input, OnInit } from "@angular/core";
 import { ControlValueAccessor, FormGroup } from "@angular/forms";
 import { ICellEditorAngularComp } from "ag-grid-angular";
-import { CellEditorBaseComponent } from "./cell-editor-base.component";
+import { CellEditorComponent } from "../cell-editor/cell-editor.component";
+import { CellRendererComponent } from "../cell-renderer/cell-renderer.component";
 
 
 @Directive({
@@ -21,7 +22,9 @@ export abstract class InputBaseComponent implements OnInit, ControlValueAccessor
     @Input()
     title!: string;
     @Input()
-    cellEditor!: CellEditorBaseComponent;
+    cellEditor!: CellEditorComponent;
+    @Input()
+    cellRenderer!: CellRendererComponent;
 
     protected onchange: any;
     protected ontouched: any;

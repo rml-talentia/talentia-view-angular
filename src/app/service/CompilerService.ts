@@ -53,7 +53,7 @@ export class CompilerService {
     return subject;
   }
   
-  getEditorFactories(options: GetEditorFactory): Observable<ComponentFactory<any>[]> {
+  getColumnFactories(options: GetColumnFactories): Observable<ComponentFactory<any>[]> {
 
     // templateKey is the sum of each template and column field name.
     const hash = crypto
@@ -107,6 +107,6 @@ interface Column {
   template: string
 }
 
-interface GetEditorFactory {
+interface GetColumnFactories {
   columns: Column[];
 }

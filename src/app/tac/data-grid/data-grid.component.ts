@@ -2,15 +2,19 @@ import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit,
 import { AllModules, ColGroupDef, GridApi, GridOptions, ICellEditorParams, Module, SideBarDef } from '@ag-grid-enterprise/all-modules';
 import { TacModule } from '../tac.module';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, toArray } from 'rxjs/operators';
 import { AgGridAngular, AgGridColumn } from '@ag-grid-community/angular';
 import { AppService } from 'src/app/service/AppService';
-import { EditableCallbackParams } from 'ag-grid-community';
+import { EditableCallbackParams, ValueFormatterParams } from 'ag-grid-community';
 import { CompilerService } from 'src/app/service/CompilerService';
 import { TransactionService } from 'src/app/service/TransactionService';
 import { ViewService } from 'src/app/service/ViewService';
 import { CellEditorComponent } from '../cell-editor/cell-editor.component';
 import { ColumnService } from 'src/app/service/ColumnService';
+import { TFDateTimeService, TFNumberService } from '@talentia/components';
+import { concat } from 'rxjs';
+import { CellRendererComponent } from '../cell-renderer/cell-renderer.component';
+import { FormatService } from 'src/app/service/FormatService';
 
 
 @Component({
@@ -30,11 +34,18 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
   @ViewChild('agGrid')
   agGrid!: AgGridAngular;
 
+
+  @ViewChild('myCellRenderer', { static: true, read: TemplateRef })
+  myCellRendererRef!: TemplateRef<any>;
+
   sideBar!: SideBarDef;
   gridOptions!: GridOptions;
 
-  public modules: Module[] = AllModules;
-  public frameworkComponents: any = { defaultCellEditor: CellEditorComponent }; // TacModule.AG_GRID_FRAMEWORK_COMPONENTS;
+  modules: Module[] = AllModules;
+  frameworkComponents: any = { 
+    defaultCellEditor: CellEditorComponent,
+    defaultCellRenderer: CellRendererComponent
+  };
 
 
   constructor(
@@ -44,49 +55,125 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
     private compilerService: CompilerService,
     private viewService: ViewService,
     private ngZone: NgZone,
-    private columnService: ColumnService) { }
+    private columnService: ColumnService,
+    private formatService: FormatService) { }
 
 
   ngOnInit(): void {
-    this
-      .compilerService
-      .getEditorFactories({
-        columns: this
-          .data
-          .columns
-          .map((column: any) => ({
-            data: column,
-            template: this // TODO: duplicate code
-              .viewService
-              .createTemplate({
-                components: column.components,
-                cellEditor: true
-              })
-          }))
-      })
-      .subscribe({
-        next: (components: any) => {
-          this
+
+    this.frameworkComponents = { 
+      defaultCellEditor: CellEditorComponent ,
+      defaultCellRenderer: CellRendererComponent
+    };
+
+    concat(
+      this
+        .compilerService
+        .getColumnFactories({
+          columns: this
             .data
             .columns
-            .forEach((column: any, index: number) => {
-              this.columnService.columns[column.field] = { 
-                componentFactory: components[index], 
-                data: column, 
+            .map((column: any) => ({
+              data: column,
+              template: this // TODO: duplicate code
+                .viewService
+                .createTemplate({
+                  components: column.components,
+                  cellEditor: true
+                })
+            }))
+        }),
+        this
+          .compilerService
+          .getColumnFactories({
+            columns: this
+              .data
+              .columns
+              .map((column: any) => ({
+                data: column,
                 template: this // TODO: duplicate code
                   .viewService
                   .createTemplate({
                     components: column.components,
-                    cellEditor: true
-                  }),
-                index: index 
-              };
-            });          
-          setTimeout(() => {
-            this.initializeDataGrid();
-          });
+                    cellRenderer: true
+                  })
+              }))
+          }))
+      .pipe(toArray())
+      .pipe(map(factories => ({
+        editorFactrories: factories[0],
+        rendererFactories: factories[1]
+      })))
+      .subscribe({
+        next: (factories: any) => {
+          this
+              .data
+              .columns
+              .forEach((column: any, index: number) => {
+                this.columnService.columns[column.field] = { 
+                  editorFactory: factories.editorFactrories[index],
+                  rendererFactory: factories.rendererFactories[index], 
+                  data: column, 
+                  editorTemplate: this // TODO: duplicate code
+                    .viewService
+                    .createTemplate({
+                      components: column.components,
+                      cellEditor: true
+                    }),
+                  rendererTemplate: this // TODO: duplicate code
+                    .viewService
+                    .createTemplate({
+                      components: column.components,
+                      cellRenderer: true
+                    }),
+                  index: index 
+                };
+              });          
+            setTimeout(() => {
+              this.initializeDataGrid();
+            });
         }
       });
+
+    // this
+    //   .compilerService
+    //   .getColumnFactories({
+    //     columns: this
+    //       .data
+    //       .columns
+    //       .map((column: any) => ({
+    //         data: column,
+    //         template: this // TODO: duplicate code, but the template is not needed here
+    //           .viewService
+    //           .createTemplate({
+    //             components: column.components,
+    //             cellEditor: true
+    //           })
+    //       }))
+    //   })
+    //   .subscribe({
+    //     next: (factories: any) => {
+    //       this
+    //         .data
+    //         .columns
+    //         .forEach((column: any, index: number) => {
+    //           this.columnService.columns[column.field] = { 
+    //             componentFactory: factories[index], 
+    //             data: column, 
+    //             template: this // TODO: duplicate code
+    //               .viewService
+    //               .createTemplate({
+    //                 components: column.components,
+    //                 cellEditor: true
+    //               }),
+    //             index: index 
+    //           };
+    //         });          
+    //       setTimeout(() => {
+    //         this.initializeDataGrid();
+    //       });
+    //     }
+    //   });
   }
 
 
@@ -262,22 +349,27 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
       .map((column: any) => (<AgGridColumn> {          
           headerName: column.title.text,
           field: column.field,
-          //editable: false,
           resizable: true,
           hide: !column.visible,
           cellStyle: (params: any) => ({ 
             'text-align': column.alignment.toLowerCase() 
           }),
+          // Formatting related options.
           headerClass: (params: any) => [
             `${column.alignment.toLowerCase()}-alignment`
           ],
           cellClass: (params: any) => { 
             return `text-${column.alignment.toLowerCase()}`;
           },            
+          valueFormatter: (params: ValueFormatterParams) => {
+            return !column.format ? params.value : this.formatService.toString(params.value, column.format);
+          },
+          // Editor related options.
           editable: (params: EditableCallbackParams) => {
             return true;//!!column.editor;
           },
-          cellEditor: 'defaultCellEditor',
+          cellEditor: !column.components.length ? null : 'defaultCellEditor',
+          cellRenderer: !column.components.length ? null : 'defaultCellRenderer',
           singleClickEdit: true
       }));
   }

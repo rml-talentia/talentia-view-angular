@@ -1,6 +1,6 @@
-import { Component, forwardRef, Input, OnInit } from '@angular/core';
+import { Component, forwardRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { TFDateTimeService } from '@talentia/components';
+import { TFDateTimePickerComponent, TFDateTimeService } from '@talentia/components';
 import { InputBaseComponent } from '../base/input-base.component';
 
 import { ICellEditorAngularComp } from "ag-grid-angular";
@@ -24,6 +24,8 @@ export class DatetimePickerComponent extends InputBaseComponent  {
   private _value: string = '';
   private _rawValue: string = '';
 
+  @ViewChild(TFDateTimePickerComponent)
+  input!: TFDateTimePickerComponent;
 
 
   constructor(private dateTimeService: TFDateTimeService) {
@@ -62,6 +64,7 @@ export class DatetimePickerComponent extends InputBaseComponent  {
       },
 
       afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+        this.focus();
       },
 
       getValue: () => {
@@ -71,6 +74,19 @@ export class DatetimePickerComponent extends InputBaseComponent  {
     };
   }
 
+  focus(): void {
+    // Used in ag-grid cell editor.
+    // setTimeout is mostly needed by select()...
+    // This is a tweak but agGrid documentation himself uses it.
+    
+    const input = (this.input as any).el.nativeElement.querySelector('input.form-control');
+    setTimeout(() => {
+      input.focus();
+      setTimeout(() => {
+        input.select();
+      });
+    });
+  }
  
   writeValue(value: any): void {
     this.value = value;

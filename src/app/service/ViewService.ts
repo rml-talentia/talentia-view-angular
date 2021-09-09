@@ -36,7 +36,6 @@ export class ViewService {
       const template: string[] = [];
 
       let componentIndex = -1;
-      let formIndex = -1;
   
       let ignoredComponent: any = null;
       let formGroupBind: string | null = null;
@@ -72,14 +71,45 @@ export class ViewService {
               name="${component.name}"
               [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
               ${!required ? '' : 'required'}
-            `;
-  
+            `;  
             const cellEditorControlBind = !options.cellEditor ? '' : `
               [cellEditor]="cellEditor"
               [(ngModel)]="value"
             `;
+            const cellRendererControlBind = !options.cellRenderer ? '' : `
+              [cellRenderer]="cellRenderer"
+              [(ngModel)]="value"
+            `;
 
-            const controlBind = `${formControlBind}${cellEditorControlBind}`.split(/ *\n */).join(' ');
+            const controlBind = [
+              formControlBind,
+              cellEditorControlBind,
+              cellRendererControlBind]
+              .join('')
+              .split(/ *\n */)
+              .join(' ');
+
+            if (!!options.cellRenderer) { 
+              switch(component.componentName) {
+                case 'Checkbox':
+                  template.push(start ? `
+                    <tac-checkbox 
+                        ${controlBind}
+                        [data]="${componentBind}"
+                        title="">
+                    ` : ` 
+                    </tac-checkbox>`);
+                  break;
+                default:
+                  template.push(start ? `
+                    <tac-text
+                        [data]="${componentBind}"
+                        [value]="value">
+                    ` : ` 
+                    </tac-text>`);
+              }
+              return;
+            }
   
             switch (component.componentName) {
               case 'View':
@@ -226,14 +256,24 @@ export class ViewService {
                   </tac-datetime-picker>`);
                 break;
               case 'Checkbox':
-                template.push(start 
-                  ? `<tf-field cols="2">
-                      <tf-checkbox 
+                if (options.cellEditor) {
+                  template.push(start ? `
+                    <tac-checkbox 
                         ${controlBind}
-                        [toggle]="true"
-                        title="${component.title.text}">` 
-                  : ` </tf-checkbox>
-                    </tf-field>`);
+                        [data]="${componentBind}"
+                        title="">
+                    ` : ` 
+                    </tac-checkbox>`);
+                } else {
+                  template.push(start 
+                    ? `<tf-field cols="2">
+                        <tf-checkbox 
+                          ${controlBind}
+                          [toggle]="true"
+                          title="${component.title.text}">` 
+                    : ` </tf-checkbox>
+                      </tf-field>`);
+                }
                 break;
               case 'Dropdown':
                 template.push(start 
@@ -325,6 +365,7 @@ interface CreateTemplate {
   components: any[];
   isIgnoredComponent?: (component: any) => boolean;
   cellEditor?: boolean;
+  cellRenderer?: boolean;
 }
 
 interface CreateComponentByIndex extends CreateTemplate {

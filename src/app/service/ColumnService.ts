@@ -5,8 +5,10 @@ interface Column {
 
     index: number;
     data: any;
-    template: string;
-    componentFactory: ComponentFactory<any>;
+    editorTemplate: string;
+    rendererTemplate: string;
+    editorFactory: ComponentFactory<any>;
+    rendererFactory: ComponentFactory<any>;
 }
 
 @Injectable()
