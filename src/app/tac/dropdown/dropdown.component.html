@@ -1,11 +1,11 @@
 <tf-input  
-    *ngIf="!data.access"
+    *ngIf="!component.access"
     class="text" 
     typeinput="text" 
     [disabled]="true"
     [(ngModel)]="text"></tf-input>
 <tf-dropdown
-    *ngIf="data.access"
+    *ngIf="component.access"
     placeholder=""
     [showSearchThreshold]="-1"
     [allowNull]="true"

@@ -9,6 +9,7 @@ import { IAfterGuiAttachedParams } from 'ag-grid-community';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { DataService } from 'src/app/service/DataService';
 import { TransactionService } from 'src/app/service/TransactionService';
 import { InputBaseComponent } from '../base/input-base.component';
 
@@ -28,6 +29,7 @@ export class ChosenComponent extends InputBaseComponent implements AfterContentI
 
   constructor(
     private http: HttpClient,
+    private dataService: DataService,
     private transactionService: TransactionService) { 
       super();
     }
@@ -69,6 +71,65 @@ export class ChosenComponent extends InputBaseComponent implements AfterContentI
   onSelected(item: any): void {
     console.log('[tac-chosen] onSelected(item:', item, ')');
     this.fireChange(this.value = item.id);
+
+console.log(  this
+  .component
+  .events);
+
+
+    const form = 'pieceComptableTravailCGSEEForm';
+
+    this
+      .component
+      .events
+      .filter((event: any) => event.eventType === 'Change')
+      .forEach((event: any) => {
+        event
+          .actions
+          .forEach((action: any) => {
+            // action.type .... Ajax
+
+            switch(action.actionType) {
+              case 'Ajax':
+
+                // Traditional HTML form post. 
+                const payload = new URLSearchParams();
+                action
+                  .parameters
+                  .forEach((parameter: any) => {
+                    payload.set(parameter.name, this.dataService.get(parameter.value, { defaultValue: '' }));
+                  });
+                this
+                  .http
+                  .post(
+                    `${this.transactionService.contextPath}/viewbridge/ajax/${action.href}?sessionId=${this.transactionService.sessionId}&__form=${form}`,
+                    payload.toString(), 
+                    {
+                        headers: {
+                          'Content-Type': 'application/x-www-form-urlencoded',
+                          [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
+                        }
+                    })
+                    .subscribe({
+                      next: (response: any) => {
+                        console.log('response:' , response);
+                        response
+                          .mutations
+                          .forEach((mutation: any) => {
+                            this.dataService.set(mutation.target, mutation.value);
+                          });
+
+
+                          console.log(this.dataService.data);
+                      }
+                    });
+                break;
+            }
+
+          
+
+          });
+      });
   }
 
   onNeedData(event: TFEvent): void {
@@ -80,7 +141,7 @@ export class ChosenComponent extends InputBaseComponent implements AfterContentI
   }
 
   private fetchData(page: number): void {
-    const payload = this.data.model.payload;
+    const payload = this.component.model.payload;
     payload.search = '';
     payload.pageSize = 30;
     payload.page = page;
@@ -153,7 +214,7 @@ export class ChosenComponent extends InputBaseComponent implements AfterContentI
 
     //const payload = this.data.model.payload;
     //const key = payload.criterias[0].name;
-    console.log('[CHOSEN] writeValue value:', value);
+ ///   console.log('[CHOSEN] writeValue value:', value);
     
     this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
     this.items = this.selection;

@@ -1,12 +1,12 @@
 <tf-input  
-    *ngIf="!data.access"
+    *ngIf="!component.access"
     class="text" 
     typeinput="text" 
     [disabled]="true"
     [(ngModel)]="value"></tf-input>
 <ng-content></ng-content>
 <tf-chosen
-    *ngIf="data.access"
+    *ngIf="component.access"
     [appendToBody]="true"
     dropdownWidth="400px"
     [standalone]="true"

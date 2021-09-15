@@ -26,7 +26,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
   iframe!: ElementRef<any>;
   @ViewChild('iframeWrapper', { read: ElementRef })
   iframeWrapper!: ElementRef<any>;
-  @ViewChild('container', {read: ViewContainerRef, static: false})
+  @ViewChild('container', {read: ViewContainerRef, static: true })
   container!: ViewContainerRef;
   componentRef!: ComponentRef<any>;
  

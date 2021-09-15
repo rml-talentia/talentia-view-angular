@@ -13,7 +13,7 @@ export class ButtonComponent implements OnInit {
   @Input()
   formName!: string;
   @Input()
-  data!: any;
+  component!: any;
 
   constructor(
     private formService: FormService
@@ -23,22 +23,22 @@ export class ButtonComponent implements OnInit {
   }
 
   get name() {
-    return this.data.action.name;
+    return this.component.action.name;
   }
 
   get icon() {
-    return this.data.action.icon;
+    return this.component.action.icon;
   }
 
   get text() {
-    return !this.data.action.title ? '' : this.data.action.title.text;
+    return !this.component.action.title ? '' : this.component.action.title.text;
   }
 
   onSelected(event: TFEvent) {
     console.log('submit:', {
       form: this.formName,
       button: {
-        data: this.data
+        data: this.component
       }
     });
    // this.form.markAllAsTouched();
@@ -46,7 +46,7 @@ export class ButtonComponent implements OnInit {
     this.formService.submit({
       form: this.formName,
       button: {
-        data: this.data
+        data: this.component
       }
     });
   }

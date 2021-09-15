@@ -1,11 +1,14 @@
+import { IAfterGuiAttachedParams } from '@ag-grid-community/core';
 import { HttpClient } from '@angular/common/http';
 import { AfterContentInit } from '@angular/core';
 import { ChangeDetectorRef, Component, forwardRef, Injector, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {  TFDropdownItem, TFEvent } from '@talentia/components';
+import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TransactionService } from 'src/app/service/TransactionService';
+import { InputBaseComponent } from '../base/input-base.component';
 
 @Component({
   selector: 'tac-dropdown',
@@ -18,35 +21,28 @@ import { TransactionService } from 'src/app/service/TransactionService';
   }],
   encapsulation: ViewEncapsulation.None
 })
-export class DropdownComponent implements OnInit, ControlValueAccessor, AfterContentInit {
-
-  constructor(
-    private http: HttpClient,
-    private transactionService: TransactionService) { }
-  ngAfterContentInit(): void {
-   // console.log('form: ', this.form);
-  }
-
-    @Input()
-    form!: FormGroup;
+export class DropdownComponent extends InputBaseComponent implements ControlValueAccessor {
 
 
-  @Input()
-  data!: any;
-  @Input()
-  title!: string;
   items!: TFDropdownItem[];
   itemsSubscription!: Subscription | null;
   @Input()
   value!: string | null;
-  text: string  = '';
-  onchange: any;
-  ontouched: any;
+  //text: string  = '';
+
+
+  constructor(
+    private http: HttpClient,
+    private transactionService: TransactionService) {
+    super();
+  }
+
 
 
   ngOnInit(): void {
+    super.ngOnInit();
 
-    const payload = this.data.model.payload;
+    const payload = this.component.model.payload;
     payload.search = '';
     payload.pageSize = 30;
    // payload.excludedKeys = null;    
@@ -76,9 +72,37 @@ export class DropdownComponent implements OnInit, ControlValueAccessor, AfterCon
         .add(() => this.itemsSubscription = null);
   }
 
+  createCellEditor(): ICellEditorAngularComp {
+    return {
+      agInit: (params) => {
+        this.value = params.value;
+      },
+
+      afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+      //  this.focus();
+      },
+
+      getValue: () => {
+        return this.value;
+      }
+    };
+  }
+
+
   private setValue(value: string | null) {
     this.value = value;
-    this.text = null !== this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
+    // Doesn't work with mutation API
+    // this.text = null !== this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
+  }
+
+  get text() {
+    // TODO : how to cache this computedValue ??
+    return null !== this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
+  }
+
+  set text(text) {
+    // TODO : how to cache this computedValue ??
+    this.value = this.items.find((item: TFDropdownItem) => item.label === text)?.name || '';  
   }
 
   writeValue(value: any): void {
@@ -94,13 +118,6 @@ export class DropdownComponent implements OnInit, ControlValueAccessor, AfterCon
     }
   }
 
-  registerOnChange(onchange: any): void {
-    this.onchange = onchange;
-  }
-
-  registerOnTouched(ontouched: any): void {
-    this.ontouched = ontouched;
-  }
 
   valueChanged(event: TFEvent) {
     if (!!this.onchange) {

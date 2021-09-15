@@ -3,6 +3,7 @@ import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/for
 import { TFEvent, TFInputComponent } from '@talentia/components';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
+import { DataService } from 'src/app/service/DataService';
 import { InputBaseComponent } from '../base/input-base.component';
 
 
@@ -19,6 +20,11 @@ import { InputBaseComponent } from '../base/input-base.component';
 export class TextInputComponent extends InputBaseComponent {
 
 
+  constructor(
+    private dataService: DataService
+  ) {
+    super();
+  }
 
 
   typeinput!: 'text' | 'amount';
@@ -32,6 +38,8 @@ export class TextInputComponent extends InputBaseComponent {
 
   private _value!: string;
 
+  data: any;
+
   @Input()
   get value() {
     return this._value;
@@ -44,20 +52,29 @@ export class TextInputComponent extends InputBaseComponent {
   }
 
   get styleClasses() {
-    return `text-${(this.data.alignment || 'LEFT').toLowerCase()}`;
+    return `text-${(this.component.alignment || 'LEFT').toLowerCase()}`;
   }
 
   ngOnInit(): void {
     super.ngOnInit();
     this.configureFromFormat();
+
+
+    this.data = {
+      show: this.component.show,
+      access: this.component.access
+    };
+    
+    this.dataService.register(this);
+
   }
   
   private configureFromFormat(): void {
-    console.log('[text-input] formatType: ', !this.data.format ? '' : this.data.format.formatType);
-    switch (!this.data.format ? '' : this.data.format.formatType) {
+    console.log('[text-input] formatType: ', !this.component.format ? '' : this.component.format.formatType);
+    switch (!this.component.format ? '' : this.component.format.formatType) {
       case 'NumberFormat':
         this.typeinput = 'amount';
-        this.decimals = this.data.format.precision;
+        this.decimals = this.component.format.precision;
         break;
       default:
         this.typeinput = 'text';
@@ -83,7 +100,13 @@ export class TextInputComponent extends InputBaseComponent {
     };
   }
 
- 
+  createData(): any {
+    return {
+      show: this.component.show,
+      access: this.component.access
+    };
+  }
+
   writeValue(value: any): void {
     this.value = value;
   }

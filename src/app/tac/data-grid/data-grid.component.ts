@@ -28,7 +28,7 @@ import { FormatService } from 'src/app/service/FormatService';
 export class DataGridComponent implements OnInit, AfterViewInit, AfterContentInit {
 
   @Input()
-  data: any | null = null;
+  component: any | null = null;
   @Input()
   rowHeight: number = 40;
   @ViewChild('agGrid')
@@ -71,7 +71,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
         .compilerService
         .getColumnFactories({
           columns: this
-            .data
+            .component
             .columns
             .map((column: any) => ({
               data: column,
@@ -87,7 +87,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
           .compilerService
           .getColumnFactories({
             columns: this
-              .data
+              .component
               .columns
               .map((column: any) => ({
                 data: column,
@@ -107,7 +107,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
       .subscribe({
         next: (factories: any) => {
           this
-              .data
+              .component
               .columns
               .forEach((column: any, index: number) => {
                 this.columnService.columns[column.field] = { 
@@ -227,10 +227,10 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
       .agGrid
       .api
       .setColumnDefs(this.getColumnDefs());
-    switch(this.data.model.modelType) {
+    switch(this.component.model.modelType) {
       case 'FinanceListDataGridModel':
         const query = {
-          model: this.data.model,
+          model: this.component.model,
           page: 0,
           pageSize: 25
         };
@@ -344,7 +344,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
   getColumnDefs(): AgGridColumn[] {
     const self = this;
     return self
-      .data
+      .component
       .columns  
       .map((column: any) => (<AgGridColumn> {          
           headerName: column.title.text,
@@ -387,8 +387,8 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
       onCellContextMenu(params) {
 
         const query = {
-          model: self.data.model,
-          menu: self.data.menu,
+          model: self.component.model,
+          menu: self.component.menu,
           rowIndex: params.rowIndex
         };
 

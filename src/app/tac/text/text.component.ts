@@ -10,7 +10,7 @@ export class TextComponent {
 
 
   @Input()
-  data!: any;
+  component!: any;
 
   text: string = '';
   private _value!: any;
@@ -26,7 +26,7 @@ export class TextComponent {
 
   set value(value) {
     this._value = value;
-    this.text = this.formatService.toString(value, this.data.format);
+    this.text = this.formatService.toString(value, this.component.format);
   }
 
 

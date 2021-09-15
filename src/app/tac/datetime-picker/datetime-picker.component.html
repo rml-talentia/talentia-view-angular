@@ -1,16 +1,16 @@
 <tf-input  
-    *ngIf="!data.access"
+    *ngIf="!component.access"
     class="text" 
     typeinput="text" 
     [disabled]="true"
     [(ngModel)]="value"></tf-input>
 <tf-datetime-picker
-    *ngIf="data.access"
+    *ngIf="component.access"
     [timepicker]="false"
     [todayBtn]="true"
     [autoCompletion]="true"
     [datepicker]="{ showOnFocus: false, autoclose: true, format: 'dd/mm/yyyy' }"
     class="text" 
     typeinput="text" 
-    [disabled]="!data.access"
+    [disabled]="!component.access"
     [(ngModel)]="rawValue"></tf-datetime-picker>

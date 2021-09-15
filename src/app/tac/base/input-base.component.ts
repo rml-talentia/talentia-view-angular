@@ -3,6 +3,7 @@ import { IAfterGuiAttachedParams } from "@ag-grid-community/core";
 import { Directive, Input, OnInit } from "@angular/core";
 import { ControlValueAccessor, FormGroup } from "@angular/forms";
 import { ICellEditorAngularComp } from "ag-grid-angular";
+import { DataSupplier } from "src/app/service/DataService";
 import { CellEditorComponent } from "../cell-editor/cell-editor.component";
 import { CellRendererComponent } from "../cell-renderer/cell-renderer.component";
 
@@ -10,7 +11,7 @@ import { CellRendererComponent } from "../cell-renderer/cell-renderer.component"
 @Directive({
     selector: '[tac-input-base-component]'
 })
-export abstract class InputBaseComponent implements OnInit, ControlValueAccessor {
+export abstract class InputBaseComponent implements OnInit, ControlValueAccessor { //, DataSupplier<any> {
 
 
     @Input()
@@ -18,7 +19,7 @@ export abstract class InputBaseComponent implements OnInit, ControlValueAccessor
     @Input()
     name!: string;
     @Input()
-    data!: any;    
+    component!: any;    
     @Input()
     title!: string;
     @Input()
@@ -42,13 +43,26 @@ export abstract class InputBaseComponent implements OnInit, ControlValueAccessor
     }
 
     ngOnInit(): void {
-        console.log('this.cellEditor: ', this.cellEditor);
         if (this.cellEditor) {
             this.cellEditor.delegate = this.createCellEditor();
         }        
     }
 
     abstract createCellEditor(): ICellEditorAngularComp;
+
+    // createData(): any {
+    //     return {};
+    // }
+
+    // getName(): string {
+    //     return this.component.name || null;
+    // }
+    
+    // private _data: any;
+
+    // getData() {
+    //     return undefined !== this._data ? this._data : (this._data = this.createData()); 
+    // }
 
     abstract writeValue(value: any): void;
 

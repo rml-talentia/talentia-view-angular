@@ -27,7 +27,7 @@ export class ViewService {
           componentRef.instance.componentByIndex = componentByIndex;
           //componentRef.instance.views = this.views;
           componentRef.instance.data = this.dataService.data;
-          componentRef.changeDetectorRef.detectChanges();
+         // componentRef.changeDetectorRef.detectChanges();
           return componentRef;
         }));
     }
@@ -95,7 +95,7 @@ export class ViewService {
                   template.push(start ? `
                     <tac-checkbox 
                         ${controlBind}
-                        [data]="${componentBind}"
+                        [component]="${componentBind}"
                         title="">
                     ` : ` 
                     </tac-checkbox>`);
@@ -103,7 +103,7 @@ export class ViewService {
                 default:
                   template.push(start ? `
                     <tac-text
-                        [data]="${componentBind}"
+                        [component]="${componentBind}"
                         [value]="value">
                     ` : ` 
                     </tac-text>`);
@@ -137,7 +137,7 @@ export class ViewService {
               case 'Button':
                 template.push(start 
                   ? `<tac-button 
-                      [data]="${componentBind}"
+                      [component]="${componentBind}"
                       [formName]="${componentBind}.action.form">` : `</tac-button>`);
                 break;
               case 'GridLayout':
@@ -241,7 +241,7 @@ export class ViewService {
                   ? `
                   <tac-text-input
                     ${controlBind}
-                    [data]="${componentBind}">                
+                    [component]="${componentBind}">                
                   ` : `
                   </tac-text-input>
                   `);
@@ -251,7 +251,7 @@ export class ViewService {
                   ? `
                   <tac-datetime-picker
                     ${controlBind}
-                    [data]="${componentBind}">
+                    [component]="${componentBind}">
                   ` : `
                   </tac-datetime-picker>`);
                 break;
@@ -260,18 +260,18 @@ export class ViewService {
                   template.push(start ? `
                     <tac-checkbox 
                         ${controlBind}
-                        [data]="${componentBind}"
+                        [component]="${componentBind}"
                         title="">
                     ` : ` 
                     </tac-checkbox>`);
                 } else {
                   template.push(start 
-                    ? `<tf-field cols="2">
-                        <tf-checkbox 
+                    ? `<tf-field cols="2" title="&nbsp;">
+                        <tac-checkbox 
                           ${controlBind}
-                          [toggle]="true"
+                          [component]="${componentBind}"
                           title="${component.title.text}">` 
-                    : ` </tf-checkbox>
+                    : ` </tac-checkbox>
                       </tf-field>`);
                 }
                 break;
@@ -280,7 +280,7 @@ export class ViewService {
                   ? `
                   <tac-dropdown     
                       ${controlBind}
-                      [data]="${componentBind}"
+                      [component]="${componentBind}"
                       title="${component.title.text}">` 
                   : `
                   </tac-dropdown>`);
@@ -290,7 +290,7 @@ export class ViewService {
                   ? `           
                   <tac-chosen          
                     ${controlBind}                  
-                    [data]="${componentBind}"
+                    [component]="${componentBind}"
                     title="${component.title.text}">
                     <ng-template 
                       #myItemTemplate
@@ -308,7 +308,9 @@ export class ViewService {
                 break;
               case 'DataGrid':
                 template.push(start
-                  ? `<tac-data-grid [data]="${componentBind}">
+                  ? `
+                  <tac-data-grid
+                    [component]="${componentBind}">
                     <ng-template 
                       #customEditor 
                       let-item 

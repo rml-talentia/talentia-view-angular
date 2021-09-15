@@ -1,6 +1,7 @@
 <tf-checkbox 
+    *ngIf="data.show"
+    [disabled]="!data.access"
     [toggle]="toggle"
     [title]="title"
-    [disabled]="!data.access"
-    [name]="data.name"
+    [name]="component.name"
     [(ngModel)]="value"></tf-checkbox>
