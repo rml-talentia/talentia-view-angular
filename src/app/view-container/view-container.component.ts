@@ -13,6 +13,7 @@ import {
 import { Observable } from 'rxjs';
 import { ViewService } from '../service/ViewService';
 import { tap } from 'rxjs/operators';
+import { TFMessageService } from '@talentia/components';
 
 
 @Component({
@@ -36,6 +37,8 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
 
   ngAfterViewInit() {
     window.TalentiaViewBridge._viewComponent = this;
+    
+
   }
 
   ngOnDestroy(): void {

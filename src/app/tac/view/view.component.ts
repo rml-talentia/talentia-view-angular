@@ -4,6 +4,7 @@ import { FormService } from 'src/app/service/FormService';
 import { ICellEditorAngularComp } from "@ag-grid-community/angular";
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
 import { ViewService } from 'src/app/service/ViewService';
+import { TFMessageService } from '@talentia/components';
 
 /**
  * This component is used as root component in dynamic templates compiled by TemplateService.

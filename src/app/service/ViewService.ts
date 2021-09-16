@@ -129,7 +129,7 @@ export class ViewService {
                       novalidate
                       #${formGroupBind}="ngForm">
                       <tac-transaction 
-                        [formData]="${formBind}"
+                        [component]="${formBind}"
                         [form]="${formGroupBind}.form"></tac-transaction>
                     ` : `
                     </form>`);

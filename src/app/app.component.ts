@@ -9,7 +9,7 @@ import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
 import { toArray } from 'rxjs/operators';
 import { findByComponentName } from './tac/util';
-import { TFLocalizationService } from '@talentia/components';
+import { TFLocalizationService, TFMessageService } from '@talentia/components';
 import { FormService } from './service/FormService';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
 
@@ -61,6 +61,7 @@ export class AppComponent implements OnInit {
   currentView: any;
 
   constructor(
+    private messageService: TFMessageService,
     private applicationRef: ApplicationRef,
     private componentFactoryResolver: ComponentFactoryResolver,
     private changeDetectorRef: ChangeDetectorRef,
@@ -131,6 +132,9 @@ export class AppComponent implements OnInit {
   }
 
   showView(view: any): Observable<any> {
+    // Remove previous view error messages.
+    this.messageService.clearMessages();
+    // Slit view into three view-container.
     const commandsPanel = findByComponentName(view, 'CommandsPanel');
     const asidePanel = findByComponentName(view, 'AsidePanel');
     return concat(
