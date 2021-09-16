@@ -11,7 +11,7 @@
             [coloredBackground]="false"
             addClasses="tac-data-grid-toolbar"
             style="text-align: right;">
-            <tf-flat-button *ngFor="let action of data.actions"
+            <tf-flat-button *ngFor="let action of component.actions"
                 mode="light" 
                 [name]="action.name"
                 [icon]="action.icon" 
@@ -37,3 +37,6 @@
     </tf-grid-row>
 </tf-simple-panel>
 <ng-content></ng-content>
+<ng-template #myCellRenderer>
+    <tf-text text="mdr lol ptdr"></tf-text>
+</ng-template>

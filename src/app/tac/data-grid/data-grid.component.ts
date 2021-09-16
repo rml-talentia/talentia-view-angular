@@ -2,76 +2,178 @@ import { AfterContentChecked, AfterContentInit, AfterViewChecked, AfterViewInit,
 import { AllModules, ColGroupDef, GridApi, GridOptions, ICellEditorParams, Module, SideBarDef } from '@ag-grid-enterprise/all-modules';
 import { TacModule } from '../tac.module';
 import { HttpClient } from '@angular/common/http';
-import { ViewService } from 'src/app/view-container/view-container.component';
-import { map } from 'rxjs/operators';
+import { map, toArray } from 'rxjs/operators';
 import { AgGridAngular, AgGridColumn } from '@ag-grid-community/angular';
 import { AppService } from 'src/app/service/AppService';
-import { ColDef, EditableCallbackParams } from 'ag-grid-community';
-import { TFTextComponent } from '@talentia/components';
-import { TextInputCellEditor } from '../text-input-cell-editor/text-input-cell-editor.component';
-import { TemplateService } from 'src/app/service/TemplateService';
+import { EditableCallbackParams, ValueFormatterParams } from 'ag-grid-community';
+import { CompilerService } from 'src/app/service/CompilerService';
+import { TransactionService } from 'src/app/service/TransactionService';
+import { ViewService } from 'src/app/service/ViewService';
+import { CellEditorComponent } from '../cell-editor/cell-editor.component';
+import { ColumnService } from 'src/app/service/ColumnService';
+import { TFDateTimeService, TFNumberService } from '@talentia/components';
+import { concat } from 'rxjs';
+import { CellRendererComponent } from '../cell-renderer/cell-renderer.component';
+import { FormatService } from 'src/app/service/FormatService';
 
 
 @Component({
   selector: 'tac-data-grid',
   templateUrl: './data-grid.component.html',
-  styleUrls: ['./data-grid.component.css']
+  styleUrls: ['./data-grid.component.css'],
+  providers: [ 
+    ColumnService
+  ]
 })
 export class DataGridComponent implements OnInit, AfterViewInit, AfterContentInit {
 
   @Input()
-  data: any | null = null;
+  component: any | null = null;
   @Input()
   rowHeight: number = 40;
   @ViewChild('agGrid')
   agGrid!: AgGridAngular;
 
+
+  @ViewChild('myCellRenderer', { static: true, read: TemplateRef })
+  myCellRendererRef!: TemplateRef<any>;
+
   sideBar!: SideBarDef;
   gridOptions!: GridOptions;
 
-  public modules: Module[] = AllModules;
-  public frameworkComponents: any;// = { tacTextInput: TextInputCellEditor}; // TacModule.AG_GRID_FRAMEWORK_COMPONENTS;
+  modules: Module[] = AllModules;
+  frameworkComponents: any = { 
+    defaultCellEditor: CellEditorComponent,
+    defaultCellRenderer: CellRendererComponent
+  };
 
-  // @ViewChild('customEditor', { read: TemplateRef, static: false })
-  // customEditor!: TemplateRef<any>;
-
-  @ContentChild('customEditor', { read: TemplateRef, static: false })
-  customEditor!: TemplateRef<any>;
 
   constructor(
     private http: HttpClient,
-    private viewService: ViewService,
+    private transactionService: TransactionService,
     private appService: AppService,
-    private templateService: TemplateService,
-    private ngZone: NgZone) { }
+    private compilerService: CompilerService,
+    private viewService: ViewService,
+    private ngZone: NgZone,
+    private columnService: ColumnService,
+    private formatService: FormatService) { }
 
 
   ngOnInit(): void {
 
+    this.frameworkComponents = { 
+      defaultCellEditor: CellEditorComponent ,
+      defaultCellRenderer: CellRendererComponent
+    };
+
+    concat(
+      this
+        .compilerService
+        .getColumnFactories({
+          columns: this
+            .component
+            .columns
+            .map((column: any) => ({
+              data: column,
+              template: this // TODO: duplicate code
+                .viewService
+                .createTemplate({
+                  components: column.components,
+                  cellEditor: true
+                })
+            }))
+        }),
+        this
+          .compilerService
+          .getColumnFactories({
+            columns: this
+              .component
+              .columns
+              .map((column: any) => ({
+                data: column,
+                template: this // TODO: duplicate code
+                  .viewService
+                  .createTemplate({
+                    components: column.components,
+                    cellRenderer: true
+                  })
+              }))
+          }))
+      .pipe(toArray())
+      .pipe(map(factories => ({
+        editorFactrories: factories[0],
+        rendererFactories: factories[1]
+      })))
+      .subscribe({
+        next: (factories: any) => {
+          this
+              .component
+              .columns
+              .forEach((column: any, index: number) => {
+                this.columnService.columns[column.field] = { 
+                  editorFactory: factories.editorFactrories[index],
+                  rendererFactory: factories.rendererFactories[index], 
+                  data: column, 
+                  editorTemplate: this // TODO: duplicate code
+                    .viewService
+                    .createTemplate({
+                      components: column.components,
+                      cellEditor: true
+                    }),
+                  rendererTemplate: this // TODO: duplicate code
+                    .viewService
+                    .createTemplate({
+                      components: column.components,
+                      cellRenderer: true
+                    }),
+                  index: index 
+                };
+              });          
+            setTimeout(() => {
+              this.initializeDataGrid();
+            });
+        }
+      });
 
     // this
-    //   .data
-    //   .columns
-    //   .map((column: any) => this
-    //     .templateService
-    //     .getEditorFactory('<tac-view [parent]="parent" #p><b>- {{p.value}} -</b></tac-view>'));
-
-    this
-      .templateService
-      .getEditorFactory('<tac-view [parent]="parent" #p><b>- {{p.value}} -</b></tac-view>')
-      .subscribe({
-        next: (result: any) => {
-          this.frameworkComponents = { tacTextInput: result.component };
-          //setTimeout(() => {
-          
-          //}, 1000);
-          this.ngZone.onStable.subscribe({
-            next: (result: any) => {
-              this.initializeDataGrid();
-            }
-          });
-        }
-      })
+    //   .compilerService
+    //   .getColumnFactories({
+    //     columns: this
+    //       .data
+    //       .columns
+    //       .map((column: any) => ({
+    //         data: column,
+    //         template: this // TODO: duplicate code, but the template is not needed here
+    //           .viewService
+    //           .createTemplate({
+    //             components: column.components,
+    //             cellEditor: true
+    //           })
+    //       }))
+    //   })
+    //   .subscribe({
+    //     next: (factories: any) => {
+    //       this
+    //         .data
+    //         .columns
+    //         .forEach((column: any, index: number) => {
+    //           this.columnService.columns[column.field] = { 
+    //             componentFactory: factories[index], 
+    //             data: column, 
+    //             template: this // TODO: duplicate code
+    //               .viewService
+    //               .createTemplate({
+    //                 components: column.components,
+    //                 cellEditor: true
+    //               }),
+    //             index: index 
+    //           };
+    //         });          
+    //       setTimeout(() => {
+    //         this.initializeDataGrid();
+    //       });
+    //     }
+    //   });
   }
 
 
@@ -116,56 +218,29 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
 
   ngAfterViewInit(): void {
-    
     //this.initializeDataGrid();
-
   }
 
   initializeDataGrid(): void {
     const self = this;       
-
-    
     self
       .agGrid
       .api
       .setColumnDefs(this.getColumnDefs());
-
-    // `${this.viewService.contextPath}/services/private/api/listviews?sessionId=${this.viewService.sessionId}`
-
-    //       .pipe(map((result: any) => {
-   //   console.log('result:', result);
-   //   return result.data;
-   // }))
-    // const payload = {
-    //   "componentId": "sousFichiersValue", 
-    //   "sessionId": this.viewService.sessionId, 
-    //   "sessionList":false,
-    //   "collectionName":"CGCCGListeSousFichiers3IHM3",
-    //   "filterable":"true","isort":[{"dir":"asc","field":"compte"}],
-    //   "formatters":[],
-    //   "take":"25",
-    //   "skip":0,
-    //   "page":1,
-    //   "pageSize":"25",
-    //   "defaultLoading":"ALL",
-    //   "visibleColumns":["compte","libelle","totalDebit","totalCredit","solde"]
-    // };
-
-
-    switch(this.data.model.modelType) {
+    switch(this.component.model.modelType) {
       case 'FinanceListDataGridModel':
         const query = {
-          model: this.data.model,
+          model: this.component.model,
           page: 0,
           pageSize: 25
         };
         this.http
           .post(
-            `${this.viewService.contextPath}/services/private/datagrid/read?__lookup2=true&sessionId=${this.viewService.sessionId}`, 
+            `${this.transactionService.contextPath}/services/private/datagrid/read?__lookup2=true&sessionId=${this.transactionService.sessionId}`, 
             query, {
               headers: {
                 // CSRF
-                [this.viewService.csrfTokenName]: this.viewService.csrfTokenValue
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
               }
             })
             .pipe(map((payload: any) => {
@@ -192,18 +267,18 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
           "isort": [],
           "page": 1,
           "pageSize": 5000,
-          "session": this.viewService.sessionId,
+          "session": this.transactionService.sessionId,
           "skip": 0,
           "take": 5000};
 
         this.http
           .post(
-            `${this.viewService.contextPath}/services/private/api/custom/cgsee/read?sessionId=${this.viewService.sessionId}`, 
+            `${this.transactionService.contextPath}/services/private/api/custom/cgsee/read?sessionId=${this.transactionService.sessionId}`, 
             payload, {
               responseType: 'text',
               headers: {
                 // CSRF
-                [this.viewService.csrfTokenName]: this.viewService.csrfTokenValue
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
               }
             })
             .pipe(map((payload: any) => {
@@ -269,42 +344,32 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
   getColumnDefs(): AgGridColumn[] {
     const self = this;
     return self
-      .data
+      .component
       .columns  
       .map((column: any) => (<AgGridColumn> {          
           headerName: column.title.text,
           field: column.field,
-          //editable: false,
           resizable: true,
           hide: !column.visible,
           cellStyle: (params: any) => ({ 
             'text-align': column.alignment.toLowerCase() 
           }),
+          // Formatting related options.
           headerClass: (params: any) => [
             `${column.alignment.toLowerCase()}-alignment`
-          ],            
+          ],
+          cellClass: (params: any) => { 
+            return `text-${column.alignment.toLowerCase()}`;
+          },            
+          valueFormatter: (params: ValueFormatterParams) => {
+            return !column.format ? params.value : this.formatService.toString(params.value, column.format);
+          },
+          // Editor related options.
           editable: (params: EditableCallbackParams) => {
             return true;//!!column.editor;
           },
-          // cellEditorSelector: (params: ICellEditorParams) => {
-          //   return 'inputEditor';
-          // },
-          // cellEditor: (params: ICellEditorParams) => {
-          // //  return TFTextComponent;
-          //   return 'customEditor';
-          // }
-          // cellEditor: 'customEditor',
-          // cellEditorParams: {
-          //   customTemplate: this.customEditor,
-          //   columnName: column.field            
-          // },
-          //cellEditorSelector: 'tac-text-input-cell-editor',
-          cellEditor: 'tacTextInput',
-                    cellEditorParams: {
-            customTemplate: this.customEditor,
-            columnName: column.field         ,
-               
-          },
+          cellEditor: !column.components.length ? null : 'defaultCellEditor',
+          cellRenderer: !column.components.length ? null : 'defaultCellRenderer',
           singleClickEdit: true
       }));
   }
@@ -322,19 +387,19 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
       onCellContextMenu(params) {
 
         const query = {
-          model: self.data.model,
-          menu: self.data.menu,
+          model: self.component.model,
+          menu: self.component.menu,
           rowIndex: params.rowIndex
         };
 
         self
           .http
-          .post(`${self.viewService.contextPath}/services/private/datagrid/menu?__lookup2=true&sessionId=${self.viewService.sessionId}`, 
+          .post(`${self.transactionService.contextPath}/services/private/datagrid/menu?__lookup2=true&sessionId=${self.transactionService.sessionId}`, 
             query, 
             {
               headers: {
                 // CSRF
-                [self.viewService.csrfTokenName]: self.viewService.csrfTokenValue
+                [self.transactionService.csrfTokenName]: self.transactionService.csrfTokenValue
               }
             })
             .pipe(map((menu: any) => {
@@ -345,7 +410,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
                   action: () => {
                     self.appService.open({
                       legacy: {
-                        src: `${self.viewService.contextPath}${menuItem.action.url}`
+                        src: `${self.transactionService.contextPath}${menuItem.action.url}`
                       }
                     })
                   }

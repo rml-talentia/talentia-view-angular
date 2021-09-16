@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TextInputCellEditor } from './text-input-cell-editor.component';
+import { CheckboxComponent } from './checkbox.component';
 
-describe('TextInputCellEditorComponent', () => {
-  let component: TextInputCellEditor;
-  let fixture: ComponentFixture<TextInputCellEditor>;
+describe('CheckboxComponent', () => {
+  let component: CheckboxComponent;
+  let fixture: ComponentFixture<CheckboxComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TextInputCellEditor ]
+      declarations: [ CheckboxComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TextInputCellEditor);
+    fixture = TestBed.createComponent(CheckboxComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,24 +1,19 @@
-import { ICellEditorAngularComp } from '@ag-grid-community/angular';
+
 import { HttpClient } from '@angular/common/http';
 import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { TFChosenComponent } from '@talentia/components';
+import { TFChosenComponent, TFEvent } from '@talentia/components';
+import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
+import { ICellEditorAngularComp } from 'ag-grid-angular';
+import { IAfterGuiAttachedParams } from 'ag-grid-community';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { ViewService } from 'src/app/view-container/view-container.component';
+import { map, tap } from 'rxjs/operators';
+import { DataService } from 'src/app/service/DataService';
+import { TransactionService } from 'src/app/service/TransactionService';
+import { InputBaseComponent } from '../base/input-base.component';
 
 
-// class ExtendedSelectItem extends SelectItem {
-
-//   constructor(source: any) {
-//     super(source);
-//   }
-
-//   cells: any[] = [];
-
-  
-// }
 
 @Component({
   selector: 'tac-chosen',
@@ -30,30 +25,28 @@ import { ViewService } from 'src/app/view-container/view-container.component';
     useExisting: forwardRef(() => ChosenComponent)
   }]
 })
-export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,  AfterViewChecked, ControlValueAccessor {
+export class ChosenComponent extends InputBaseComponent implements AfterContentInit, AfterViewInit,  AfterViewChecked {
 
   constructor(
-    private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
-    private viewService: ViewService) { }
+    private dataService: DataService,
+    private transactionService: TransactionService) { 
+      super();
+    }
+
+  @ViewChild(TFChosenComponent)
+  chosen!: TFChosenComponent;
+
 
   @Input()
-  form!: FormGroup;
-  @Input()
-  name!: string;
-  @Input()
   value!: string;
-  @Input()
-  data!: any;  
-  @Input()
-  title!: string;
+
 
   selection: any[] = [];
   items: any[] = [];  
   itemsSubscription!: Subscription | null;
+  totalCount: number = 0;
 
-  private onchange: any;
-  private ontouched: any;
 
   @ContentChild('myItemTemplate', { read: TemplateRef})
   myItemTemplate!: TemplateRef<any>;
@@ -62,79 +55,152 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
   tfChosen!: TFChosenComponent;
 
   ngAfterViewChecked(): void {
-   
   }
 
-
   ngAfterViewInit(): void {
-    this.workaroundTAC2786();
-   
+//    this.workaroundTAC2786();  
   }
 
   ngAfterContentInit(): void {
-    // Array.prototype.forEach.call(document.querySelectorAll('tf-chosen > div.dropdown'), element => { element.addEventListener('focus', event => {  var chosen = event.target.parentElement.__component; chosen.form.controls[chosen.name].markAsTouched();   }); })
- 
-
   }
 
-
-
-
   ngOnInit(): void {
-    //this.text = '';
-   
-  //  console.log('[CHOSEN] value: ', this.value);
- //   console.log('[CHOSEN] data: ', this.data);
-   // console.log('this.data: ', this.data);
+    super.ngOnInit();
+  }
 
- 
-    const payload = this.data.model.payload;
+  onSelected(item: any): void {
+    console.log('[tac-chosen] onSelected(item:', item, ')');
+    this.fireChange(this.value = item.id);
+
+console.log(  this
+  .component
+  .events);
+
+
+    const form = 'pieceComptableTravailCGSEEForm';
+
+    this
+      .component
+      .events
+      .filter((event: any) => event.eventType === 'Change')
+      .forEach((event: any) => {
+        event
+          .actions
+          .forEach((action: any) => {
+            // action.type .... Ajax
+
+            switch(action.actionType) {
+              case 'Ajax':
+
+                // Traditional HTML form post. 
+                const payload = new URLSearchParams();
+                action
+                  .parameters
+                  .forEach((parameter: any) => {
+                    payload.set(parameter.name, this.dataService.get(parameter.value, { defaultValue: '' }));
+                  });
+                this
+                  .http
+                  .post(
+                    `${this.transactionService.contextPath}/viewbridge/ajax/${action.href}?sessionId=${this.transactionService.sessionId}&__form=${form}`,
+                    payload.toString(), 
+                    {
+                        headers: {
+                          'Content-Type': 'application/x-www-form-urlencoded',
+                          [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
+                        }
+                    })
+                    .subscribe({
+                      next: (response: any) => {
+                        console.log('response:' , response);
+                        response
+                          .mutations
+                          .forEach((mutation: any) => {
+                            this.dataService.set(mutation.target, mutation.value);
+                          });
+
+
+                          console.log(this.dataService.data);
+                      }
+                    });
+                break;
+            }
+
+          
+
+          });
+      });
+  }
+
+  onNeedData(event: TFEvent): void {
+   this.fetchData(0);
+  }
+
+  onNeedMoreData(event: TFEvent): void {
+    this.fetchData(Math.ceil(this.items.length / 30));
+  }
+
+  private fetchData(page: number): void {
+    const payload = this.component.model.payload;
     payload.search = '';
     payload.pageSize = 30;
+    payload.page = page;
    // payload.excludedKeys = null;    
     
     const key = payload.criterias[0].name;
-
-
-    // if (this.value) {
-     
-    //   this.value[0] = { id: this.value[0][key], text: this.value[0][key] };
-    // }
-
-
-    // this.items = [];
-    // const value = this.data.value.value;
-    // console.log('[CHOSEN] value: ', value);
-    // this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
-    // this.items = this.selection.slice(0);
-
-    if (true) return;
-
     this.itemsSubscription = this
         .http
         .post(
-            `${this.viewService.contextPath}/services/private/api/consultation/all?sessionId=${this.viewService.sessionId}`,
+            `${this.transactionService.contextPath}/services/private/api/consultation/all?sessionId=${this.transactionService.sessionId}`,
             payload, 
             {
                 headers: {
                 // CSRF
-                [this.viewService.csrfTokenName]: this.viewService.csrfTokenValue
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
                 }
             })
-        .pipe(map((response: any) => response
-          .rows
-          .map((row: any, index: number) => <any> {
-              id:  row[key],
-              text: row[key],
-              cells: payload.criterias.map((criteria: any) => criteria.name).map((column:any) => row[column])
-          })))
+        .pipe(tap((response: any) => {
+          this.totalCount = response.total;
+        }))
+        .pipe(map((response: any) => { 
+          return response
+            .rows
+            .map((row: any, index: number) => <any> {
+                id:  row[key],
+                text: row[key],
+                cells: payload.criterias.map((criteria: any) => criteria.name).map((column:any) => row[column])
+            });
+        }))
         .subscribe({
           next: (items: any[]) => {
-            this.items = items;            
+            if (0 === page) {
+              this.items = items;
+            } else {
+              //this.items.push.apply(this.items, items);
+              //
+              this.items = this.items.concat(items);
+              this.chosen.refresh();
+            }           
           }
         })
         .add(() => this.itemsSubscription = null);
+  }
 
+  createCellEditor(): ICellEditorAngularComp {
+    return  <ICellEditorAngularComp> {       
+        
+      agInit: (params) => {
+        this.value = params.value;
+      },
+
+      afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+      },
+
+      getValue: () => {
+        return this.value;
+      }
+
+    };
   }
 
 
@@ -148,10 +214,11 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
     //const payload = this.data.model.payload;
     //const key = payload.criterias[0].name;
-   // console.log('[CHOSEN] writeValue value:', value);
-    this.value = value;
+ ///   console.log('[CHOSEN] writeValue value:', value);
+    
     this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
     this.items = this.selection;
+    this.fireChange(this.value = value);
 
     // if (!!this.onchange) {
     //   this.onchange(value);
@@ -161,13 +228,7 @@ export class ChosenComponent implements OnInit, AfterContentInit, AfterViewInit,
 
   }
 
-  registerOnChange(onchange: any): void {
-    this.onchange = onchange;
-  }
 
-  registerOnTouched(ontouched: any): void {
-    this.ontouched = ontouched;
-  }
 
 
   private workaroundTAC2786(): void {

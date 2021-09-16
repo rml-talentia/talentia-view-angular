@@ -27,7 +27,10 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
 import { ButtonComponent } from './button/button.component';
 import { ViewComponent } from './view/view.component';
 import { TextInputComponent } from './text-input/text-input.component';
-import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-editor/text-input-cell-editor.component';
+import { TransactionComponent } from './transaction/transaction.component';
+import { CheckboxComponent } from './checkbox/checkbox.component';
+import { CellRendererComponent } from './cell-renderer/cell-renderer.component';
+import { TextComponent } from './text/text.component';
 
 
 
@@ -35,6 +38,7 @@ import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-ed
   declarations: [
     ButtonComponent,
     FormComponent,
+    TransactionComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,
@@ -42,9 +46,10 @@ import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-ed
     DatetimePickerComponent,
     TextInputComponent,
     ViewComponent,
-    TextInputCellEditor
-    //,
-    //CellEditorComponent
+    CheckboxComponent,
+    CellRendererComponent,
+    CellEditorComponent,
+    TextComponent
   ],
   imports: [
     TFUILibraryModule,
@@ -69,6 +74,9 @@ import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-ed
       // TextInputCellEditor
     ])
   ],
+  /**
+   * This module export every components used inside dynamic template views.
+   */
   exports: [    
     TFUILibraryModule,
     TFShellLibraryModule,
@@ -78,13 +86,17 @@ import { TextInputCellEditor as TextInputCellEditor } from './text-input-cell-ed
     ViewComponent,
     ButtonComponent,
     FormComponent,
+    TransactionComponent,
     DataGridComponent,
     BreadcrumbComponent,
     DropdownComponent,
     ChosenComponent,
     DatetimePickerComponent,
     TextInputComponent,
-    TextInputCellEditor
+    CheckboxComponent,
+    CellRendererComponent,
+    CellEditorComponent,
+    TextComponent
   ]
 })
 export class TacModule { 
@@ -104,10 +116,6 @@ export class TacModule {
     datetimeEditor: TFAdvancedDatagridDatetimeEditor,
     inputEditor: TFAdvancedDatagridInputEditor,
     /* Filter */
-    agDateInput: TFAdvancedDatagridDateFilter,
-
-
-    /* Tac Editor */
-    tacTextInput: TextInputCellEditor
+    agDateInput: TFAdvancedDatagridDateFilter
   };
 }

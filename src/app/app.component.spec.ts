@@ -16,11 +16,11 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'talentia-view-angular'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('talentia-view-angular');
-  });
+  // it(`should have as title 'talentia-view-angular'`, () => {
+  //   const fixture = TestBed.createComponent(AppComponent);
+  //   const app = fixture.componentInstance;
+  //   expect(app.title).toEqual('talentia-view-angular');
+  // });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);

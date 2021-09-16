@@ -10,7 +10,7 @@ import {JitCompilerFactory} from '@angular/platform-browser-dynamic';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
-import { ViewContainerComponent, ViewService } from './view-container/view-container.component';
+import { ViewContainerComponent } from './view-container/view-container.component';
 import { SimpleNotificationsModule } from 'angular2-notifications';
 import { TFUILibraryModule } from '@talentia/components';
 import { TFShellLibraryModule } from '@talentia/components/shell';
@@ -19,7 +19,11 @@ import { ContextService } from './service/ContextService';
 import { PageContentComponent } from './page-content/page-content.component';
 import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
-import { TemplateService } from '@ag-grid-enterprise/all-modules';
+import { TransactionService } from './service/TransactionService';
+import { DataService } from './service/DataService';
+import { CompilerService } from './service/CompilerService';
+import { ViewService } from './service/ViewService';
+import { FormatService } from './service/FormatService';
 
 /*
 Licence ag-Grid
@@ -55,8 +59,11 @@ export function createCompiler(compilerFactory: CompilerFactory) {
   providers: [
     MenuService,
     ContextService,
+    TransactionService,   
+    CompilerService,
+    DataService,
     ViewService,
-    TemplateService,
+    FormatService,
     {
       provide: COMPILER_OPTIONS,
       useValue: {},
