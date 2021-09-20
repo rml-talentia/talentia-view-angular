@@ -17,6 +17,7 @@ import { CellRendererComponent } from '../cell-renderer/cell-renderer.component'
 import { FormatService } from 'src/app/service/FormatService';
 
 
+
 @Component({
   selector: 'tac-data-grid',
   templateUrl: './data-grid.component.html',

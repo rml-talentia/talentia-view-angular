@@ -61,7 +61,7 @@ export class CompilerService {
     options
       .columns
       .forEach(column => hash
-        .update(column.data.field)
+        .update(column.data.field || '') // TODO : CGCCG -> Détails.
         .update(column.template));
     const templateKey = hash
       .digest('hex');

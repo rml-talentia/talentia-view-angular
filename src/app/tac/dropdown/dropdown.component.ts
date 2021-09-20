@@ -30,6 +30,7 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
   value!: string | null;
   //text: string  = '';
 
+  _text: string = '';
 
   constructor(
     private http: HttpClient,
@@ -95,9 +96,14 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
     // this.text = null !== this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
   }
 
+  private getText() {
+    return !!this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
+  }
+
   get text() {
     // TODO : how to cache this computedValue ??
-    return null !== this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
+    //return null !== this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
+    return !!this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
   }
 
   set text(text) {

@@ -41,8 +41,6 @@ export class ViewComponent implements OnInit, OnDestroy, AfterContentInit, After
     this.experimentCellEditor();
    
   }
-
-
   
   ngOnDestroy(): void {
   }
