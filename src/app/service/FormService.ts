@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { FormGroup } from "@angular/forms";
 import { TFEvent } from "@talentia/components";
 import { AppComponent } from "../app.component";
-import { findByComponentName, visitView } from "../tac/util";
+import { findByComponentType, visitView } from "../tac/util";
 import { DataService } from "./DataService";
 
 
@@ -68,7 +68,7 @@ export class FormService {
         const data: { [field: string]: any; } = {};
         const buttonData = { [options.button.data.action.name]: !options.button.data.action.title ? '' : options.button.data.action.title.text };
         const transactionData = this.appComponent.currentView.transaction;
-        const formData = this.dataService.data[options.form]; //findByComponentName(this.appComponent.currentView, 'Form').data;
+        const formData = this.dataService.data[options.form]; //findByComponentType(this.appComponent.currentView, 'Form').data;
 
 
         for (let field in buttonData) {
@@ -85,7 +85,7 @@ export class FormService {
             if ('id' === field) {
                 continue;
             }
-            if ('componentName' === field) {
+            if ('componentType' === field) {
                 continue;
             }
             let value = transactionData[field];
@@ -153,7 +153,7 @@ export class FormService {
         visitView(view, (component: any, parent: any, index: Number, start: Boolean) => {
             const current = stack[stack.length - 1];
 
-            switch (component.componentName) {
+            switch (component.componentType) {
                 case 'Form':
                     if (start) {
                         stack.push({ });

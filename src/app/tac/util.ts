@@ -1,6 +1,6 @@
-export function findByComponentName(view: any, componentName: string): any {
+export function findByComponentType(view: any, componentType: string): any {
     return findInView(view, 
-        (component: any, parent: any, index: Number) => componentName === component.componentName ? component : undefined);
+        (component: any, parent: any, index: Number) => componentType === component.componentType ? component : undefined);
 }
   
 export function findInView(view: any, finder: Function) {

@@ -10,6 +10,7 @@ import { IAfterGuiAttachedParams } from 'ag-grid-community';
 import { Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { DataService } from 'src/app/service/DataService';
+import { ReferenceService } from 'src/app/service/ReferenceService';
 import { TransactionService } from 'src/app/service/TransactionService';
 import { InputBaseComponent } from '../base/input-base.component';
 
@@ -29,7 +30,8 @@ export class ChosenComponent extends InputBaseComponent implements AfterContentI
 
   constructor(
     private http: HttpClient,
-    private dataService: DataService,
+    private referenceService: ReferenceService,
+    //private dataService: DataService,
     private transactionService: TransactionService) { 
       super();
     }
@@ -70,11 +72,14 @@ export class ChosenComponent extends InputBaseComponent implements AfterContentI
 
   onSelected(item: any): void {
     console.log('[tac-chosen] onSelected(item:', item, ')');
+
+    
     this.fireChange(this.value = item.id);
 
-console.log(  this
-  .component
-  .events);
+    this.component.value = this.value;
+
+console.log('component:',  this
+  .component);
 
 
     const form = 'pieceComptableTravailCGSEEForm';
@@ -94,10 +99,14 @@ console.log(  this
 
                 // Traditional HTML form post. 
                 const payload = new URLSearchParams();
+                payload.set(this.transactionService.csrfTokenName, this.transactionService.csrfTokenValue);
                 action
                   .parameters
                   .forEach((parameter: any) => {
-                    payload.set(parameter.name, this.dataService.get(parameter.value, { defaultValue: '' }));
+                    console.log(parameter);
+                    payload.set(
+                      this.referenceService.getValue(this.component, parameter.bindings.references.name), 
+                      this.referenceService.getValueOrDefault(this.component, parameter.bindings.references.value, ''));
                   });
                 this
                   .http
@@ -113,14 +122,14 @@ console.log(  this
                     .subscribe({
                       next: (response: any) => {
                         console.log('response:' , response);
-                        response
-                          .mutations
-                          .forEach((mutation: any) => {
-                            this.dataService.set(mutation.target, mutation.value);
-                          });
+                        // response
+                        //   .mutations
+                        //   .forEach((mutation: any) => {
+                        //     //this.dataService.set(mutation.target, mutation.value);
+                        //   });
 
 
-                          console.log(this.dataService.data);
+                         // console.log(this.dataService.data);
                       }
                     });
                 break;
@@ -141,49 +150,53 @@ console.log(  this
   }
 
   private fetchData(page: number): void {
-    const payload = this.component.model.payload;
-    payload.search = '';
-    payload.pageSize = 30;
-    payload.page = page;
-   // payload.excludedKeys = null;    
-    
-    const key = payload.criterias[0].name;
-    this.itemsSubscription = this
-        .http
-        .post(
-            `${this.transactionService.contextPath}/services/private/api/consultation/all?sessionId=${this.transactionService.sessionId}`,
-            payload, 
-            {
-                headers: {
-                // CSRF
-                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
-                }
-            })
-        .pipe(tap((response: any) => {
-          this.totalCount = response.total;
-        }))
-        .pipe(map((response: any) => { 
-          return response
-            .rows
-            .map((row: any, index: number) => <any> {
-                id:  row[key],
-                text: row[key],
-                cells: payload.criterias.map((criteria: any) => criteria.name).map((column:any) => row[column])
-            });
-        }))
-        .subscribe({
-          next: (items: any[]) => {
-            if (0 === page) {
-              this.items = items;
-            } else {
-              //this.items.push.apply(this.items, items);
-              //
-              this.items = this.items.concat(items);
-              this.chosen.refresh();
-            }           
-          }
-        })
-        .add(() => this.itemsSubscription = null);
+
+
+    const model = this.component.model.toObject();
+    const key = model.criterias[0].name;
+
+    this.itemsSubscription = this.http
+      .post(
+          `${this.transactionService.contextPath}/services/private/api/chosen/${this.component.model.componentType}/getPage?sessionId=${this.transactionService.sessionId}`,
+          {
+            page: 0,
+            pageSize: 30,
+            search: '',
+            model: model
+          }, 
+          {
+              headers: {
+              // CSRF
+              [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
+              }
+          })
+          .pipe(tap((response: any) => {
+            this.totalCount = response.total;
+          }))
+          .pipe(map((response: any) => { 
+            return response
+              .rows
+              .map((row: any, index: number) => <any> {
+                  id:  row[key],
+                  text: row[key],
+                  cells: model.criterias.map((criteria: any) => criteria.name).map((column:any) => row[column])
+              });
+          }))
+          .subscribe({
+            next: (items: any[]) => {
+              if (0 === page) {
+                this.items = items;
+              } else {
+                //this.items.push.apply(this.items, items);
+                //
+                this.items = this.items.concat(items);
+                this.chosen.refresh();
+              }           
+            }
+          })
+          .add(() => this.itemsSubscription = null);
+
+  
   }
 
   createCellEditor(): ICellEditorAngularComp {
@@ -218,6 +231,9 @@ console.log(  this
     
     this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
     this.items = this.selection;
+
+   
+
     this.fireChange(this.value = value);
 
     // if (!!this.onchange) {

@@ -26,11 +26,12 @@ export class DataService {
     data: any = {};
 
     register(component: DataSupplier<any>): void {
-       this.data[component.name]  = undefined === component.data ? {}: component.data;//Object.assign({}, undefined === component.data ? {}: component.data);
+       //this.data[component.name]  = undefined === component.data ? {}: component.data;//Object.assign({}, undefined === component.data ? {}: component.data);
     }
 
     unregister(component: any): boolean {
-        return delete this.data[component.name];
+        //return delete this.data[component.name];
+        return true;
     }
 
 

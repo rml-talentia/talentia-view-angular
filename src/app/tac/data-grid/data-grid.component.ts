@@ -73,7 +73,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
         .getColumnFactories({
           columns: this
             .component
-            .columns
+            .components
             .map((column: any) => ({
               data: column,
               template: this // TODO: duplicate code
@@ -89,7 +89,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
           .getColumnFactories({
             columns: this
               .component
-              .columns
+              .components
               .map((column: any) => ({
                 data: column,
                 template: this // TODO: duplicate code
@@ -109,7 +109,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
         next: (factories: any) => {
           this
               .component
-              .columns
+              .components
               .forEach((column: any, index: number) => {
                 this.columnService.columns[column.field] = { 
                   editorFactory: factories.editorFactrories[index],
@@ -224,20 +224,22 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
   initializeDataGrid(): void {
     const self = this;       
+    console.log(this.component.model.toObject());
     self
       .agGrid
       .api
       .setColumnDefs(this.getColumnDefs());
-    switch(this.component.model.modelType) {
+    switch(this.component.model.componentType) {
       case 'FinanceListDataGridModel':
         const query = {
-          model: this.component.model,
+          model: this.component.model.toObject(),
           page: 0,
           pageSize: 25
         };
         this.http
           .post(
-            `${this.transactionService.contextPath}/services/private/datagrid/read?__lookup2=true&sessionId=${this.transactionService.sessionId}`, 
+           // `${this.transactionService.contextPath}/services/private/datagrid/read?__lookup2=true&sessionId=${this.transactionService.sessionId}`, 
+            `${this.transactionService.contextPath}/services/private/dataGrid/FinanceListDataGridModel/getPage?__lookup2=true&sessionId=${this.transactionService.sessionId}`, 
             query, {
               headers: {
                 // CSRF
@@ -344,9 +346,10 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
   getColumnDefs(): AgGridColumn[] {
     const self = this;
+    console.log(self.component);
     return self
       .component
-      .columns  
+      .components  
       .map((column: any) => (<AgGridColumn> {          
           headerName: column.title.text,
           field: column.field,
@@ -389,13 +392,14 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
 
         const query = {
           model: self.component.model,
-          menu: self.component.menu,
           rowIndex: params.rowIndex
         };
 
         self
           .http
-          .post(`${self.transactionService.contextPath}/services/private/datagrid/menu?__lookup2=true&sessionId=${self.transactionService.sessionId}`, 
+          .post(
+            //`${self.transactionService.contextPath}/services/private/datagrid/menu?__lookup2=true&sessionId=${self.transactionService.sessionId}`, 
+            `${self.transactionService.contextPath}/services/private/dataGrid/FinanceListDataGridModel/getMenu?__lookup2=true&sessionId=${self.transactionService.sessionId}`, 
             query, 
             {
               headers: {

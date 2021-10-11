@@ -43,6 +43,38 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
   ngOnInit(): void {
     super.ngOnInit();
 
+    const model = this.component.model.toObject();
+    this.itemsSubscription = this
+        .http
+        .post(
+            `${this.transactionService.contextPath}/services/private/api/chosen/FinanceLabelTableChosenModel/getPage?sessionId=${this.transactionService.sessionId}`,
+            {
+              page: 0,
+              pageSize: 30,
+              search: '',
+              model: model
+            }, 
+            {
+                headers: {
+                // CSRF
+                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
+                }
+            })
+        .pipe(map((response: any) => response
+          .rows
+          .map((row: any, index: number) => <TFDropdownItem> {
+              name:  row.key,
+              label: row.value
+          })))
+        .subscribe({
+          next: (items: TFDropdownItem[]) => {
+            this.items = items;            
+          }
+        })
+        .add(() => this.itemsSubscription = null);
+
+    if (true) return;
+
     const payload = this.component.model.payload;
     payload.search = '';
     payload.pageSize = 30;

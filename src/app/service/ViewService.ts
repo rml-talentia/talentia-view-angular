@@ -5,6 +5,7 @@ import { map } from "rxjs/operators";
 import { visit } from "../tac/util";
 import { DataService } from "./DataService";
 import { CompilerService } from "./CompilerService";
+import { TFGridColConfig } from "@talentia/components/lib/models/tf-grid-col-config.model";
 
 
 
@@ -62,16 +63,19 @@ export class ViewService {
               componentIndex++;
             }
     
-            const required = !!parent && 'Field' === parent.componentName && parent.required;
+            const required = !!parent && 'Field' === parent.componentType && parent.required;
             const componentBind = `componentByIndex[${componentIndex}]`;
             const formControlBind = !formGroupBind || !component.name ? '' : `                
               #inputbase
-              #formControl="ngModel"
-              [form]="${formGroupBind}"
+              
+              
               name="${component.name}"
-              [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
+              
               ${!required ? '' : 'required'}
             `;  
+            // [form]="${formGroupBind}"
+            // #formControl="ngModel"
+            // [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
             const cellEditorControlBind = !options.cellEditor ? '' : `
               [cellEditor]="cellEditor"
               [(ngModel)]="value"
@@ -90,7 +94,7 @@ export class ViewService {
               .join(' ');
 
             if (!!options.cellRenderer) { 
-              switch(component.componentName) {
+              switch(component.componentType) {
                 case 'Checkbox':
                   template.push(start ? `
                     <tac-checkbox 
@@ -111,7 +115,7 @@ export class ViewService {
               return;
             }
   
-            switch (component.componentName) {
+            switch (component.componentType) {
               case 'View':
                 template.push(start ? `
                 <tac-view>
@@ -219,11 +223,14 @@ export class ViewService {
                     </tf-grid-row>`);
                 break;
               case 'Field':
+                const title = component.components[0].title;
+              //  cols="${!!component.size ? component.size.medium : 4}"
+                
                 template.push(start ? `
                 <tf-field 
-                  addClasses="${!!component.title.text && !!component.title.text.trim() ? 'tf-bold' : ''}"
-                  title="${!!component.title.text && !!component.title.text.trim() ? component.title.text : '&nbsp;'}" 
-                  cols="${!!component.cols ? component.cols : 4}">
+                  addClasses="${!!title.text && !!title.text.trim() ? 'tf-bold' : ''}"
+                  title="${!!title.text && !!title.text.trim() ? title.text : '&nbsp;'}" 
+                  [cols]="${!!component.size ? `{default:${component.size.medium},sm:${component.size.small},md:${component.size.medium},lg:${component.size.medium},xl:${component.size.large}}` : 4}">
                 ` : `
                 </tf-field>`);
                 break;
@@ -236,7 +243,7 @@ export class ViewService {
                         value="${!!component.value ? component.value.value : ''}" 
                          />` : ``);
                   break;
-              case 'Text':
+              case 'Input':
                 template.push(start
                   ? `
                   <tac-text-input

@@ -8,10 +8,11 @@ import { ContextService } from './service/ContextService';
 import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
 import { toArray } from 'rxjs/operators';
-import { findByComponentName } from './tac/util';
+import { findByComponentType } from './tac/util';
 import { TFLocalizationService, TFMessageService } from '@talentia/components';
 import { FormService } from './service/FormService';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
+import { ReferenceService } from './service/ReferenceService';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -39,7 +40,8 @@ export function localizationServiceFactory() {
       useFactory: localizationServiceFactory
     },
     AppService,
-    FormService
+    FormService,
+    ReferenceService
   ]
 })
 export class AppComponent implements OnInit {
@@ -69,7 +71,8 @@ export class AppComponent implements OnInit {
     private menuService: MenuService,
     private contextService: ContextService,
     private appService: AppService,
-    private formService: FormService) {
+    private formService: FormService,
+    private referenceService: ReferenceService) {
       this.appService.postConstruct(this);
       this.formService.postConstruct(this);
     }
@@ -93,6 +96,7 @@ export class AppComponent implements OnInit {
 
   openView(view: any): void {
     console.log('[APP] openView(', view, ')');
+    
     const 
       self = this,
       iframe = this.pageContent.iframe.nativeElement;
@@ -113,6 +117,7 @@ export class AppComponent implements OnInit {
     }
 
     
+    
     this.hideLegacyView();
     this.navigationHistory = this.createNavigationHistory(view);
     this.currentView = view;
@@ -132,11 +137,14 @@ export class AppComponent implements OnInit {
   }
 
   showView(view: any): Observable<any> {
+    console.log(view);
+    console.log('[APP] showView(view: ', this.referenceService.toInstance(view), ')');
+    view = this.referenceService.toInstance(view);
     // Remove previous view error messages.
     this.messageService.clearMessages();
     // Slit view into three view-container.
-    const commandsPanel = findByComponentName(view, 'CommandsPanel');
-    const asidePanel = findByComponentName(view, 'AsidePanel');
+    const commandsPanel = findByComponentType(view, 'CommandsPanel');
+    const asidePanel = findByComponentType(view, 'AsidePanel');
     return concat(
         this.asidePanel.open({ name: 'asidePanel', components: !asidePanel ? [] : [asidePanel] }),
         this.commandsPanel.open({ name: 'commandsPanel', components: !commandsPanel ? [] : [commandsPanel] }),
@@ -145,7 +153,7 @@ export class AppComponent implements OnInit {
   }
 
   clearView(): Observable<any> {
-    return this.showView({ components: [] });
+    return this.showView({ components: [], bindings: { references: {} } });
   }
 
   showLegacyView(): void {
@@ -198,7 +206,7 @@ export class AppComponent implements OnInit {
         }
       ];
     }
-    const component = findByComponentName(view, 'Breadcrumb');
+    const component = findByComponentType(view, 'Breadcrumb');
     return [
       <TFNavigationItem> {
         title: 'Acceuil'
