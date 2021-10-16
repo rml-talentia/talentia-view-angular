@@ -123,7 +123,9 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
 
 
   private setValue(value: string | null) {
+    console.log('[Dropdown] setValue(value:', value, ')');
     this.value = value;
+    this.component.value = value;
     // Doesn't work with mutation API
     // this.text = null !== this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
   }
@@ -141,6 +143,7 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
   set text(text) {
     // TODO : how to cache this computedValue ??
     this.value = this.items.find((item: TFDropdownItem) => item.label === text)?.name || '';  
+    this.component.value = this.value;
   }
 
   writeValue(value: any): void {
@@ -158,6 +161,8 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
 
 
   valueChanged(event: TFEvent) {
+    console.log('[Dropdown] valueChanged(event:', event, ')');
+    this.setValue(event.data);
     if (!!this.onchange) {
       this.onchange(event.source.selectedItem?.name || null);
     }

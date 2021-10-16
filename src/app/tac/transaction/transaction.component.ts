@@ -38,6 +38,7 @@ export class TransactionComponent implements OnInit, OnDestroy, AfterViewInit {
     this.name = this.component.name;
     this.data = Object.assign({}, this.component.data); // Clone form data to keep original values.
     this.dataService.register(this);
+  
 
     // Register form's FormGroup.
     this.formService.register({

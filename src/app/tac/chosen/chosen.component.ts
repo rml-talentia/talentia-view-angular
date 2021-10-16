@@ -155,6 +155,8 @@ console.log('component:',  this
     const model = this.component.model.toObject();
     const key = model.criterias[0].name;
 
+    console.log('fetchData model: ', model);
+
     this.itemsSubscription = this.http
       .post(
           `${this.transactionService.contextPath}/services/private/api/chosen/${this.component.model.componentType}/getPage?sessionId=${this.transactionService.sessionId}`,

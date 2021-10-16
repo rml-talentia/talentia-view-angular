@@ -1,0 +1,8 @@
+<tf-h-layout spacing="none">
+    <tf-button
+        *ngFor="let option of component.model.options"
+        [text]="option[component.model.label]"
+        [selectable]="true"
+        [active]="option[component.model.value] === component.value"
+        (selected)="onSelected($event, option)"></tf-button>
+</tf-h-layout>

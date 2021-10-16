@@ -86,8 +86,8 @@ export class Component {
     }
 
     toObject() {
+        console.log('[Component] toObject() this:', this);
         const object: any = {};
-        console.log(this);
         for (const key in this) {
             switch (key) {
                 case 'componentType':
@@ -99,10 +99,12 @@ export class Component {
                 case '_data':
                    // case 'parameters':
                     continue;
-                default:
-                    console.log('key:', key);
-                    object[key] = this[key];
             }
+            let value: any = this[key];
+            if (value instanceof Component) {
+                value = value.toObject();
+            }
+            object[key] = value;
         }
         return object;
         // return {
@@ -120,7 +122,8 @@ export class Component {
 type Reference = { 
     referenceType: string,
     parent: Reference, 
-    [key: string]: any 
+    [key: string]: any ,
+
 };
 
 class ReferenceBase {
@@ -167,7 +170,7 @@ export class ReferenceService {
             case 'AtIndexReference':
                 return null === parentValue ? null : this.asValue(parentValue[reference.index]);
             case 'DefaultReference':
-                throw new Error('');
+                return null !== parentValue ? parentValue : this.getValue(component, reference.value);
             case 'SelfReference':
                 return component;
             case 'ViewReference':
@@ -175,13 +178,11 @@ export class ReferenceService {
             case 'FormReference':
                 return this.getClosest(component, 'Form');
             case 'ControlReference':
-                // if (reference.name in this.controlByName) {
-                //     return this.controlByName[reference.name];
-                // }
-                return this.controlByName[reference.name] = findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
+                return this.asValue(findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
                     switch (component.componentType) {
                         case 'Input':
                         case 'Checkbox':
+                        case 'Chosen':
                         case 'Dropdown':
                         case 'DatePicker':
                             if (reference.name !== component.name) {
@@ -191,7 +192,7 @@ export class ReferenceService {
                         default:
                             return;
                     }
-                }) || null;
+                }));
             case 'DataReference':
                 for (let current: (Component | null) = component; null !== current; current = current.parent) {
                     // TODO : test reference rather than actual value ???
@@ -201,7 +202,6 @@ export class ReferenceService {
                 }
                 return null;
             case 'SessionReference':
-                console.log('SessionReference component: ', component, ' root: ', this.getRoot(component));
                 const sessionComponent: any = findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
                     switch (component.componentType) {
                         case 'SessionComponent':
@@ -210,7 +210,6 @@ export class ReferenceService {
                             return;
                     }
                 }) || null;
-                console.log('sessionComponent: ', sessionComponent);
                 return null === sessionComponent ? null : sessionComponent.data[reference.key];
             case 'ContextDataReference':
                 const contextDataComponent: any = findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
@@ -244,6 +243,9 @@ export class ReferenceService {
                     return;
                 }
                 parentValue[reference.key] = value;
+                return;
+            case 'DefaultReference':
+                this.setValue(component, reference.value, value);
                 return;
             case 'ViewReference':
             case 'FormReference':

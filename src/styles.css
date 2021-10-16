@@ -78,3 +78,10 @@ tac-text-input > tf-input.text-center input.form-control {
         padding-right: 0;
     }
 }
+
+
+
+/* radio.html : Bug on tf library active class change nothing ( copy of :hover rules ) */
+.btn.active {
+    background-color: #263237 !important;
+}

@@ -391,7 +391,7 @@ export class DataGridComponent implements OnInit, AfterViewInit, AfterContentIni
       onCellContextMenu(params) {
 
         const query = {
-          model: self.component.model,
+          model: self.component.model.toObject(),
           rowIndex: params.rowIndex
         };
 

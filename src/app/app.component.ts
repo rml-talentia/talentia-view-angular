@@ -13,6 +13,7 @@ import { TFLocalizationService, TFMessageService } from '@talentia/components';
 import { FormService } from './service/FormService';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
 import { ReferenceService } from './service/ReferenceService';
+import { ActionService } from './service/ActionService';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -41,7 +42,8 @@ export function localizationServiceFactory() {
     },
     AppService,
     FormService,
-    ReferenceService
+    ReferenceService,
+    ActionService
   ]
 })
 export class AppComponent implements OnInit {

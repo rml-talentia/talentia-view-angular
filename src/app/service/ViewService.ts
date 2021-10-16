@@ -68,13 +68,19 @@ export class ViewService {
             const formControlBind = !formGroupBind || !component.name ? '' : `                
               #inputbase
               
-              
+              [(ngModel)]="${componentBind}.value"
               name="${component.name}"
               
-              ${!required ? '' : 'required'}
+
+               [form]="${formGroupBind}"
+               #formControl="ngModel"
+               
+               tacConstraints
             `;  
-            // [form]="${formGroupBind}"
-            // #formControl="ngModel"
+
+//              ${!required ? '' : 'required'}
+         //     tacConstraints
+
             // [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
             const cellEditorControlBind = !options.cellEditor ? '' : `
               [cellEditor]="cellEditor"
@@ -92,6 +98,9 @@ export class ViewService {
               .join('')
               .split(/ *\n */)
               .join(' ');
+
+
+              //console.log('componentBind: ', componentBind,  ' component:', component);
 
             if (!!options.cellRenderer) { 
               switch(component.componentType) {
@@ -175,6 +184,7 @@ export class ViewService {
                       <br/>
                   ` : `
                   </tf-panel>
+                  <br/>
                   `);
                   break;
                 }
@@ -184,6 +194,7 @@ export class ViewService {
                   text="${component.title ? component.title.text : ''}">
                 ` : `
                 </tf-panel>
+                <br/>
                 `);
                 break;
               case 'AsidePanel':
@@ -282,6 +293,16 @@ export class ViewService {
                       </tf-field>`);
                 }
                 break;
+              case 'Radio':
+                template.push(start 
+                  ? `
+                  <tac-radio     
+                      ${controlBind}
+                      [component]="${componentBind}"
+                      title="${component.title.text}">` 
+                  : `
+                  </tac-radio>`);
+                break;
               case 'Dropdown':
                 template.push(start 
                   ? `
@@ -314,6 +335,7 @@ export class ViewService {
                   </tac-chosen>`);
                 break;
               case 'DataGrid':
+                console.log('dataGrid:', component);
                 template.push(start
                   ? `
                   <tac-data-grid

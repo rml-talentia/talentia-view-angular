@@ -42,7 +42,8 @@ export class TextInputComponent extends InputBaseComponent {
 
   @Input()
   get value() {
-    return this._value;
+    return this.component.value;
+   // return this._value;
   }
 
   set value(value: string) {
