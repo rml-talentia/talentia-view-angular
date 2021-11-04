@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { TFEvent } from '@talentia/components';
 import { ActionService } from 'src/app/service/ActionService';
@@ -7,7 +7,8 @@ import { FormService } from 'src/app/service/FormService';
 @Component({
   selector: 'tac-button',
   templateUrl: './button.component.html',
-  styleUrls: ['./button.component.css']
+  styleUrls: ['./button.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ButtonComponent implements OnInit {
 

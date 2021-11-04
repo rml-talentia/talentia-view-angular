@@ -6,6 +6,7 @@ import { visit } from "../tac/util";
 import { DataService } from "./DataService";
 import { CompilerService } from "./CompilerService";
 import { TFGridColConfig } from "@talentia/components/lib/models/tf-grid-col-config.model";
+import { Component } from "./types";
 
 
 
@@ -26,7 +27,6 @@ export class ViewService {
         .pipe(map((componentFactory: ComponentFactory<any>) => {
           const componentRef = options.container.createComponent(componentFactory);
           componentRef.instance.componentByIndex = componentByIndex;
-          //componentRef.instance.views = this.views;
           componentRef.instance.data = this.dataService.data;
          // componentRef.changeDetectorRef.detectChanges();
           return componentRef;
@@ -54,7 +54,7 @@ export class ViewService {
               }
               return;
             }
-            if (!!options.isIgnoredComponent && options.isIgnoredComponent(component)) {
+            if (this.isIgnoredComponent(options, component)) {
               ignoredComponent = component;
               return;
             }
@@ -82,6 +82,8 @@ export class ViewService {
          //     tacConstraints
 
             // [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
+            // [(ngModel)]="${componentBind}.value"
+
             const cellEditorControlBind = !options.cellEditor ? '' : `
               [cellEditor]="cellEditor"
               [(ngModel)]="value"
@@ -377,7 +379,7 @@ export class ViewService {
             }
             return;
           }
-          if (!!options.isIgnoredComponent && options.isIgnoredComponent(component)) {
+          if (this.isIgnoredComponent(options, component)) {
             ignoredComponent = component;
             return;
           }
@@ -387,6 +389,12 @@ export class ViewService {
         });
       });
     return componentByIndex;
+  }
+
+
+  private isIgnoredComponent(options: CreateTemplate, component: Component) {
+    return !!options.isIgnoredComponent && options.isIgnoredComponent(component) 
+      || component.componentType === 'DataGridColumn';
   }
 
 }

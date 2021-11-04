@@ -1,16 +1,16 @@
 
 import { HttpClient } from '@angular/common/http';
-import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterContentInit, AfterViewChecked, AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChild, forwardRef,  Host, Inject, Input, NgZone, OnChanges, OnInit, Optional, SimpleChanges, SkipSelf, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { TFChosenComponent, TFEvent } from '@talentia/components';
+import { TFChosenComponent, TFEvent, TFPanelComponent } from '@talentia/components';
 import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
 import { Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { DataService } from 'src/app/service/DataService';
-import { ReferenceService } from 'src/app/service/ReferenceService';
+import { DataGridService } from 'src/app/service/DataGridService';
+import { EventService } from 'src/app/service/EventService';
 import { TransactionService } from 'src/app/service/TransactionService';
 import { InputBaseComponent } from '../base/input-base.component';
 
@@ -20,125 +20,65 @@ import { InputBaseComponent } from '../base/input-base.component';
   selector: 'tac-chosen',
   templateUrl: './chosen.component.html',
   styleUrls: ['./chosen.component.css'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    multi: true,
-    useExisting: forwardRef(() => ChosenComponent)
-  }]
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      multi: true,
+      useExisting: forwardRef(() => ChosenComponent)
+    }
+  //,{ provide: TFPanelComponent, useExisting: forwardRef(() => ChosenComponent) }
+  ]
+  ,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChosenComponent extends InputBaseComponent implements AfterContentInit, AfterViewInit,  AfterViewChecked {
+export class ChosenComponent extends InputBaseComponent implements  AfterViewInit {
 
   constructor(
+    //  @SkipSelf() @Optional() private view: TFPanelComponent,
+    // private applicationRef: ApplicationRef,
+    // private zone: NgZone,
+    private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
-    private referenceService: ReferenceService,
     //private dataService: DataService,
-    private transactionService: TransactionService) { 
+    private transactionService: TransactionService,
+    private eventService: EventService,
+    private dataGridService: DataGridService) { 
       super();
     }
-
-  @ViewChild(TFChosenComponent)
-  chosen!: TFChosenComponent;
-
-
-  @Input()
-  value!: string;
-
-
-  selection: any[] = [];
-  items: any[] = [];  
-  itemsSubscription!: Subscription | null;
-  totalCount: number = 0;
-
 
   @ContentChild('myItemTemplate', { read: TemplateRef})
   myItemTemplate!: TemplateRef<any>;
 
   @ViewChild(TFChosenComponent)
   tfChosen!: TFChosenComponent;
-
-  ngAfterViewChecked(): void {
-  }
+  @Input()
+  value!: string;
+  selection: any[] = [];
+  items: any[] = [];  
+  itemsSubscription!: Subscription | null;
+  totalCount: number = 0;
 
   ngAfterViewInit(): void {
 //    this.workaroundTAC2786();  
-  }
-
-  ngAfterContentInit(): void {
-  }
-
-  ngOnInit(): void {
-    super.ngOnInit();
+  //  this.changeDetectorRef.detectChanges();
   }
 
   onSelected(item: any): void {
-    console.log('[tac-chosen] onSelected(item:', item, ')');
+    console.log('[ChosenComponent] onSelected(item:', item, ')');
 
     
     this.fireChange(this.value = item.id);
-
     this.component.value = this.value;
-
-console.log('component:',  this
-  .component);
+    //this.dataGridService.setValue(this.component.getClosest('DataGrid'), 0, this.component.name, this.value);
 
 
-    const form = 'pieceComptableTravailCGSEEForm';
+    // In case of cell editor, the event is triggered from DataGrid.
+    if (!this.isInCellEditor()) {
+      this.eventService.doEvent(this.component, 'Change');
+    } 
 
-    this
-      .component
-      .events
-      .filter((event: any) => event.eventType === 'Change')
-      .forEach((event: any) => {
-        event
-          .actions
-          .forEach((action: any) => {
-            // action.type .... Ajax
+    
 
-            switch(action.actionType) {
-              case 'Ajax':
-
-                // Traditional HTML form post. 
-                const payload = new URLSearchParams();
-                payload.set(this.transactionService.csrfTokenName, this.transactionService.csrfTokenValue);
-                action
-                  .parameters
-                  .forEach((parameter: any) => {
-                    console.log(parameter);
-                    payload.set(
-                      this.referenceService.getValue(this.component, parameter.bindings.references.name), 
-                      this.referenceService.getValueOrDefault(this.component, parameter.bindings.references.value, ''));
-                  });
-                this
-                  .http
-                  .post(
-                    `${this.transactionService.contextPath}/viewbridge/ajax/${action.href}?sessionId=${this.transactionService.sessionId}&__form=${form}`,
-                    payload.toString(), 
-                    {
-                        headers: {
-                          'Content-Type': 'application/x-www-form-urlencoded',
-                          [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
-                        }
-                    })
-                    .subscribe({
-                      next: (response: any) => {
-                        console.log('response:' , response);
-                        // response
-                        //   .mutations
-                        //   .forEach((mutation: any) => {
-                        //     //this.dataService.set(mutation.target, mutation.value);
-                        //   });
-
-
-                         // console.log(this.dataService.data);
-                      }
-                    });
-                break;
-            }
-
-          
-
-          });
-      });
   }
 
   onNeedData(event: TFEvent): void {
@@ -155,7 +95,7 @@ console.log('component:',  this
     const model = this.component.model.toObject();
     const key = model.criterias[0].name;
 
-    console.log('fetchData model: ', model);
+    console.log('[ChosenComponent] fetchData model: ', model, ' component: ', this.component);
 
     this.itemsSubscription = this.http
       .post(
@@ -186,14 +126,24 @@ console.log('component:',  this
           }))
           .subscribe({
             next: (items: any[]) => {
+
               if (0 === page) {
-                this.items = items;
-              } else {
-                //this.items.push.apply(this.items, items);
-                //
-                this.items = this.items.concat(items);
-                this.chosen.refresh();
-              }           
+                this.items = [{
+                  id: '',
+                  text: '<Aucune sélection>',
+                  cells: ['<Aucune sélection>', '', '', '']
+                }];
+              }
+
+              this.items = this.items.concat(items);
+
+              // if (0 === page) {
+              //   this.items = items;
+              // } else {
+              //   this.items = this.items.concat(items);
+              // //  this.chosen.refresh();
+              // }           
+              this.changeDetectorRef.markForCheck();
             }
           })
           .add(() => this.itemsSubscription = null);
@@ -201,14 +151,29 @@ console.log('component:',  this
   
   }
 
+
+
   createCellEditor(): ICellEditorAngularComp {
+    let value: any = null;
     return  <ICellEditorAngularComp> {       
+
         
       agInit: (params) => {
-        this.value = params.value;
+        console.log('[ChosenComponent] agInit(params:', params, ')');
+       // this.value = params.value;
+       //this.writeValue(params.value);
+       value = params.value;
+
+       
+
+      //  this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
+      //  this.items = this.selection;
+      //  this.value = value;
       },
 
       afterGuiAttached: (params?: IAfterGuiAttachedParams) => {
+        console.log('[ChosenComponent] afterGuiAttached(params:', params, ')');
+        //this.value =
       },
 
       getValue: () => {
@@ -220,7 +185,7 @@ console.log('component:',  this
 
 
   writeValue(value: any): void {
-   // console.log('writeValue(value:', value, ')');
+    console.log('[ChosenComponent] writeValue(value:', value, ')');
 //    if (value !== this.value) {
 //     this.value = value;
 //     this.cd.markForCheck();
@@ -230,13 +195,14 @@ console.log('component:',  this
     //const payload = this.data.model.payload;
     //const key = payload.criterias[0].name;
  ///   console.log('[CHOSEN] writeValue value:', value);
-    
+
+
+    this.value = value;
     this.selection = !value ? [] : [{ id: value, text: value, cells: [value] }];
     this.items = this.selection;
+    this.fireChange(value);
 
-   
 
-    this.fireChange(this.value = value);
 
     // if (!!this.onchange) {
     //   this.onchange(value);

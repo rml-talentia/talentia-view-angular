@@ -1,4 +1,4 @@
-import { Component, forwardRef, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, OnInit } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFEvent } from '@talentia/components';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
@@ -12,7 +12,8 @@ import { InputBaseComponent } from '../base/input-base.component';
     provide: NG_VALUE_ACCESSOR,
     multi: true,
     useExisting: forwardRef(() => RadioComponent)
-  }]
+  }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RadioComponent extends InputBaseComponent  {
   

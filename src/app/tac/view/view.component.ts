@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, ContentChildren, Input, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterContentInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChildren, Input, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { FormService } from 'src/app/service/FormService';
 import { ICellEditorAngularComp } from "@ag-grid-community/angular";
@@ -14,7 +14,8 @@ import { TFMessageService } from '@talentia/components';
 @Component({
   selector: 'tac-view',
   templateUrl: './view.component.html',
-  styleUrls: ['./view.component.css']
+  styleUrls: ['./view.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ViewComponent implements OnInit, OnDestroy, AfterContentInit, AfterViewInit {
 
@@ -29,7 +30,7 @@ export class ViewComponent implements OnInit, OnDestroy, AfterContentInit, After
 
   constructor(
     private formService: FormService,
-    private changeDetectorRef: ChangeDetectorRef,
+    public changeDetectorRef: ChangeDetectorRef,
     private viewService: ViewService 
   ) {}
 

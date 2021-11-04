@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { TFMessageService, TFMessageType } from '@talentia/components';
 import { DataService } from 'src/app/service/DataService';
@@ -7,7 +7,8 @@ import { FormService } from 'src/app/service/FormService';
 @Component({
   selector: 'tac-transaction',
   templateUrl: './transaction.component.html',
-  styleUrls: ['./transaction.component.css']
+  styleUrls: ['./transaction.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionComponent implements OnInit, OnDestroy, AfterViewInit {
 

@@ -14,6 +14,9 @@ import { FormService } from './service/FormService';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
 import { ReferenceService } from './service/ReferenceService';
 import { ActionService } from './service/ActionService';
+import { MutationService } from './service/MutationService';
+import { AjaxService } from './service/AjaxService';
+import { EventService } from './service/EventService';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -43,7 +46,10 @@ export function localizationServiceFactory() {
     AppService,
     FormService,
     ReferenceService,
-    ActionService
+    MutationService,
+    ActionService,
+    AjaxService,
+    EventService
   ]
 })
 export class AppComponent implements OnInit {
@@ -140,8 +146,9 @@ export class AppComponent implements OnInit {
 
   showView(view: any): Observable<any> {
     console.log(view);
-    console.log('[APP] showView(view: ', this.referenceService.toInstance(view), ')');
+   
     view = this.referenceService.toInstance(view);
+    console.log('[APP] showView(view: ', view, ')');
     // Remove previous view error messages.
     this.messageService.clearMessages();
     // Slit view into three view-container.

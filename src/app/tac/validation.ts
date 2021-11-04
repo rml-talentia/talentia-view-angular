@@ -17,6 +17,7 @@ export class TacConstraintsDirective implements Validator {
     
 
     validate(control: AbstractControl): ValidationErrors | null {
+        //console.log('[Constraints] component: ', this.component);
         const violations = this.component.violations;
         if (null === violations || !violations.length) {
             return null;

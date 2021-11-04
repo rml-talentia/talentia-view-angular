@@ -1,6 +1,6 @@
 import { IAfterGuiAttachedParams } from '@ag-grid-community/core';
 import { HttpClient } from '@angular/common/http';
-import { AfterContentInit } from '@angular/core';
+import { AfterContentInit, AfterViewChecked, AfterViewInit, ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef, Component, forwardRef, Injector, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {  TFDropdownItem, TFEvent } from '@talentia/components';
@@ -18,21 +18,23 @@ import { InputBaseComponent } from '../base/input-base.component';
     provide: NG_VALUE_ACCESSOR,
     multi: true,
     useExisting: forwardRef(() => DropdownComponent)
-  }],
-  encapsulation: ViewEncapsulation.None
+  }]
+  ,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DropdownComponent extends InputBaseComponent implements ControlValueAccessor {
 
 
   items!: TFDropdownItem[];
   itemsSubscription!: Subscription | null;
-  @Input()
-  value!: string | null;
+ // @Input()
+//  value!: string | null;
   //text: string  = '';
 
   _text: string = '';
 
   constructor(
+    private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
     private transactionService: TransactionService) {
     super();
@@ -40,8 +42,15 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
 
 
 
+
   ngOnInit(): void {
     super.ngOnInit();
+
+
+    // Require to render the initial value.
+    if (!!this.component.selection) {
+      this.items = [this.component.selection];
+    }
 
     const model = this.component.model.toObject();
     this.itemsSubscription = this
@@ -73,36 +82,7 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
         })
         .add(() => this.itemsSubscription = null);
 
-    if (true) return;
-
-    const payload = this.component.model.payload;
-    payload.search = '';
-    payload.pageSize = 30;
-   // payload.excludedKeys = null;    
     
-    this.itemsSubscription = this
-        .http
-        .post(
-            `${this.transactionService.contextPath}/services/private/api/consultation/all?sessionId=${this.transactionService.sessionId}`,
-            payload, 
-            {
-                headers: {
-                // CSRF
-                [this.transactionService.csrfTokenName]: this.transactionService.csrfTokenValue
-                }
-            })
-        .pipe(map((response: any) => response
-          .rows
-          .map((row: any, index: number) => <TFDropdownItem> {
-              name:  row.key,
-              label: row.value
-          })))
-        .subscribe({
-          next: (items: TFDropdownItem[]) => {
-            this.items = items;            
-          }
-        })
-        .add(() => this.itemsSubscription = null);
   }
 
   createCellEditor(): ICellEditorAngularComp {
@@ -123,7 +103,7 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
 
 
   private setValue(value: string | null) {
-    console.log('[Dropdown] setValue(value:', value, ')');
+    //console.log('[Dropdown] setValue(value:', value, ')');
     this.value = value;
     this.component.value = value;
     // Doesn't work with mutation API
@@ -132,6 +112,15 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
 
   private getText() {
     return !!this.items && null !== this.value ? this.items.find((item: TFDropdownItem) => item.name === this.value)?.label || '' : '';
+  }
+
+  @Input()
+  get value() {
+    return this.component.value;
+  }
+
+  set value(value: any) {
+    this.component.value = value;
   }
 
   get text() {
@@ -161,7 +150,7 @@ export class DropdownComponent extends InputBaseComponent implements ControlValu
 
 
   valueChanged(event: TFEvent) {
-    console.log('[Dropdown] valueChanged(event:', event, ')');
+    //console.log('[Dropdown] valueChanged(event:', event, ')');
     this.setValue(event.data);
     if (!!this.onchange) {
       this.onchange(event.source.selectedItem?.name || null);

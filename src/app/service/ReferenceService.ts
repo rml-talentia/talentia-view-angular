@@ -1,130 +1,17 @@
 import { Injectable } from "@angular/core";
-import { findInView, visit } from "../tac/util";
+import { findByComponentType, findInView } from "../tac/util";
+import { DataGridService } from "./DataGridService";
+import { Component, Reference } from "./types";
 
 
 
-type Event = {
-
-    parameters: any[];
-
-};
 
 
-export class Component {
 
-    [key: string]: any;
-    public parent: Component | null = null;
-    public components: Component[] = [];
-    public events: Event[] = [];
-    public componentType: string;
-    private _data: any;
 
-    constructor(
-        private referenceService: ReferenceService,
-        data: any,
-        parent: Component | null) {
-        this.componentType = data.componentType;
-        this.events = data.events;
-        this._data = Object.freeze(data); // TODO : deepFreeze ? https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
-        this.parent = parent;
-        
-        this.defineProperties();
-        this.populateComponents();
-    }
 
-    private populateComponents() {
-        this.components = this
-            ._data
-            .components
-            .map((data: any) => new Component(this.referenceService, data, this));
-        // this.events = !('events' in this._data) ? [] : this
-        //     ._data
-        //     .events
-        //     .map((data: any) => new Component(this.referenceService, data, this));
-    }
-
-    private defineProperties() {
-        for (const key in this._data.bindings.references) {
-            const reference = this._data.bindings.references[key];
-            // console.log('reference:', reference);
-            // TODO : handle null reference ??? or prevent null in getBindings().setReference from server side ?
-            if (Array.isArray(reference)) {
-                this.defineArrayProperty(key, reference);
-            } else {
-                this.defineProperty(key, reference);
-            }
-        }
-    }
-
-    private defineArrayProperty(key: string, references: Reference[]) {
-        Object.defineProperty(this, key, {
-            enumerable: true,
-            get: () => {
-                
-                return this.referenceService.getValues(this, references);
-            }
-        });
-    }
-
-    private defineProperty(key: string, reference: Reference) {
-
-        const value = this.referenceService.getValue(this, reference);
-        if (null !== value && 'object' === typeof value && 'componentType' in value && 'bindings' in value) {
-            this.referenceService.setValue(this, reference, new Component(this.referenceService, value, this));
-        }
-
-        Object.defineProperty(this, key, {
-            enumerable: true,
-            get: () => {
-      
-                return this.referenceService.getValue(this, reference);
-            },
-            set: (value: any) => {
-                this.referenceService.setValue(this, reference, value);
-            }
-        });
-    }
-
-    toObject() {
-        console.log('[Component] toObject() this:', this);
-        const object: any = {};
-        for (const key in this) {
-            switch (key) {
-                case 'componentType':
-                    // Prevent  Unrecognized field "componentType" (jackson without ignore unknow properties)
-                case 'referenceService':
-                case 'components':
-                case 'events':
-                case 'parent':
-                case '_data':
-                   // case 'parameters':
-                    continue;
-            }
-            let value: any = this[key];
-            if (value instanceof Component) {
-                value = value.toObject();
-            }
-            object[key] = value;
-        }
-        return object;
-        // return {
-        //     componentType: this.componentType,
-        //     ...this
-        //         ._data
-        //         .bindings
-        //         .references
-        //         .map((reference: Reference) => this.referenceService.getValue(this, reference))
-        // };
-    }
-
-}
-
-type Reference = { 
-    referenceType: string,
-    parent: Reference, 
-    [key: string]: any ,
-
-};
+// TODO : make reference observable ??? example : reset dropdown 
+// Seem to be complicating thing....
 
 class ReferenceBase {
 
@@ -145,22 +32,34 @@ class CacheableReference extends ReferenceBase {
 @Injectable()
 export class ReferenceService {
 
-    private controlByName: { [name: string]: Component | null } = {};
+    constructor(
+        private dataGridService: DataGridService) {}
 
     toInstance(data: any, parent?: Component): Component {
         return new Component(this, data, parent || null);
     }
 
     getValues(component: Component, references: Reference[]): any[] {
-        return references.map(reference => this.getValue(component, reference));
+        return references.map(reference => this._getValue(component, reference));
     }
 
     getValueOrDefault(component: Component, reference: Reference, defaultValue: any): any {
-        const value = this.getValue(component, reference);
+      //  console.log('[ReferenceService] getValueOrDefault(...)');
+        const value = this._getValue(component, reference);
         return null !== value ? value : defaultValue;
     }
 
     getValue(component: Component, reference: Reference): any {
+        //console.log('[ReferenceService] getValue(component:', component, 'reference:', reference, ')');
+        // if ('_value' in reference) {
+        //     // Cached.
+        //     return reference._value;
+        // }
+        return this._getValue(component, reference);
+    }
+
+    private _getValue(component: Component, reference: Reference): any {
+        
         const parentValue = this.getParentValue(component, reference);
         switch (reference.referenceType) {
             case 'Value':
@@ -170,7 +69,7 @@ export class ReferenceService {
             case 'AtIndexReference':
                 return null === parentValue ? null : this.asValue(parentValue[reference.index]);
             case 'DefaultReference':
-                return null !== parentValue ? parentValue : this.getValue(component, reference.value);
+                return null !== parentValue ? parentValue : this._getValue(component, reference.value);
             case 'SelfReference':
                 return component;
             case 'ViewReference':
@@ -179,6 +78,7 @@ export class ReferenceService {
                 return this.getClosest(component, 'Form');
             case 'ControlReference':
                 return this.asValue(findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
+                    // TODO : handle intheritence ???
                     switch (component.componentType) {
                         case 'Input':
                         case 'Checkbox':
@@ -193,6 +93,25 @@ export class ReferenceService {
                             return;
                     }
                 }));
+            case 'DataGridReference':
+            case 'RowByIndexReference':
+            case 'RowReference':
+            case 'RowIndexReference':
+                const dataGrid = component.getClosest('DataGrid');
+                if (null === dataGrid) {
+                    return null;
+                }
+                switch (reference.referenceType) {
+                    case 'DataGridReference':
+                        return dataGrid;
+                    case 'RowReference':
+                        return this.asValue(this.dataGridService.getRowByIndex(dataGrid, dataGrid.rowIndex));
+                    case 'RowIndexReference':
+                        return this.asValue(dataGrid.rowIndex);
+                    case 'RowByIndexReference':
+                        console.log('dataGrid:', dataGrid);
+                        return this.asValue(this.dataGridService.getRowByIndex(dataGrid, reference.index));
+                }
             case 'DataReference':
                 for (let current: (Component | null) = component; null !== current; current = current.parent) {
                     // TODO : test reference rather than actual value ???
@@ -229,7 +148,7 @@ export class ReferenceService {
     setValue(component: Component, reference: Reference, value: any): void {
         const parentValue = this.getParentValue(component, reference);
         switch (reference.referenceType) {
-            case 'Value':
+            case 'Value': // TODO : rename ValueReference
                 reference.value = value;
                 return;
             case 'AtKeyReference':
@@ -246,6 +165,21 @@ export class ReferenceService {
                 return;
             case 'DefaultReference':
                 this.setValue(component, reference.value, value);
+                return;
+            case 'SessionReference':
+                const session = findByComponentType(this.getRoot(component), 'SessionComponent');
+                session.data[reference.key] = value;
+                return;
+            case 'ContextDataReference':
+                const contextData = findByComponentType(this.getRoot(component), 'ContextDataComponent');
+                contextData.data[reference.key] = value;
+                return;
+            case 'RowByIndexReference':
+                const dataGrid = component.getClosest('DataGrid');
+                if (null === dataGrid) {
+                    return;
+                }
+                this.dataGridService.setRowByIndex(dataGrid, reference.index, value);
                 return;
             case 'ViewReference':
             case 'FormReference':
@@ -272,7 +206,7 @@ export class ReferenceService {
     }
 
     private getParentValue(component: Component, reference: Reference): any {
-        return null === reference.parent ? null : this.getValue(component, reference.parent);
+        return null === reference.parent ? null : this._getValue(component, reference.parent);
     }
 
     /**
