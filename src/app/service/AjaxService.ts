@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { findByComponentType, getRoot } from "../tac/util";
+import { AppService } from "./AppService";
 import { MutationService } from "./MutationService";
 import { ReferenceService } from "./ReferenceService";
 import { TransactionService } from "./TransactionService";
@@ -17,12 +18,13 @@ export class AjaxService {
 
     constructor(
         private http: HttpClient,
+        private appService: AppService,
         private referenceService: ReferenceService,
         private mutationService: MutationService,
         private transactionService: TransactionService) {
     }
 
-    doTableChange(component: Component, action: Component) {
+    doTableAjax(component: Component, action: Component) {
 
         const dataGrid: Component | null = action.getClosest('DataGrid');
         const control: Component | null | undefined = action.parent?.parent;
@@ -51,11 +53,16 @@ export class AjaxService {
                 .subscribe({
                     next: (response: any) => {
                         console.log('response:' , response);
+                        // Apply mutations.
                         response
                             .mutations
                             .forEach((mutation: any) => {
                                 this.mutationService.apply(component, mutation);
                             });
+                        // Do redirection if any.                            
+                        if (null !== response.redirection) {
+                            this.appService.openLegacy(response.redirection);
+                        }
                     }
                 });
     }

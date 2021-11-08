@@ -19,6 +19,12 @@ export class MutationService {
             case 'Set':
                 this.referenceService.setValue(component, mutation.to, mutation.value);
                 break;
+            case 'Add':
+                this.referenceService.addValue(component, mutation.to, mutation.value);
+                break;
+            case 'Splice':
+                this.referenceService.spliceValue(component, mutation.to, mutation.start, mutation.count, mutation.elements);
+                break;
             default:
                 console.error('[MutationService] mutation: ', mutation);
                 throw new Error('Unsupported operation.');

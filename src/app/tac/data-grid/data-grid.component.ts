@@ -326,7 +326,10 @@ export class DataGridComponent implements OnInit, OnDestroy, AfterViewInit, Afte
     if (!!action.behavior) {
       switch (action.behavior.componentType) {
         case 'TableCreate':
-          this.ajaxService.doTableChange(this.component, action.behavior);
+        case 'TableDelete':
+        case 'TableUpdate':
+        default:
+          this.ajaxService.doTableAjax(this.component, action.behavior);
           break;
       }
       return;

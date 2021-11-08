@@ -94,6 +94,7 @@ export class ReferenceService {
                     }
                 }));
             case 'DataGridReference':
+            case 'RowsReference':
             case 'RowByIndexReference':
             case 'RowReference':
             case 'RowIndexReference':
@@ -104,6 +105,8 @@ export class ReferenceService {
                 switch (reference.referenceType) {
                     case 'DataGridReference':
                         return dataGrid;
+                    case 'RowsReference':
+                        return this.asValue(this.dataGridService.getRows(dataGrid));
                     case 'RowReference':
                         return this.asValue(this.dataGridService.getRowByIndex(dataGrid, dataGrid.rowIndex));
                     case 'RowIndexReference':
@@ -142,6 +145,33 @@ export class ReferenceService {
                 return null === contextDataComponent ? null : contextDataComponent.data[reference.key];
             default:
                 throw new Error('Unsupported reference. referenceType: ' + reference.referenceType);
+        }
+    }
+
+    addValue(component: Component, reference: Reference, value: any): void {
+        switch (reference.referenceType) {
+            case 'RowByIndexReference':
+                const dataGrid = component.getClosest('DataGrid');
+                if (null === dataGrid) {
+                    return;
+                }
+                this.dataGridService.addRowAtIndex(dataGrid, reference.index, value);
+                return;
+            default:
+                const parentValue = this.getParentValue(component, reference); // an array
+                parentValue.splice(reference.index, 0, value);
+        }
+    }
+
+    spliceValue(component: Component, reference: Reference, start: number, count: number, addedElements: any[]): void {
+        switch (reference.referenceType) {
+            case 'RowsReference':
+                const dataGrid = component.getClosest('DataGrid');
+                if (null === dataGrid) {
+                    return;
+                }
+                this.dataGridService.splice(dataGrid, start, count, addedElements);
+                return;
         }
     }
 

@@ -111,16 +111,44 @@ class DataGridDatasource implements IViewportDatasource {
             }
           });
     }
+    
+    getRows() {
+      return this.rows;
+    }
 
     getRowByIndex(index: number) {
-        return this.rows[index - this.firstRow] || null;
+      return this.rows[index - this.firstRow] || null;
     }
   
     setRowByIndex(index: number, row: any) {
-        console.log('[DataGridDatasource] setRowByIndex(index:', index, ', row:', row, ')');
-        this.rows[index - this.firstRow] = row;
-        this.params.setRowData(this.rows);
-        this.dataGrid.agGrid.api.refreshCells({ force: true });
+      console.log('[DataGridDatasource] setRowByIndex(index:', index, ', row:', row, ')');
+      this.rows[index - this.firstRow] = row;
+      this.params.setRowData(this.rows);
+      this.dataGrid.agGrid.api.refreshCells({ force: true });
+    }
+
+    addRowAtIndex(index: number, row: any) {
+      console.log('[DataGridDatasource] addRowAtIndex(index:', index, ', row:', row, ')');
+      this.rows.splice(index, 0, row);
+      this.params.setRowData(this.rows);      
+      this.params.setRowCount(this.rows.length, false);
+      this.dataGrid.agGrid.api.refreshCells({ force: true });
+    }
+
+    removeAtIndex(index: number) {
+      console.log('[DataGridDatasource] removeAtIndex(index:', index, ')');
+      this.rows.splice(index, 1);
+      this.params.setRowData(this.rows);      
+      this.params.setRowCount(this.rows.length, false);
+      this.dataGrid.agGrid.api.refreshCells({ force: true });
+    }
+
+    splice(start: number, count: number, rows: any[]) {
+      console.log('[DataGridDatasource] splice(start:', start, ', count:', count, ', rows:', rows, ')');
+      this.rows.splice.apply(this.rows, (<any> [start, count]).concat(rows));
+      this.params.setRowData(this.rows);      
+      this.params.setRowCount(this.rows.length, false);
+      this.dataGrid.agGrid.api.refreshCells({ force: true });
     }
 }
 
@@ -141,6 +169,14 @@ export class DataGridService {
         delete this.dataSources[dataGrid.component.name];
     }
 
+    getRows(dataGrid: Component) {
+      const dataSource = this.dataSources[dataGrid.name];
+      if (!dataSource) {
+          return null;
+      }
+      return dataSource.getRows();
+    }
+
     getRowByIndex(dataGrid: Component, index: number) {
         const dataSource = this.dataSources[dataGrid.name];
         if (!dataSource) {
@@ -157,6 +193,14 @@ export class DataGridService {
         dataSource.setRowByIndex(index, row);
     }
 
+    addRowAtIndex(dataGrid: Component, index: number, row: any) {
+      const dataSource = this.dataSources[dataGrid.name];
+      if (!dataSource) {
+          return;
+      }
+      dataSource.addRowAtIndex(index, row);
+    }
+
     setValue(dataGrid: Component, rowIndex: number, field: string, value: any) {
         const dataSource = this.dataSources[dataGrid.name];
         if (!dataSource) {
@@ -165,4 +209,12 @@ export class DataGridService {
         const row = dataSource.getRowByIndex(rowIndex);
         row[field] = value;
     }
+
+    splice(dataGrid: Component, start: number, count: number, rows: any[]) {
+      const dataSource = this.dataSources[dataGrid.name];
+      if (!dataSource) {
+          return;
+      }
+      dataSource.splice(start, count, rows);
+  }
 }

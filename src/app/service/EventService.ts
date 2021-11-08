@@ -25,7 +25,7 @@ export class EventService {
                                 this.ajaxService.doAjax(component, action);
                                 break;
                             case 'TableChange': // Legacy ui:tableAction
-                                this.ajaxService.doTableChange(component, action);
+                                this.ajaxService.doTableAjax(component, action);
                                 break;
                         }
                     });
