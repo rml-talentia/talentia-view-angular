@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ComponentRef, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { TFCollapsePanelComponent, TFMessage, TFMessages, TFMessagesComponent, TFMessageService, TFMessageType } from '@talentia/components';
 
@@ -8,7 +8,8 @@ import { TFCollapsePanelComponent, TFMessage, TFMessages, TFMessagesComponent, T
   styleUrls: ['./form.component.css'],
   inputs: [
     'data'
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormComponent implements OnInit, AfterViewChecked, AfterViewInit {
 

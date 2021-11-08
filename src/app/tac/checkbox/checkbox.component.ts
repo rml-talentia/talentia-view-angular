@@ -1,5 +1,5 @@
 import { IAfterGuiAttachedParams } from '@ag-grid-community/core';
-import { Component, forwardRef, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { DataService } from 'src/app/service/DataService';
@@ -13,7 +13,8 @@ import { InputBaseComponent } from '../base/input-base.component';
     provide: NG_VALUE_ACCESSOR,
     multi: true,
     useExisting: forwardRef(() => CheckboxComponent)
-  }]
+  }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckboxComponent extends InputBaseComponent {
 

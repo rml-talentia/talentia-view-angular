@@ -5,6 +5,8 @@ import { map } from "rxjs/operators";
 import { visit } from "../tac/util";
 import { DataService } from "./DataService";
 import { CompilerService } from "./CompilerService";
+import { TFGridColConfig } from "@talentia/components/lib/models/tf-grid-col-config.model";
+import { Component } from "./types";
 
 
 
@@ -25,7 +27,6 @@ export class ViewService {
         .pipe(map((componentFactory: ComponentFactory<any>) => {
           const componentRef = options.container.createComponent(componentFactory);
           componentRef.instance.componentByIndex = componentByIndex;
-          //componentRef.instance.views = this.views;
           componentRef.instance.data = this.dataService.data;
          // componentRef.changeDetectorRef.detectChanges();
           return componentRef;
@@ -53,7 +54,7 @@ export class ViewService {
               }
               return;
             }
-            if (!!options.isIgnoredComponent && options.isIgnoredComponent(component)) {
+            if (this.isIgnoredComponent(options, component)) {
               ignoredComponent = component;
               return;
             }
@@ -62,16 +63,27 @@ export class ViewService {
               componentIndex++;
             }
     
-            const required = !!parent && 'Field' === parent.componentName && parent.required;
+            const required = !!parent && 'Field' === parent.componentType && parent.required;
             const componentBind = `componentByIndex[${componentIndex}]`;
             const formControlBind = !formGroupBind || !component.name ? '' : `                
               #inputbase
-              #formControl="ngModel"
-              [form]="${formGroupBind}"
+              
+              [(ngModel)]="${componentBind}.value"
               name="${component.name}"
-              [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
-              ${!required ? '' : 'required'}
+              
+
+               [form]="${formGroupBind}"
+               #formControl="ngModel"
+               
+               tacConstraints
             `;  
+
+//              ${!required ? '' : 'required'}
+         //     tacConstraints
+
+            // [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
+            // [(ngModel)]="${componentBind}.value"
+
             const cellEditorControlBind = !options.cellEditor ? '' : `
               [cellEditor]="cellEditor"
               [(ngModel)]="value"
@@ -89,8 +101,11 @@ export class ViewService {
               .split(/ *\n */)
               .join(' ');
 
+
+              //console.log('componentBind: ', componentBind,  ' component:', component);
+
             if (!!options.cellRenderer) { 
-              switch(component.componentName) {
+              switch(component.componentType) {
                 case 'Checkbox':
                   template.push(start ? `
                     <tac-checkbox 
@@ -111,7 +126,7 @@ export class ViewService {
               return;
             }
   
-            switch (component.componentName) {
+            switch (component.componentType) {
               case 'View':
                 template.push(start ? `
                 <tac-view>
@@ -171,6 +186,7 @@ export class ViewService {
                       <br/>
                   ` : `
                   </tf-panel>
+                  <br/>
                   `);
                   break;
                 }
@@ -180,6 +196,7 @@ export class ViewService {
                   text="${component.title ? component.title.text : ''}">
                 ` : `
                 </tf-panel>
+                <br/>
                 `);
                 break;
               case 'AsidePanel':
@@ -219,11 +236,14 @@ export class ViewService {
                     </tf-grid-row>`);
                 break;
               case 'Field':
+                const title = component.components[0].title;
+              //  cols="${!!component.size ? component.size.medium : 4}"
+                
                 template.push(start ? `
                 <tf-field 
-                  addClasses="${!!component.title.text && !!component.title.text.trim() ? 'tf-bold' : ''}"
-                  title="${!!component.title.text && !!component.title.text.trim() ? component.title.text : '&nbsp;'}" 
-                  cols="${!!component.cols ? component.cols : 4}">
+                  addClasses="${!!title.text && !!title.text.trim() ? 'tf-bold' : ''}"
+                  title="${!!title.text && !!title.text.trim() ? title.text : '&nbsp;'}" 
+                  [cols]="${!!component.size ? `{default:${component.size.medium},sm:${component.size.small},md:${component.size.medium},lg:${component.size.medium},xl:${component.size.large}}` : 4}">
                 ` : `
                 </tf-field>`);
                 break;
@@ -236,7 +256,7 @@ export class ViewService {
                         value="${!!component.value ? component.value.value : ''}" 
                          />` : ``);
                   break;
-              case 'Text':
+              case 'Input':
                 template.push(start
                   ? `
                   <tac-text-input
@@ -275,6 +295,16 @@ export class ViewService {
                       </tf-field>`);
                 }
                 break;
+              case 'Radio':
+                template.push(start 
+                  ? `
+                  <tac-radio     
+                      ${controlBind}
+                      [component]="${componentBind}"
+                      title="${component.title.text}">` 
+                  : `
+                  </tac-radio>`);
+                break;
               case 'Dropdown':
                 template.push(start 
                   ? `
@@ -307,6 +337,7 @@ export class ViewService {
                   </tac-chosen>`);
                 break;
               case 'DataGrid':
+                console.log('dataGrid:', component);
                 template.push(start
                   ? `
                   <tac-data-grid
@@ -348,7 +379,7 @@ export class ViewService {
             }
             return;
           }
-          if (!!options.isIgnoredComponent && options.isIgnoredComponent(component)) {
+          if (this.isIgnoredComponent(options, component)) {
             ignoredComponent = component;
             return;
           }
@@ -358,6 +389,12 @@ export class ViewService {
         });
       });
     return componentByIndex;
+  }
+
+
+  private isIgnoredComponent(options: CreateTemplate, component: Component) {
+    return !!options.isIgnoredComponent && options.isIgnoredComponent(component) 
+      || component.componentType === 'DataGridColumn';
   }
 
 }

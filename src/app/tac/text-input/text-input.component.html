@@ -4,6 +4,6 @@
     [name]="component.name"
     [typeinput]="typeinput" 
     [decimals]="decimals"
-    [disabled]="!data.access"
+    [disabled]="!component.access"
     [(ngModel)]="value"
     (blur)="doBlur($event)"></tf-input>

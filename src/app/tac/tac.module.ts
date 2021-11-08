@@ -31,11 +31,14 @@ import { TransactionComponent } from './transaction/transaction.component';
 import { CheckboxComponent } from './checkbox/checkbox.component';
 import { CellRendererComponent } from './cell-renderer/cell-renderer.component';
 import { TextComponent } from './text/text.component';
+import { TacConstraintsDirective } from './validation';
+import { RadioComponent } from './radio/radio.component';
 
 
 
 @NgModule({
   declarations: [
+    TacConstraintsDirective,
     ButtonComponent,
     FormComponent,
     TransactionComponent,
@@ -49,7 +52,8 @@ import { TextComponent } from './text/text.component';
     CheckboxComponent,
     CellRendererComponent,
     CellEditorComponent,
-    TextComponent
+    TextComponent,
+    RadioComponent
   ],
   imports: [
     TFUILibraryModule,
@@ -83,6 +87,7 @@ import { TextComponent } from './text/text.component';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    TacConstraintsDirective,
     ViewComponent,
     ButtonComponent,
     FormComponent,
@@ -96,7 +101,8 @@ import { TextComponent } from './text/text.component';
     CheckboxComponent,
     CellRendererComponent,
     CellEditorComponent,
-    TextComponent
+    TextComponent,
+    RadioComponent
   ]
 })
 export class TacModule { 

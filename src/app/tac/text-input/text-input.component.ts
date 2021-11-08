@@ -1,10 +1,11 @@
-import { Component, ElementRef, EventEmitter, forwardRef, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFEvent, TFInputComponent } from '@talentia/components';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
 import { DataService } from 'src/app/service/DataService';
 import { InputBaseComponent } from '../base/input-base.component';
+
 
 
 @Component({
@@ -16,14 +17,18 @@ import { InputBaseComponent } from '../base/input-base.component';
     multi: true,
     useExisting: forwardRef(() => TextInputComponent)
   }]
+  ,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TextInputComponent extends InputBaseComponent {
+export class TextInputComponent extends InputBaseComponent  {
 
 
   constructor(
-    private dataService: DataService
+    private dataService: DataService,
+    private changeDetectionRef: ChangeDetectorRef
   ) {
     super();
+   // changeDetectionRef.detach();
   }
 
 
@@ -38,18 +43,23 @@ export class TextInputComponent extends InputBaseComponent {
 
   private _value!: string;
 
-  data: any;
 
   @Input()
-  get value() {
-    return this._value;
-  }
+  value: any;
 
-  set value(value: string) {
-    //console.log('[text-input] set value(value:', value, ')');
-    this._value = value;
-    this.fireChange(value);
-  }
+  
+
+  // @Input()
+  // get value() {
+  //   return this.component.value;
+  //  // return this._value;
+  // }
+
+  // set value(value: string) {
+  //   //console.log('[text-input] set value(value:', value, ')');
+  //   this._value = value;
+  //   this.fireChange(value);
+  // }
 
   get styleClasses() {
     return `text-${(this.component.alignment || 'LEFT').toLowerCase()}`;
@@ -58,19 +68,12 @@ export class TextInputComponent extends InputBaseComponent {
   ngOnInit(): void {
     super.ngOnInit();
     this.configureFromFormat();
-
-
-    this.data = {
-      show: this.component.show,
-      access: this.component.access
-    };
-    
-    this.dataService.register(this);
-
   }
-  
+
+ 
+
   private configureFromFormat(): void {
-    console.log('[text-input] formatType: ', !this.component.format ? '' : this.component.format.formatType);
+ //  console.log('[text-input] formatType: ', !this.component.format ? '' : this.component.format.formatType);
     switch (!this.component.format ? '' : this.component.format.formatType) {
       case 'NumberFormat':
         this.typeinput = 'amount';
@@ -108,6 +111,7 @@ export class TextInputComponent extends InputBaseComponent {
   }
 
   writeValue(value: any): void {
+    console.log('[TextInputComponent] writeValue(value:', value, ')');
     this.value = value;
   }
 

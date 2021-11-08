@@ -9,7 +9,7 @@ import { ViewContainerComponent } from '../view-container/view-container.compone
 export class PageContentComponent extends ViewContainerComponent {
 
   isIgnoredComponent(component: any): boolean {
-    switch(component.componentName) {
+    switch(component.componentType) {
       case 'CommandsPanel':
       case 'AsidePanel':
         return true;

@@ -9,6 +9,7 @@ import {
   SimpleChanges,
   OnDestroy,
   ElementRef,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ViewService } from '../service/ViewService';
@@ -19,7 +20,8 @@ import { TFMessageService } from '@talentia/components';
 @Component({
   selector: 'app-view-container',
   templateUrl: './view-container.component.html',
-  styleUrls: ['./view-container.component.css']
+  styleUrls: ['./view-container.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChanges  {
 

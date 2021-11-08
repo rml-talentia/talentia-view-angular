@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFDateTimePickerComponent, TFDateTimeService } from '@talentia/components';
 import { InputBaseComponent } from '../base/input-base.component';
@@ -15,7 +15,8 @@ import { IAfterGuiAttachedParams } from '@ag-grid-community/core';
     provide: NG_VALUE_ACCESSOR,
     multi: true,
     useExisting: forwardRef(() => DatetimePickerComponent)
-  }]
+  }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DatetimePickerComponent extends InputBaseComponent  {
 

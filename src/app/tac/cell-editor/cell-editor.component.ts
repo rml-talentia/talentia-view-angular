@@ -1,10 +1,10 @@
-import { IAfterGuiAttachedParams } from '@ag-grid-community/core';
-import { ChangeDetectorRef, Component, ComponentRef, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { ColDef, IAfterGuiAttachedParams } from '@ag-grid-community/core';
+import { ChangeDetectorRef, Component, ComponentRef, Host, Inject, OnInit, Optional, ViewChild, ViewContainerRef } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { ICellEditorParams } from 'ag-grid-community';
 import { ColumnService } from 'src/app/service/ColumnService';
-import { ViewContainerComponent } from 'src/app/view-container/view-container.component';
+import { DataGridComponent } from '../data-grid/data-grid.component';
 
 @Component({
   selector: 'tac-cell-editor',
@@ -23,22 +23,28 @@ export class CellEditorComponent  implements ICellEditorAngularComp {
 
 
   constructor(
+    @Inject(DataGridComponent) private dataGrid: DataGridComponent,
     private columnService: ColumnService,
     private changeDetectorRef: ChangeDetectorRef) {
   }
 
+
+
   agInit(params: ICellEditorParams): void {
+    console.log('[CellEditorComponent] agInit(params:', params, ')');
     this.params = params;
     //this.params.colDef.field;
-    console.log('[tac-cell-editor] columnSerivce:', this.columnService);
+   // console.log('[tac-cell-editor] columnSerivce:', this.columnService);
 
   }
   
   afterGuiAttached(params?: IAfterGuiAttachedParams): void {
+    console.log('[CellEditorComponent] afterGuiAttached(params:', params, ')');
     if (!this.params.colDef.field) {
       return;
     }
     if (this.componentRef) {
+      console.log('[CellEditorComponent] afterGuiAttached... this.componentRef.destroy()');
       this.componentRef.destroy();
     }
     const column = this.columnService.columns[this.params.colDef.field];
@@ -46,7 +52,27 @@ export class CellEditorComponent  implements ICellEditorAngularComp {
     this.componentRef.instance.componentByIndex = column.data.components;
     this.componentRef.instance.cellEditor = this;
     this.componentRef.instance.value = this.params.value;
+
+
+    
+    // RowIndexReference support.
+    this.dataGrid.component.rowIndex = this.params.rowIndex;
+
+    // console.log(' this.dataGrid.component.row:',  this.dataGrid.component.row);
+    // console.log('this.dataGrid: ', this.dataGrid);
+    // console.log('this.params: ', this.params);
+    // console.log('params: ', params);
+    // console.log('containerRef: ', this.container);
+
+
+    // const column1 = this.dataGrid.component.components.find((column: any) => column.field === this.params.colDef.field);
+    // console.log('column:', column1);
+
+  ///  this.componentRef.instance.component = null;
+
+    console.log('[CellEditorComponent] afterGuiAttached... this.componentRef.changeDetectorRef.detectChanges()');
     this.componentRef.changeDetectorRef.detectChanges();
+    
     
     if (!this.delegate) {
       return;

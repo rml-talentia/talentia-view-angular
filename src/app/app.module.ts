@@ -24,6 +24,7 @@ import { DataService } from './service/DataService';
 import { CompilerService } from './service/CompilerService';
 import { ViewService } from './service/ViewService';
 import { FormatService } from './service/FormatService';
+import { DataGridService } from './service/DataGridService';
 
 /*
 Licence ag-Grid
@@ -64,6 +65,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     DataService,
     ViewService,
     FormatService,
+    DataGridService,
     {
       provide: COMPILER_OPTIONS,
       useValue: {},
