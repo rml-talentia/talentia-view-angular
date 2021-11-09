@@ -15,11 +15,17 @@ export class ContextService {
     private _userInfo!: Observable<TFUserInfo>;
 
     getContextPath(): string {
-        return '/accounting';
+        const i = window.location.pathname
+            .indexOf('/', 1);
+        return i < 0 
+            ? window.location.pathname 
+            : window.location.pathname.substr(0, i);
     }
 
     getSessionId(): string {
-        return window.location.href.replace(/.*sessionId=/, '');
+        return window.location.href
+            .replace(/.*sessionId=/, '')
+            .replace(/&.*/, '');
     }
 
     getUserInfo(): Observable<TFUserInfo> {
