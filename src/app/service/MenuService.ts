@@ -2,12 +2,16 @@ import { HttpClient } from "@angular/common/http";
 import { ElementRef, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
+import { AppService } from "./AppService";
+import { ContextService } from "./ContextService";
 
 
 @Injectable()
 export class MenuService {
 
-    constructor(private http: HttpClient) {
+    constructor(
+        private contextService: ContextService,
+        private http: HttpClient) {
 
     }
 
@@ -18,7 +22,7 @@ export class MenuService {
     getMenu(): Observable<any> {
        const sessionId = this._getSessionId();
        return this.http
-        .get(`/accounting/services/private/menu/menuNodes?sessionId=${sessionId}`)
+        .get(`${this.contextService.getContextPath()}/services/private/menu/menuNodes?sessionId=${sessionId}`)
         .pipe(map((data: any) => {
             return {
                 isSearchable: true,
