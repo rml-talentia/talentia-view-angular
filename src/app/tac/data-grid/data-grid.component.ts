@@ -7,7 +7,7 @@ import { AppService } from 'src/app/service/AppService';
 import { EditableCallbackParams, NewValueParams, ValueFormatterParams } from 'ag-grid-community';
 import { CompilerService } from 'src/app/service/CompilerService';
 import { TransactionService } from 'src/app/service/TransactionService';
-import { ViewService } from 'src/app/service/ViewService';
+import { TemplateService } from 'src/app/service/TemplateService';
 import { CellEditorComponent } from '../cell-editor/cell-editor.component';
 import { ColumnService } from 'src/app/service/ColumnService';
 import { concat, Observable } from 'rxjs';
@@ -15,8 +15,8 @@ import { CellRendererComponent } from '../cell-renderer/cell-renderer.component'
 import { FormatService } from 'src/app/service/FormatService';
 import { DataGridService } from 'src/app/service/DataGridService';
 import { EventService } from 'src/app/service/EventService';
-import { ActionService } from 'src/app/service/ActionService';
 import { AjaxService } from 'src/app/service/AjaxService';
+import { BaseComponent } from '../base/component-base.component';
 
 
 
@@ -32,10 +32,9 @@ import { AjaxService } from 'src/app/service/AjaxService';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DataGridComponent implements OnInit, OnDestroy, AfterViewInit, AfterContentInit {
+export class DataGridComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit, AfterContentInit {
 
-  @Input()
-  component: any | null = null;
+ 
   @Input()
   rowHeight: number = 40;
   @ViewChild('agGrid')
@@ -61,12 +60,14 @@ export class DataGridComponent implements OnInit, OnDestroy, AfterViewInit, Afte
     private dataGridService: DataGridService,
     private appService: AppService,
     private compilerService: CompilerService,
-    private viewService: ViewService,
+    private viewService: TemplateService,
     private ngZone: NgZone,
     private columnService: ColumnService,
     private formatService: FormatService,
     private eventService: EventService,
-    private ajaxService: AjaxService) { }
+    private ajaxService: AjaxService) { 
+      super();
+  }
 
   getActions() {
     return this.component.components.filter((component: any /* Component */) => component.componentType === 'DataGridColumn');

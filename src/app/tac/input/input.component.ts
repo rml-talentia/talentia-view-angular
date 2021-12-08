@@ -9,18 +9,18 @@ import { InputBaseComponent } from '../base/input-base.component';
 
 
 @Component({
-  selector: 'tac-text-input',
-  templateUrl: './text-input.component.html',
-  styleUrls: ['./text-input.component.css'],
+  selector: 'tac-input',
+  templateUrl: './input.component.html',
+  styleUrls: ['./input.component.css'],
   providers: [{
     provide: NG_VALUE_ACCESSOR,
     multi: true,
-    useExisting: forwardRef(() => TextInputComponent)
+    useExisting: forwardRef(() => InputComponent)
   }]
   ,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TextInputComponent extends InputBaseComponent  {
+export class InputComponent extends InputBaseComponent  {
 
 
   constructor(
@@ -41,25 +41,14 @@ export class TextInputComponent extends InputBaseComponent  {
   @Output() 
   blur: EventEmitter<TFEvent> = new EventEmitter<TFEvent>();
 
-  private _value!: string;
-
-
   @Input()
-  value: any;
+  get value() {
+    return this.component.value;
+  }
 
-  
-
-  // @Input()
-  // get value() {
-  //   return this.component.value;
-  //  // return this._value;
-  // }
-
-  // set value(value: string) {
-  //   //console.log('[text-input] set value(value:', value, ')');
-  //   this._value = value;
-  //   this.fireChange(value);
-  // }
+  set value(value: any) {
+    this.component.value = value;
+  }
 
   get styleClasses() {
     return `text-${(this.component.alignment || 'LEFT').toLowerCase()}`;

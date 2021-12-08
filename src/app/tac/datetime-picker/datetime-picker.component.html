@@ -7,10 +7,12 @@
 <tf-datetime-picker
     *ngIf="component.access"
     [timepicker]="false"
-    [todayBtn]="true"
-    [autoCompletion]="true"
+    [todayBtn]="true"    
     [datepicker]="{ showOnFocus: false, autoclose: true, format: 'dd/mm/yyyy' }"
+    startDate="1900-01-01"
+    endDate="7999-12-31"
     class="text" 
     typeinput="text" 
     [disabled]="!component.access"
-    [(ngModel)]="rawValue"></tf-datetime-picker>
+    [(ngModel)]="rawValue"
+    (blur)="onBlur($event)"></tf-datetime-picker>

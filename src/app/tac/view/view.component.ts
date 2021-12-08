@@ -3,8 +3,9 @@ import { NgForm } from '@angular/forms';
 import { FormService } from 'src/app/service/FormService';
 import { ICellEditorAngularComp } from "@ag-grid-community/angular";
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
-import { ViewService } from 'src/app/service/ViewService';
+import { TemplateService } from 'src/app/service/TemplateService';
 import { TFMessageService } from '@talentia/components';
+import { BaseComponent } from '../base/component-base.component';
 
 /**
  * This component is used as root component in dynamic templates compiled by TemplateService.
@@ -17,7 +18,7 @@ import { TFMessageService } from '@talentia/components';
   styleUrls: ['./view.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ViewComponent implements OnInit, OnDestroy, AfterContentInit, AfterViewInit {
+export class ViewComponent extends BaseComponent implements OnInit, OnDestroy, AfterContentInit, AfterViewInit {
 
   @ContentChildren(NgForm)
   formElements!: QueryList<NgForm>;
@@ -31,8 +32,9 @@ export class ViewComponent implements OnInit, OnDestroy, AfterContentInit, After
   constructor(
     private formService: FormService,
     public changeDetectorRef: ChangeDetectorRef,
-    private viewService: ViewService 
-  ) {}
+    private viewService: TemplateService) {
+    super();
+  }
 
    
   ngOnInit(): void {

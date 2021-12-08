@@ -12,7 +12,7 @@ import { Component } from "./types";
 
 
 @Injectable()
-export class ViewService {    
+export class TemplateService {    
  
     constructor(
       private compilerService: CompilerService,
@@ -259,11 +259,11 @@ export class ViewService {
               case 'Input':
                 template.push(start
                   ? `
-                  <tac-text-input
+                  <tac-input
                     ${controlBind}
                     [component]="${componentBind}">                
                   ` : `
-                  </tac-text-input>
+                  </tac-input>
                   `);
                 break;
               case 'DatePicker':

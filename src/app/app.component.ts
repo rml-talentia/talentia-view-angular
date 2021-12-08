@@ -255,6 +255,13 @@ export class AppComponent implements OnInit {
     } else {
       iframeWrapper.classList.remove('menu-toggled');
     }
+  } 
+
+  designMode: boolean = false;
+
+  
+  toggleDesignMode() {
+    this.designMode = true;
   }
 
 }

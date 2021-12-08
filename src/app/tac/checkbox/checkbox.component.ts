@@ -21,29 +21,12 @@ export class CheckboxComponent extends InputBaseComponent {
   @Input()
   value!: boolean;
   
-  data: any = {
-    show: true,
-    access: true
-  };
-
-
   constructor(
     private dataService: DataService
   ) {
     super();
   }
 
-  ngOnInit() {
-    super.ngOnInit();
-
-    this.data = {
-      show: this.component.show,
-      access: this.component.access
-    };
-    this.dataService.register(this);
-
-  }
-  
   get toggle(): boolean {
     return !this.cellEditor && !this.cellRenderer;
   }

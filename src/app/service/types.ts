@@ -1,5 +1,7 @@
 import { ReferenceService } from "./ReferenceService";
 
+import * as uuid from 'uuid';
+import { BaseComponent } from "../tac/base/component-base.component";
 
 export type Action = {
     actionType: string,
@@ -15,21 +17,22 @@ export type Event = {
 export type Reference = { 
     referenceType: string,
     parent: Reference | null, 
-    [key: string]: any ,
-
+    [key: string]: any
 };
 
 export class Component {
 
     [key: string]: any;
     public parent: Component | null = null;
-   // public components: Component[] = [];
-   // public events: Event[] = [];
-   // public actions: Action[] = [];
-   // public componentType: string;
+    private _id: string = uuid.v4(); 
     private _options: any;
     private _data: any;
     private _bindings: any;
+    /**
+     * The component as object is associated to component view (angular),
+     * Because it is used by IntrospectionService.
+     */
+    public _view: BaseComponent | null = null;
 
     constructor(
         private _referenceService: ReferenceService,
@@ -38,24 +41,11 @@ export class Component {
         this.componentType = options.componentType;
         this._options = options; // TODO : deepFreeze ? https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
         this.parent = parent;
-
         
+
         this.populate();
-        
-
-        // this.populateComponents();
-        // this.populateEvents();
-        // this.populateActions();
-        // this.populateReferences();
         this.defineProperties();
     }
-
-    // static isComponent(value: any): boolean {
-    //     return null !== value 
-    //         && 'object' === typeof value 
-    //         && 'componentType' in value 
-    //         && 'bindings' in value;
-    // }
 
     static isBindable(value: any): boolean {
         return null !== value 
@@ -166,8 +156,12 @@ export class Component {
         const object: any = {};
         for (const key in this) {
             switch (key) {
+                // TODO : all theses hardcoded ignored properties will be removed
+                //        The view API (server side) should provide a schema of each type of component.
                 case 'modelType':
                 case 'componentType':
+                case '_id':
+                case '_view':
                 case '_referenceService':
                 case '_data':
                 case '_bindings':
@@ -176,7 +170,6 @@ export class Component {
                 case 'events':
                 case 'actions':
                 case 'parent':
-                   // case 'parameters':
                     continue;
             }
             let value: any = this[key];

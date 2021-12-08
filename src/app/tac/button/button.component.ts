@@ -3,6 +3,7 @@ import { FormGroup } from '@angular/forms';
 import { TFEvent } from '@talentia/components';
 import { ActionService } from 'src/app/service/ActionService';
 import { FormService } from 'src/app/service/FormService';
+import { BaseComponent } from '../base/component-base.component';
 
 @Component({
   selector: 'tac-button',
@@ -10,17 +11,16 @@ import { FormService } from 'src/app/service/FormService';
   styleUrls: ['./button.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ButtonComponent implements OnInit {
+export class ButtonComponent extends BaseComponent implements OnInit {
 
   @Input()
   formName!: string;
-  @Input()
-  component!: any;
 
   constructor(
     private actionService: ActionService,
-    private formService: FormService
-  ) { }
+    private formService: FormService) {
+    super();
+  }
 
   ngOnInit(): void {
   }
@@ -40,22 +40,6 @@ export class ButtonComponent implements OnInit {
   onSelected(event: TFEvent) {
     console.log('[Button] onSelected(event:', event, ') component:', this.component);
     this.actionService.submit(this.component.action);
-  //   console.log('submit:', {
-  //     form: this.formName,
-  //     button: {
-  //       data: this.component
-  //     }
-  //   });
-  //  // this.form.markAllAsTouched();
-
-    
-
-  //   this.formService.submit({
-  //     form: this.formName,
-  //     button: {
-  //       data: this.component
-  //     }
-  //   });
   }
 
 }

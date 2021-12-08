@@ -12,7 +12,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
 import { ViewContainerComponent } from './view-container/view-container.component';
 import { SimpleNotificationsModule } from 'angular2-notifications';
-import { TFUILibraryModule } from '@talentia/components';
+import { TFLocalizationService, TFUILibraryModule } from '@talentia/components';
 import { TFShellLibraryModule } from '@talentia/components/shell';
 import { MenuService } from './service/MenuService';
 import { ContextService } from './service/ContextService';
@@ -22,9 +22,10 @@ import { CommandsPanelComponent } from './commands-panel/commands-panel.componen
 import { TransactionService } from './service/TransactionService';
 import { DataService } from './service/DataService';
 import { CompilerService } from './service/CompilerService';
-import { ViewService } from './service/ViewService';
+import { TemplateService } from './service/TemplateService';
 import { FormatService } from './service/FormatService';
 import { DataGridService } from './service/DataGridService';
+import { ViewEditorComponent } from './view-editor/view-editor.component';
 
 /*
 Licence ag-Grid
@@ -32,6 +33,19 @@ Licence ag-Grid
 CompanyName=TALENTIA SOFTWARE FRANCE,LicensedGroup=R&D,LicenseType=MultipleApplications,LicensedConcurrentDeveloperCount=5,LicensedProductionInstancesCount=50,AssetReference=AG-015029,ExpiryDate=5_July_2022_[v2]_MTY1Njk3NTYwMDAwMA==27a33a25fbcf6f91189a022d63c7d5a4
 
 */
+
+function localizationServiceFactory() {
+  const localizationService = new TFLocalizationService();
+  localizationService.culture = 'fr-FR';
+  localizationService.dateFormat = 'DD/MM/YYYY';
+  localizationService.dateSeparator = '/';
+  localizationService.decimalSeparator = ',';
+  localizationService.groupSeparator = ' ';
+  localizationService.numberDecimalPlaces = 3;
+  localizationService.timeFormat = 'HH:mm:ss';
+  localizationService.timeSeparator = ':';
+  return localizationService;
+}
 
 
 export function createCompiler(compilerFactory: CompilerFactory) {
@@ -44,7 +58,8 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     ViewContainerComponent,
     PageContentComponent,
     AsidePanelComponent,
-    CommandsPanelComponent
+    CommandsPanelComponent,
+    ViewEditorComponent
   ],
   imports: [ 
     BrowserAnimationsModule,
@@ -63,7 +78,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     TransactionService,   
     CompilerService,
     DataService,
-    ViewService,
+    TemplateService,
     FormatService,
     DataGridService,
     {
@@ -80,6 +95,10 @@ export function createCompiler(compilerFactory: CompilerFactory) {
       provide: Compiler,
       useFactory: createCompiler,
       deps: [CompilerFactory]
+    },
+    {
+      provide: TFLocalizationService,
+      useFactory: localizationServiceFactory
     }
   ],
   bootstrap: [AppComponent]

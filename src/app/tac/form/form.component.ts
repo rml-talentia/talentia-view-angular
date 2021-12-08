@@ -1,6 +1,7 @@
 import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { TFCollapsePanelComponent, TFMessage, TFMessages, TFMessagesComponent, TFMessageService, TFMessageType } from '@talentia/components';
+import { BaseComponent } from '../base/component-base.component';
 
 @Component({
   selector: 'tac-form',
@@ -11,7 +12,7 @@ import { TFCollapsePanelComponent, TFMessage, TFMessages, TFMessagesComponent, T
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FormComponent implements OnInit, AfterViewChecked, AfterViewInit {
+export class FormComponent extends BaseComponent implements OnInit, AfterViewChecked, AfterViewInit {
 
   @Input('data')
   data: any;
@@ -19,12 +20,11 @@ export class FormComponent implements OnInit, AfterViewChecked, AfterViewInit {
   @Input()
   formGroup!: FormGroup;
 
-  // @ViewChild('messages')
-  // messagesRef!: ComponentRef<TFMessagesComponent>;
-
-  constructor(private messageService: TFMessageService) { 
-    console.log('[FormComponent] constructor()');
+  constructor(
+    private messageService: TFMessageService) { 
+    super();
   }
+
   ngAfterViewInit(): void {
     this.messageService.clearMessages();
     this.data.errors.forEach((error: any) => {

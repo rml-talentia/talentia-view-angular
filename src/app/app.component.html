@@ -15,6 +15,11 @@
     quick-actions-right 
     icon="icon-power" 
     tooltip="Quit Application"></tf-flat-button>
+  <tf-flat-button 
+    toolbar-right-before 
+    icon="fal fa-edit"
+    [disabled]="designMode" 
+    (selected)="toggleDesignMode()"></tf-flat-button>
   <tf-breadcrumb
     titlebar-breadcrumb 
     id="tf-breadcrumb" 
@@ -28,3 +33,5 @@
   <app-page-content 
     page-content></app-page-content>  
 </tf-shell>
+<app-view-editor
+  *ngIf="designMode"></app-view-editor>

@@ -23,15 +23,15 @@ tf-simple-panel.tac-pixel-perfect > div {
 }
 
 
-tac-text-input > tf-input.text-left input.form-control {
+tac-input > tf-input.text-left input.form-control {
     text-align: left !important;
 }
 
-tac-text-input > tf-input.text-right input.form-control {
+tac-input > tf-input.text-right input.form-control {
     text-align: right !important;
 }
 
-tac-text-input > tf-input.text-center input.form-control {
+tac-input > tf-input.text-center input.form-control {
     text-align: center !important;
 }
 

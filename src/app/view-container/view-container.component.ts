@@ -12,7 +12,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ViewService } from '../service/ViewService';
+import { TemplateService } from '../service/TemplateService';
 import { tap } from 'rxjs/operators';
 import { TFMessageService } from '@talentia/components';
 
@@ -35,7 +35,7 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
  
   constructor(
     public changeDetectorRef: ChangeDetectorRef,
-    private viewService: ViewService) {}
+    private viewService: TemplateService) {}
 
   ngAfterViewInit() {
     window.TalentiaViewBridge._viewComponent = this;

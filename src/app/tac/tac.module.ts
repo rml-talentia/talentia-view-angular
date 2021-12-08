@@ -26,7 +26,7 @@ import { ChosenComponent } from './chosen/chosen.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { ButtonComponent } from './button/button.component';
 import { ViewComponent } from './view/view.component';
-import { TextInputComponent } from './text-input/text-input.component';
+import { InputComponent } from './input/input.component';
 import { TransactionComponent } from './transaction/transaction.component';
 import { CheckboxComponent } from './checkbox/checkbox.component';
 import { CellRendererComponent } from './cell-renderer/cell-renderer.component';
@@ -47,7 +47,7 @@ import { RadioComponent } from './radio/radio.component';
     DropdownComponent,
     ChosenComponent,
     DatetimePickerComponent,
-    TextInputComponent,
+    InputComponent,
     ViewComponent,
     CheckboxComponent,
     CellRendererComponent,
@@ -97,7 +97,7 @@ import { RadioComponent } from './radio/radio.component';
     DropdownComponent,
     ChosenComponent,
     DatetimePickerComponent,
-    TextInputComponent,
+    InputComponent,
     CheckboxComponent,
     CellRendererComponent,
     CellEditorComponent,

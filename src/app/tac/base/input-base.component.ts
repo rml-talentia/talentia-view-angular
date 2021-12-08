@@ -1,24 +1,29 @@
 
-import { IAfterGuiAttachedParams } from "@ag-grid-community/core";
 import { AfterContentChecked, AfterViewChecked, Directive, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
 import { ControlValueAccessor, FormGroup } from "@angular/forms";
 import { ICellEditorAngularComp } from "ag-grid-angular";
-import { DataSupplier } from "src/app/service/DataService";
 import { CellEditorComponent } from "../cell-editor/cell-editor.component";
 import { CellRendererComponent } from "../cell-renderer/cell-renderer.component";
+import { BaseComponent } from "./component-base.component";
+
+
+class Step {
+
+}
+
+class InputOn extends Step {
+}
 
 
 @Directive({
     selector: '[tac-input-base-component]'
 })
-export abstract class InputBaseComponent implements OnInit, ControlValueAccessor,  AfterViewChecked, AfterContentChecked, OnChanges {
+export abstract class InputBaseComponent extends BaseComponent implements OnInit, ControlValueAccessor {
   
     @Input()
     form!: FormGroup;
     @Input()
     name!: string;
-    @Input()
-    component!: any;    
     @Input()
     title!: string;
     @Input()
@@ -26,13 +31,18 @@ export abstract class InputBaseComponent implements OnInit, ControlValueAccessor
     @Input()
     cellRenderer!: CellRendererComponent;
     
-    
-    get lastUpdate() {
-        return new Date().getTime();
-      }
-
     protected onchange: any;
     protected ontouched: any;
+    
+    abstract createCellEditor(): ICellEditorAngularComp;
+    abstract writeValue(value: any): void;
+    
+    ngOnInit(): void {
+        // Cell editor support.
+        if (!!this.cellEditor) {
+            this.cellEditor.delegate = this.createCellEditor();
+        }        
+    }
 
     protected fireChange(newValue: any): void {
         if (!!this.onchange) {
@@ -46,46 +56,9 @@ export abstract class InputBaseComponent implements OnInit, ControlValueAccessor
         }
     }
 
-    ngOnInit(): void {
-        if (this.cellEditor) {
-            this.cellEditor.delegate = this.createCellEditor();
-        }        
-    }
-
     protected isInCellEditor(): boolean {
         return null !== this.component.getClosest('DataGrid');
     }
-
-
-    ngAfterViewChecked(): void {
-   //     if (undefined === this.changeCount) this.changeCount = 0;
-
-   }
-   ngAfterContentChecked(): void {
-   
-   }
-
-   ngOnChanges(changes: SimpleChanges): void {
-    
-   }
-
-    abstract createCellEditor(): ICellEditorAngularComp;
-
-    // createData(): any {
-    //     return {};
-    // }
-
-    // getName(): string {
-    //     return this.component.name || null;
-    // }
-    
-    // private _data: any;
-
-    // getData() {
-    //     return undefined !== this._data ? this._data : (this._data = this.createData()); 
-    // }
-
-    abstract writeValue(value: any): void;
 
     registerOnChange(onchange: any): void {
         this.onchange = onchange;
