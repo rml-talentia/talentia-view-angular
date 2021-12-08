@@ -145,10 +145,8 @@ export class AppComponent implements OnInit {
   }
 
   showView(view: any): Observable<any> {
-    console.log(view);
-   
     view = this.referenceService.toInstance(view);
-    console.log('[APP] showView(view: ', view, ')');
+    console.debug('[APP] showView(view:', view, ')');  
     // Remove previous view error messages.
     this.messageService.clearMessages();
     // Slit view into three view-container.

@@ -30,9 +30,7 @@ export class ViewComponent extends BaseComponent implements OnInit, OnDestroy, A
   name!: string;
 
   constructor(
-    private formService: FormService,
-    public changeDetectorRef: ChangeDetectorRef,
-    private viewService: TemplateService) {
+    public changeDetectorRef: ChangeDetectorRef) {
     super();
   }
 

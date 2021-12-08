@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core
 import { FormGroup } from '@angular/forms';
 import { TFEvent } from '@talentia/components';
 import { ActionService } from 'src/app/service/ActionService';
-import { FormService } from 'src/app/service/FormService';
 import { BaseComponent } from '../base/component-base.component';
 
 @Component({
@@ -17,8 +16,7 @@ export class ButtonComponent extends BaseComponent implements OnInit {
   formName!: string;
 
   constructor(
-    private actionService: ActionService,
-    private formService: FormService) {
+    private actionService: ActionService) {
     super();
   }
 
