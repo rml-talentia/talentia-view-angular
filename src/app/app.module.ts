@@ -20,7 +20,6 @@ import { PageContentComponent } from './page-content/page-content.component';
 import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
 import { TransactionService } from './service/TransactionService';
-import { DataService } from './service/DataService';
 import { CompilerService } from './service/CompilerService';
 import { TemplateService } from './service/TemplateService';
 import { FormatService } from './service/FormatService';
@@ -77,7 +76,6 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     ContextService,
     TransactionService,   
     CompilerService,
-    DataService,
     TemplateService,
     FormatService,
     DataGridService,

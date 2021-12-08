@@ -39,7 +39,6 @@ export class ChosenComponent extends InputBaseComponent implements  AfterViewIni
     // private zone: NgZone,
     private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient,
-    //private dataService: DataService,
     private transactionService: TransactionService,
     private eventService: EventService,
     private dataGridService: DataGridService) { 

@@ -3,7 +3,6 @@ import { ComponentFactory, ComponentRef, Injectable, ViewContainerRef } from "@a
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { visit } from "../tac/util";
-import { DataService } from "./DataService";
 import { CompilerService } from "./CompilerService";
 import { TFGridColConfig } from "@talentia/components/lib/models/tf-grid-col-config.model";
 import { Component } from "./types";
@@ -15,8 +14,7 @@ import { Component } from "./types";
 export class TemplateService {    
  
     constructor(
-      private compilerService: CompilerService,
-      private dataService: DataService) {}
+      private compilerService: CompilerService) {}
 
     createAndCompileTemplate(options: CreateAndCompileTemplate): Observable<ComponentRef<any>> {
       const template = this.createTemplate(options);
@@ -27,7 +25,7 @@ export class TemplateService {
         .pipe(map((componentFactory: ComponentFactory<any>) => {
           const componentRef = options.container.createComponent(componentFactory);
           componentRef.instance.componentByIndex = componentByIndex;
-          componentRef.instance.data = this.dataService.data;
+          //componentRef.instance.data = this.dataService.data;
          // componentRef.changeDetectorRef.detectChanges();
           return componentRef;
         }));

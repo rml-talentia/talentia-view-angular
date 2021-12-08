@@ -3,7 +3,6 @@ import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/for
 import { TFEvent, TFInputComponent } from '@talentia/components';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
-import { DataService } from 'src/app/service/DataService';
 import { InputBaseComponent } from '../base/input-base.component';
 
 
@@ -24,11 +23,8 @@ export class InputComponent extends InputBaseComponent  {
 
 
   constructor(
-    private dataService: DataService,
-    private changeDetectionRef: ChangeDetectorRef
-  ) {
+    private changeDetectionRef: ChangeDetectorRef) {
     super();
-   // changeDetectionRef.detach();
   }
 
 

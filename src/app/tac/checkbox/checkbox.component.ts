@@ -2,7 +2,6 @@ import { IAfterGuiAttachedParams } from '@ag-grid-community/core';
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
-import { DataService } from 'src/app/service/DataService';
 import { InputBaseComponent } from '../base/input-base.component';
 
 @Component({
@@ -21,9 +20,7 @@ export class CheckboxComponent extends InputBaseComponent {
   @Input()
   value!: boolean;
   
-  constructor(
-    private dataService: DataService
-  ) {
+  constructor() {
     super();
   }
 
