@@ -10,7 +10,6 @@ import { AppService } from './service/AppService';
 import { toArray } from 'rxjs/operators';
 import { findByComponentType } from './tac/util';
 import { TFLocalizationService, TFMessageService } from '@talentia/components';
-import { FormService } from './service/FormService';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
 import { ReferenceService } from './service/ReferenceService';
 import { ActionService } from './service/ActionService';
@@ -44,7 +43,6 @@ export function localizationServiceFactory() {
       useFactory: localizationServiceFactory
     },
     AppService,
-    FormService,
     ReferenceService,
     MutationService,
     ActionService,
@@ -79,10 +77,8 @@ export class AppComponent implements OnInit {
     private menuService: MenuService,
     private contextService: ContextService,
     private appService: AppService,
-    private formService: FormService,
     private referenceService: ReferenceService) {
       this.appService.postConstruct(this);
-      this.formService.postConstruct(this);
     }
 
   ngOnInit(): void {

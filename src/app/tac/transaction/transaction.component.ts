@@ -2,7 +2,6 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, On
 import { FormGroup } from '@angular/forms';
 import { TFMessageService, TFMessageType } from '@talentia/components';
 import { DataService } from 'src/app/service/DataService';
-import { FormService } from 'src/app/service/FormService';
 
 @Component({
   selector: 'tac-transaction',
@@ -28,7 +27,6 @@ export class TransactionComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private messageService: TFMessageService,
-    private formService: FormService,
     private dataService: DataService
   ) { }
 
@@ -39,22 +37,10 @@ export class TransactionComponent implements OnInit, OnDestroy, AfterViewInit {
     this.name = this.component.name;
     this.data = Object.assign({}, this.component.data); // Clone form data to keep original values.
     this.dataService.register(this);
-  
-
-    // Register form's FormGroup.
-    this.formService.register({
-      data: this.component,
-      group: this.form
-    });
-
   }
 
   ngOnDestroy(): void {
     this.dataService.unregister(this.component);  
-    this.formService.unregister({
-      data: this.component,
-      group: this.form
-    });
   }
 
   ngAfterViewInit(): void {
