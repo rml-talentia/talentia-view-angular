@@ -62,7 +62,7 @@ export class ReferenceService {
         
         const parentValue = this.getParentValue(component, reference);
         switch (reference.referenceType) {
-            case 'Value':
+            case 'ValueReference':
                 return reference.value;
             case 'AtKeyReference':
                 return null === parentValue ? null : this.asValue(parentValue[reference.key]);
@@ -178,7 +178,7 @@ export class ReferenceService {
     setValue(component: Component, reference: Reference, value: any): void {
         const parentValue = this.getParentValue(component, reference);
         switch (reference.referenceType) {
-            case 'Value': // TODO : rename ValueReference
+            case 'ValueReference':
                 reference.value = value;
                 return;
             case 'AtKeyReference':
