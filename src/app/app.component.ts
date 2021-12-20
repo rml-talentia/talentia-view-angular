@@ -16,6 +16,7 @@ import { ActionService } from './service/ActionService';
 import { MutationService } from './service/MutationService';
 import { AjaxService } from './service/AjaxService';
 import { EventService } from './service/EventService';
+import { ToolsService } from './service/ToolsService';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -47,7 +48,8 @@ export function localizationServiceFactory() {
     MutationService,
     ActionService,
     AjaxService,
-    EventService
+    EventService,
+    ToolsService
   ]
 })
 export class AppComponent implements OnInit {
@@ -70,13 +72,12 @@ export class AppComponent implements OnInit {
 
   constructor(
     private messageService: TFMessageService,
-    private applicationRef: ApplicationRef,
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private changeDetectorRef: ChangeDetectorRef,
+    //private applicationRef: ApplicationRef,
     private transactionService: TransactionService,
     private menuService: MenuService,
     private contextService: ContextService,
     private appService: AppService,
+    private toolsService: ToolsService,
     private referenceService: ReferenceService) {
       this.appService.postConstruct(this);
     }
@@ -124,7 +125,7 @@ export class AppComponent implements OnInit {
     
     this.hideLegacyView();
     this.navigationHistory = this.createNavigationHistory(view);
-    this.currentView = view;
+    //this.currentView = view;
 
     // Share view's transaction infos through other services and components.
     (this.transactionService as WritableTransactionService)
@@ -142,6 +143,7 @@ export class AppComponent implements OnInit {
 
   showView(view: any): Observable<any> {
     view = this.referenceService.toInstance(view);
+    this.currentView = view;
     console.debug('[APP] showView(view:', view, ')');  
     // Remove previous view error messages.
     this.messageService.clearMessages();

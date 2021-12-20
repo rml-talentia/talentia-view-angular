@@ -6,10 +6,12 @@ import { __exportStar } from 'tslib';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 import { TacModule } from './app/tac/tac.module';
+import { ToolsService } from './app/service/ToolsService';
 
 declare global {
   interface Window { 
     TalentiaViewBridge: any; 
+    ToolsService: ToolsService;
   }
 }
 

@@ -30,7 +30,7 @@ export class Component {
     private _bindings: any;
     /**
      * The component as object is associated to component view (angular),
-     * Because it is used by IntrospectionService.
+     * Because it is used by ToolsService.
      */
     public _view: BaseComponent | null = null;
 
