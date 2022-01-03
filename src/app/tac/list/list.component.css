@@ -1,0 +1,35 @@
+
+.tac-list-wrapper {
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    position: absolute;
+    inset: 0;
+    overflow: hidden; 
+    border: 1px solid rgba(0,0,0,.1); /* .dropdown-menu */
+}
+
+.tac-list-viewport {
+    flex: 1;    
+    overflow: hidden; 
+}
+
+.tac-list-viewport > .dropdown-menu {
+    display: block;
+    position: relative;
+    top: unset;
+    float: unset;
+    overflow: hidden;    
+    border: 0 !important;
+}
+
+.tac-list-scrollbar {
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 1;
+}
+
+.tac-list-scrollbar-content {
+    position: relative;
+    width: 1px;
+}

@@ -1,9 +1,40 @@
-<tf-input 
-    #input
-    [addClasses]="styleClasses"
-    [name]="component.name"
-    [typeinput]="typeinput" 
-    [decimals]="decimals"
-    [disabled]="!component.access"
-    [(ngModel)]="value"
-    (blur)="doBlur($event)"></tf-input>
+<span>
+    <tf-input 
+        center
+        #input
+        #inputbase
+        [addClasses]="styleClasses"
+        [name]="component.name"
+        [typeinput]="typeinput" 
+        [decimals]="decimals"
+        [disabled]="!component.access"
+        [(ngModel)]="value"
+        (blur)="doBlur($event)"></tf-input>
+    <span
+        style="
+            position: absolute;
+            top: 7px;
+            right: 11px;
+            z-index: 4;">
+        <i 
+            aria-hidden="true" 
+            class="fa fa-times" 
+            title="Deselect this choice"
+            style="
+                display: none;
+                width: 1rem;
+                color: #888 !important;"></i>
+        <i
+            aria-hidden="true" 
+            class="fa fa-chevron-down"
+            (click)="doClick($event)"></i>
+    </span>
+</span>
+<ng-content></ng-content>
+<ng-template
+    let-component
+    #dropdown>
+    <tac-list
+        [component]="component.components[0]">
+    </tac-list>
+</ng-template>

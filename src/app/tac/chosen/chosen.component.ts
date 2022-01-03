@@ -1,9 +1,8 @@
 
 import { HttpClient } from '@angular/common/http';
-import { AfterContentInit, AfterViewChecked, AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChild, forwardRef,  Host, Inject, Input, NgZone, OnChanges, OnInit, Optional, SimpleChanges, SkipSelf, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { TFChosenComponent, TFEvent, TFPanelComponent } from '@talentia/components';
-import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChild, forwardRef, Input, TemplateRef, ViewChild } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { TFChosenComponent, TFEvent } from '@talentia/components';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
 //import { SelectItem } from '@talentia/components/lib/ui/chosen/tf-select-item';
@@ -184,7 +183,7 @@ export class ChosenComponent extends InputBaseComponent implements  AfterViewIni
 
 
   writeValue(value: any): void {
-    console.log('[ChosenComponent] writeValue(value:', value, ')');
+   // console.log('[ChosenComponent] writeValue(value:', value, ')');
 //    if (value !== this.value) {
 //     this.value = value;
 //     this.cd.markForCheck();

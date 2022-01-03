@@ -1,0 +1,13 @@
+<div
+    #glasspanel
+    [style]="glasspanelStyle">
+    
+    <div 
+        *ngIf="!!templateRef"
+        class="tac-dropdown-panel tf-box-shadow"       
+        [style]="dropdownStyle">
+        <ng-container
+            *ngTemplateOutlet="templateRef; context: context"></ng-container>
+    </div>
+
+</div>

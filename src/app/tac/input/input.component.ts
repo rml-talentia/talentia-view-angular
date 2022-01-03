@@ -1,9 +1,13 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { AfterContentChecked, AfterContentInit, AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ContentChildren, ElementRef, EmbeddedViewRef, EventEmitter, forwardRef, Host, Inject, Injector, Input, OnChanges, OnInit, Optional, Output, QueryList, SimpleChanges, SkipSelf, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TFEvent, TFInputComponent } from '@talentia/components';
 import { ICellEditorAngularComp } from 'ag-grid-angular';
 import { IAfterGuiAttachedParams } from 'ag-grid-community';
+import { AppComponent } from 'src/app/app.component';
+import { ChosenService } from 'src/app/service/ChosenService';
 import { InputBaseComponent } from '../base/input-base.component';
+import { ItemDirective } from '../item/item.directive';
 
 
 
@@ -17,13 +21,16 @@ import { InputBaseComponent } from '../base/input-base.component';
     useExisting: forwardRef(() => InputComponent)
   }]
   ,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
-export class InputComponent extends InputBaseComponent  {
+export class InputComponent extends InputBaseComponent implements AfterContentInit, AfterContentChecked {
 
 
   constructor(
-    private changeDetectionRef: ChangeDetectorRef) {
+    @Optional() 
+    private appComponent: AppComponent,
+    private chosenService: ChosenService) {
     super();
   }
 
@@ -33,6 +40,13 @@ export class InputComponent extends InputBaseComponent  {
 
   @ViewChild('input', { read: TFInputComponent })
   input!: TFInputComponent;
+
+  @ViewChild('dropdown', { read: TemplateRef })
+  dropdownRef!: TemplateRef<any>;
+
+  @ContentChildren(ItemDirective, { read: TemplateRef })
+  templates!: QueryList<ItemDirective>;
+
 
   @Output() 
   blur: EventEmitter<TFEvent> = new EventEmitter<TFEvent>();
@@ -55,7 +69,15 @@ export class InputComponent extends InputBaseComponent  {
     this.configureFromFormat();
   }
 
- 
+  ngAfterContentInit(): void {
+    
+    console.log('templates:', this.templates);
+    console.log('templates.length:', this.templates.length);
+  }
+
+  ngAfterContentChecked(): void {
+      
+  }
 
   private configureFromFormat(): void {
  //  console.log('[text-input] formatType: ', !this.component.format ? '' : this.component.format.formatType);
@@ -96,7 +118,7 @@ export class InputComponent extends InputBaseComponent  {
   }
 
   writeValue(value: any): void {
-    console.log('[TextInputComponent] writeValue(value:', value, ')');
+    //console.log('[TextInputComponent] writeValue(value:', value, ')');
     this.value = value;
   }
 
@@ -113,8 +135,20 @@ export class InputComponent extends InputBaseComponent  {
   }
 
   doBlur(event: TFEvent) {
-    console.log('[text-input] onBlur:', event);
+    console.log('[text-input] doBlur:', event);
     this.fireTouched();
     this.blur.emit(new TFEvent("blur", this, { "event": event }));
+  }
+
+  doClick(event: MouseEvent) {
+    console.log('[text-input] doClick:', event);
+    this.focus();
+
+    this.appComponent.openDropdown({
+      templateRef: this.dropdownRef,
+      elementRef: this.input.input,
+      data: this.component
+    });
+
   }
 }

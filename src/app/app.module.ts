@@ -25,6 +25,8 @@ import { TemplateService } from './service/TemplateService';
 import { FormatService } from './service/FormatService';
 import { DataGridService } from './service/DataGridService';
 import { ViewEditorComponent } from './view-editor/view-editor.component';
+import { DropdownPanelComponent } from './dropdown-panel/dropdown-panel.component';
+import { ChosenService } from './service/ChosenService';
 
 /*
 Licence ag-Grid
@@ -58,7 +60,8 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     PageContentComponent,
     AsidePanelComponent,
     CommandsPanelComponent,
-    ViewEditorComponent
+    ViewEditorComponent,    
+    DropdownPanelComponent
   ],
   imports: [ 
     BrowserAnimationsModule,
@@ -79,6 +82,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     TemplateService,
     FormatService,
     DataGridService,
+    ChosenService,
     {
       provide: COMPILER_OPTIONS,
       useValue: {},

@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ElementRef, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ElementRef, forwardRef, InjectionToken, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { TFNavigationItem, TFShellOptions, TFUserInfo } from '@talentia/components/shell';
 import { concat, observable, Observable } from 'rxjs';
 import { AsidePanelComponent } from './aside-panel/aside-panel.component';
@@ -17,6 +17,7 @@ import { MutationService } from './service/MutationService';
 import { AjaxService } from './service/AjaxService';
 import { EventService } from './service/EventService';
 import { ToolsService } from './service/ToolsService';
+import { DropdownPanelComponent, OpenDropdownOptions } from './dropdown-panel/dropdown-panel.component';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -34,6 +35,9 @@ export function localizationServiceFactory() {
 }
 
 
+
+//export declare const APP_COMPONENT_ACCESSOR: InjectionToken<AppComponent>;
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -43,6 +47,11 @@ export function localizationServiceFactory() {
       provide: TFLocalizationService,
       useFactory: localizationServiceFactory
     },
+    // {
+    //   provide: AppComponent,
+    //   multi: false,
+    //   useExisting: forwardRef(() => AppComponent)
+    // },
     AppService,
     ReferenceService,
     MutationService,
@@ -68,9 +77,14 @@ export class AppComponent implements OnInit {
   @ViewChild(PageContentComponent)
   pageContent!: PageContentComponent;
 
+  // Rename glasspanel
+  @ViewChild(DropdownPanelComponent)
+  dropdownPanel!: DropdownPanelComponent;
+
   currentView: any;
 
   constructor(
+   
     private messageService: TFMessageService,
     //private applicationRef: ApplicationRef,
     private transactionService: TransactionService,
@@ -260,33 +274,37 @@ export class AppComponent implements OnInit {
     this.designMode = true;
   }
 
+  openDropdown<T>(options: OpenDropdownOptions<T>) {
+    this.dropdownPanel.openDropdown(options);
+  }
+
 }
 
-export interface ObservableFactory<T> {
-  (): Observable<T>;
-}
 
 
+// export interface ObservableFactory<T> {
+//   (): Observable<T>;
+// }
 
-function sequencial<T>(...factories: ObservableFactory<T>[])  {
-  return new Observable<T>(subscriber => {
-    console.log('SUBSCRIBE');
-    (function f(i: number) {
-      console.log('f i:', i);
-      if (i >= factories.length) {
-        subscriber.complete();
-        return;
-      }
-      factories[i]()
-        .subscribe({
-          next(value: T) {
-       //     observable.next(value);
-       console.log('next value:', value);
-            f(i + 1);
-          }
-        });
-    })(0);
-  });
-}
+// function sequencial<T>(...factories: ObservableFactory<T>[])  {
+//   return new Observable<T>(subscriber => {
+//     console.log('SUBSCRIBE');
+//     (function f(i: number) {
+//       console.log('f i:', i);
+//       if (i >= factories.length) {
+//         subscriber.complete();
+//         return;
+//       }
+//       factories[i]()
+//         .subscribe({
+//           next(value: T) {
+//        //     observable.next(value);
+//        console.log('next value:', value);
+//             f(i + 1);
+//           }
+//         });
+//     })(0);
+//   });
+// }
 
 

@@ -33,6 +33,9 @@ import { CellRendererComponent } from './cell-renderer/cell-renderer.component';
 import { TextComponent } from './text/text.component';
 import { TacConstraintsDirective } from './validation';
 import { RadioComponent } from './radio/radio.component';
+import { ModelSwitchComponent } from './model-switch/model-switch.component';
+import { ListComponent } from './list/list.component';
+import { ItemDirective } from './item/item.directive';
 
 
 
@@ -53,7 +56,10 @@ import { RadioComponent } from './radio/radio.component';
     CellRendererComponent,
     CellEditorComponent,
     TextComponent,
-    RadioComponent
+    RadioComponent,
+    ModelSwitchComponent,
+    ListComponent,
+    ItemDirective
   ],
   imports: [
     TFUILibraryModule,
@@ -98,11 +104,14 @@ import { RadioComponent } from './radio/radio.component';
     ChosenComponent,
     DatetimePickerComponent,
     InputComponent,
+    ItemDirective,
     CheckboxComponent,
     CellRendererComponent,
     CellEditorComponent,
     TextComponent,
-    RadioComponent
+    RadioComponent,
+    ModelSwitchComponent,
+    ListComponent
   ]
 })
 export class TacModule { 

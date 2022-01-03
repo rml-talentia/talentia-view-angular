@@ -264,6 +264,31 @@ export class TemplateService {
                   </tac-input>
                   `);
                 break;
+              case 'ExtendedInput':
+                const template0 = component
+                  .components[0]
+                  .columns
+                  .map((column: any) => `
+                    <span style="display: block; float: left; width: ${Math.ceil(column.size * 100)}%;">
+                    {{item.data.${column.field}}}
+                    </span>`)
+                  .join('\n');
+                template.push(start
+                  ? `
+                  <tac-input
+                    ${controlBind}
+                    [component]="${componentBind}">
+                    <ng-template 
+                      tacItem="default"
+                      let-data>
+                      <div>${template0}</div>
+                    </ng-template>
+                  </tac-input>             
+                  <tac-model-switch 
+                    extra
+                    [component]="${componentBind}"></tac-model-switch>   
+                  ` : ``);
+                break;
               case 'DatePicker':
                 template.push(start 
                   ? `
