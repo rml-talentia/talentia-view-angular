@@ -27,7 +27,9 @@ export class TextComponent {
 
   set value(value) {
     this._value = value;
-    this.text = this.formatService.toString(value, this.component.format);
+    this.text = null === this.component || null === this.component.format 
+      ? String(value) 
+      : this.formatService.toString(value, this.component.format);
   }
 
 

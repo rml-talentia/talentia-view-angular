@@ -13,332 +13,368 @@ import { Component } from "./types";
 @Injectable()
 export class TemplateService {    
  
-    constructor(
-      private compilerService: CompilerService) {}
+  constructor(
+    private compilerService: CompilerService) {}
 
-    createAndCompileTemplate(options: CreateAndCompileTemplate): Observable<ComponentRef<any>> {
-      const template = this.createTemplate(options);
-      const componentByIndex = this.createComponentByIndex(options);
-      return this
-        .compilerService
-        .getComponentFactory(template)
-        .pipe(map((componentFactory: ComponentFactory<any>) => {
-          const componentRef = options.container.createComponent(componentFactory);
-          componentRef.instance.componentByIndex = componentByIndex;
-          //componentRef.instance.data = this.dataService.data;
-         // componentRef.changeDetectorRef.detectChanges();
-          return componentRef;
-        }));
-    }
+  createAndCompileTemplate(options: CreateAndCompileTemplate): Observable<ComponentRef<any>> {
+    const template = this.createTemplate(options);
+    const componentByIndex = this.createComponentByIndex(options);
+    return this
+      .compilerService
+      .getComponentFactory(template)
+      .pipe(map((componentFactory: ComponentFactory<any>) => {
+        const componentRef = options.container.createComponent(componentFactory);
+        componentRef.instance.componentByIndex = componentByIndex;
+        //componentRef.instance.data = this.dataService.data;
+        // componentRef.changeDetectorRef.detectChanges();
+        return componentRef;
+      }));
+  }
 
-    createTemplate(options: CreateTemplate): string {
-      const template: string[] = [];
+  createTemplate(options: CreateTemplate): string {
+    const template: string[] = [];
 
-      let componentIndex = -1;
+    let componentIndex = -1;
+
+    let ignoredComponent: any = null;
+    let formGroupBind: string | null = null;
+    let formBind: string | null = null;
   
-      let ignoredComponent: any = null;
-      let formGroupBind: string | null = null;
-      let formBind: string | null = null;
-    
-      options
-        .components
-        .forEach((component: any) => {
-          visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
+    options
+      .components
+      .forEach((component: any) => {
+        visit(component, (component: any, parent: any, index: Number, start: Boolean) => {
+
+          // Ignore a component when it is rendered in an other view (aside or titlebar-commands)
+          if (!!ignoredComponent) {
+            if (!start && ignoredComponent === component) {
+              ignoredComponent = null;
+            }
+            return;
+          }
+          if (this.isIgnoredComponent(options, component)) {
+            ignoredComponent = component;
+            return;
+          }
+
+          if (start) {
+            componentIndex++;
+          }
   
-            // Ignore a component when it is rendered in an other view (aside or titlebar-commands)
-            if (!!ignoredComponent) {
-              if (!start && ignoredComponent === component) {
-                ignoredComponent = null;
-              }
-              return;
-            }
-            if (this.isIgnoredComponent(options, component)) {
-              ignoredComponent = component;
-              return;
-            }
-  
-            if (start) {
-              componentIndex++;
-            }
-    
-            const required = !!parent && 'Field' === parent.componentType && parent.required;
-            const componentBind = `componentByIndex[${componentIndex}]`;
-            const formControlBind = !formGroupBind || !component.name ? '' : `                
-              #inputbase
+          const required = !!parent && 'Field' === parent.componentType && parent.required;
+          const componentBind = `componentByIndex[${componentIndex}]`;
+          const formControlBind = !formGroupBind || !component.name ? '' : `                
+            #inputbase
+            
+            [(ngModel)]="${componentBind}.value"
+            name="${component.name}"
+            
+
+              [form]="${formGroupBind}"
+              #formControl="ngModel"
               
-              [(ngModel)]="${componentBind}.value"
-              name="${component.name}"
-              
-
-               [form]="${formGroupBind}"
-               #formControl="ngModel"
-               
-               tacConstraints
-            `;  
+              tacConstraints
+          `;  
 
 //              ${!required ? '' : 'required'}
-         //     tacConstraints
+        //     tacConstraints
 
-            // [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
-            // [(ngModel)]="${componentBind}.value"
+          // [(ngModel)]="${!component.value ? '' : 'data.' + this.dataService.toExpression(component.value)}"
+          // [(ngModel)]="${componentBind}.value"
 
-            const cellEditorControlBind = !options.cellEditor ? '' : `
-              [cellEditor]="cellEditor"
-              [(ngModel)]="value"
-            `;
-            const cellRendererControlBind = !options.cellRenderer ? '' : `
-              [cellRenderer]="cellRenderer"
-              [(ngModel)]="value"
-            `;
+          const cellEditorControlBind = !options.cellEditor ? '' : `
+            [cellEditor]="cellEditor"
+            [(ngModel)]="value"
+          `;
+          const cellRendererControlBind = !options.cellRenderer ? '' : `
+            [cellRenderer]="cellRenderer"
+            [(ngModel)]="value"
+          `;
 
-            const controlBind = [
-              formControlBind,
-              cellEditorControlBind,
-              cellRendererControlBind]
-              .join('')
-              .split(/ *\n */)
-              .join(' ');
+          const controlBind = [
+            formControlBind,
+            cellEditorControlBind,
+            cellRendererControlBind]
+            .join('')
+            .split(/ *\n */)
+            .join(' ');
 
 
-              //console.log('componentBind: ', componentBind,  ' component:', component);
+            //console.log('componentBind: ', componentBind,  ' component:', component);
 
-            if (!!options.cellRenderer) { 
-              switch(component.componentType) {
-                case 'Checkbox':
-                  template.push(start ? `
-                    <tac-checkbox 
-                        ${controlBind}
-                        [component]="${componentBind}"
-                        title="">
-                    ` : ` 
-                    </tac-checkbox>`);
-                  break;
-                default:
-                  template.push(start ? `
-                    <tac-text
-                        [component]="${componentBind}"
-                        [value]="value">
-                    ` : ` 
-                    </tac-text>`);
-              }
-              return;
-            }
-  
-            switch (component.componentType) {
-              case 'View':
+          if (!!options.cellRenderer) { 
+            switch(component.componentType) {
+              case 'Checkbox':
                 template.push(start ? `
-                <tac-view>
-                ` : `
-                </tac-view>`);
-                break;
-              case 'Transaction':
-                break;
-              case 'Form':
-                  formGroupBind = !start ? null : `form`;// !start ? null : `form${++formIndex}`;
-                  formBind = !start ? null : componentBind;
-                  template.push(start 
-                    ? `
-                    <form
-                      novalidate
-                      #${formGroupBind}="ngForm">
-                      <tac-transaction 
-                        [component]="${formBind}"
-                        [form]="${formGroupBind}.form"></tac-transaction>
-                    ` : `
-                    </form>`);
-                break;
-              case 'Button':
-                template.push(start 
-                  ? `<tac-button 
+                  <tac-checkbox 
+                      ${controlBind}
                       [component]="${componentBind}"
-                      [formName]="${componentBind}.action.form">` : `</tac-button>`);
+                      title="">
+                  ` : ` 
+                  </tac-checkbox>`);
                 break;
-              case 'GridLayout':
-                template.push(start ? `<tf-grid-layout>` : '</tf-grid-layout>');
-                break;
-              case 'GridRow':
-                template.push(start ? `<tf-grid-row>` : '</tf-grid-row>');
-                break;
-              case 'GridColumn':
-                template.push(start ? `<tf-grid-col cols="${component.cols}" margin="md">` : '</tf-grid-col>');
-                break;
-              case 'Panel':
-                if (1 === component.components.length 
-                  && 0 === component.components[0].components.length) {
-                  // Empty panel.
-                  // TODO : should be resolved in server side
-                  break;
-                }
-                if (component.title && component.title.text !== '&nbsp;') {
-                  template.push(start ? `
-                  <tf-panel 
-                    cols="12">
-                    <tf-title
-                      [level]="5"
-                      [bold]="true"
-                      [separator]="true"
-                      mode="light"
-                      marginDirection="bottom"
-                      margin="xl"
-                      text="${component.title.text}"></tf-title>
-                      <br/>
+              default:
+                template.push(start ? `
+                  <tac-text
+                      [component]="${componentBind}"
+                      [value]="value">
+                  ` : ` 
+                  </tac-text>`);
+            }
+            return;
+          }
+
+          switch (component.componentType) {
+            case 'View':
+              template.push(start ? `
+              <tac-view>
+              ` : `
+              </tac-view>`);
+              break;
+            case 'Transaction':
+              break;
+            case 'Form':
+                formGroupBind = !start ? null : `form`;// !start ? null : `form${++formIndex}`;
+                formBind = !start ? null : componentBind;
+                template.push(start 
+                  ? `
+                  <form
+                    novalidate
+                    #${formGroupBind}="ngForm">
+                    <tac-transaction 
+                      [component]="${formBind}"
+                      [form]="${formGroupBind}.form"></tac-transaction>
                   ` : `
-                  </tf-panel>
-                  <br/>
-                  `);
-                  break;
-                }
+                  </form>`);
+              break;
+            case 'Button':
+              template.push(start 
+                ? `<tac-button 
+                    [component]="${componentBind}"
+                    [formName]="${componentBind}.action.form">` : `</tac-button>`);
+              break;
+            case 'GridLayout':
+              template.push(start ? `<tf-grid-layout>` : '</tf-grid-layout>');
+              break;
+            case 'GridRow':
+              template.push(start ? `<tf-grid-row>` : '</tf-grid-row>');
+              break;
+            case 'GridColumn':
+              template.push(start ? `<tf-grid-col cols="${component.cols}" margin="md">` : '</tf-grid-col>');
+              break;
+            case 'Panel':
+              if (1 === component.components.length 
+                && 0 === component.components[0].components.length) {
+                // Empty panel.
+                // TODO : should be resolved in server side
+                break;
+              }
+              if (component.title && component.title.text !== '&nbsp;') {
                 template.push(start ? `
                 <tf-panel 
-                  cols="12" 
-                  text="${component.title ? component.title.text : ''}">
+                  cols="12">
+                  <tf-title
+                    [level]="5"
+                    [bold]="true"
+                    [separator]="true"
+                    mode="light"
+                    marginDirection="bottom"
+                    margin="xl"
+                    text="${component.title.text}"></tf-title>
+                    <br/>
                 ` : `
                 </tf-panel>
                 <br/>
                 `);
                 break;
-              case 'AsidePanel':
-                template.push(start 
-                  ? `<div style="margin-right: 1rem;">`
-                  : '</div>');
+              }
+              template.push(start ? `
+              <tf-panel 
+                cols="12" 
+                text="${component.title ? component.title.text : ''}">
+              ` : `
+              </tf-panel>
+              <br/>
+              `);
+              break;
+            case 'AsidePanel':
+              template.push(start 
+                ? `<div style="margin-right: 1rem;">`
+                : '</div>');
+              break;
+            case 'Breadcrumb':
                 break;
-              case 'Breadcrumb':
-                  break;
-              case 'Section':
-                template.push(start 
-                  ? `
-                  <tf-grid-layout addClasses="tf-width-full">
-                    <tf-simple-panel 
-                      [cols]="12"
-                      addClasses="tac-pixel-perfect">
-                      <tf-section  
-                        [title]="${componentBind}.title.text" 
-                        [titleLevel]="5" 
-                        [isCollapse]="true"
-                        [dropshadow]="false"
-                        layout="advanced">
-                      
-                  ` : `
-                        
-                      </tf-section>
-                    </tf-simple-panel>
-                  </tf-grid-layout>`);
-                break;
-              case 'HorizontalLayout':
-                template.push(start 
-                  ? `
-                    <tf-grid-row horizontalAlignment="end">
-                      <tf-grid-col [cols]="4" style="text-align: right;">
-                  ` : `
-                      </tf-grid-col>    
-                    </tf-grid-row>`);
-                break;
-              case 'Field':
-                const title = component.components[0].title;
-              //  cols="${!!component.size ? component.size.medium : 4}"
-                
-                template.push(start ? `
-                <tf-field 
-                  addClasses="${!!title.text && !!title.text.trim() ? 'tf-bold' : ''}"
-                  title="${!!title.text && !!title.text.trim() ? title.text : '&nbsp;'}" 
-                  [cols]="${!!component.size ? `{default:${component.size.medium},sm:${component.size.small},md:${component.size.medium},lg:${component.size.medium},xl:${component.size.large}}` : 4}">
+            case 'Section':
+              template.push(start 
+                ? `
+                <tf-grid-layout addClasses="tf-width-full">
+                  <tf-simple-panel 
+                    [cols]="12"
+                    addClasses="tac-pixel-perfect">
+                    <tf-section  
+                      [title]="${componentBind}.title.text" 
+                      [titleLevel]="5" 
+                      [isCollapse]="true"
+                      [dropshadow]="false"
+                      layout="advanced">
+                    
                 ` : `
-                </tf-field>`);
+                      
+                    </tf-section>
+                  </tf-simple-panel>
+                </tf-grid-layout>`);
+              break;
+            case 'HorizontalLayout':
+              template.push(start 
+                ? `
+                  <tf-grid-row horizontalAlignment="end">
+                    <tf-grid-col [cols]="4" style="text-align: right;">
+                ` : `
+                    </tf-grid-col>    
+                  </tf-grid-row>`);
+              break;
+            case 'Field':
+              const title = component.components[0].title;
+            //  cols="${!!component.size ? component.size.medium : 4}"
+              
+              template.push(start ? `
+              <tf-field 
+                addClasses="${!!title.text && !!title.text.trim() ? 'tf-bold' : ''}"
+                title="${!!title.text && !!title.text.trim() ? title.text : '&nbsp;'}" 
+                [cols]="${!!component.size ? `{default:${component.size.medium},sm:${component.size.small},md:${component.size.medium},lg:${component.size.medium},xl:${component.size.large}}` : 4}">
+              ` : `
+              </tf-field>`);
+              break;
+
+            case 'Hidden':
+                template.push(start 
+                  ? `<input 
+                      type="hidden" 
+                      name="${component.name}" 
+                      value="${!!component.value ? component.value.value : ''}" 
+                        />` : ``);
                 break;
-  
-              case 'Hidden':
-                  template.push(start 
-                    ? `<input 
-                        type="hidden" 
-                        name="${component.name}" 
-                        value="${!!component.value ? component.value.value : ''}" 
-                         />` : ``);
-                  break;
-              case 'Input':
-                template.push(start
-                  ? `
-                  <tac-input
-                    ${controlBind}
-                    [component]="${componentBind}">                
-                  ` : `
-                  </tac-input>
-                  `);
-                break;
-              case 'ExtendedInput':
-                const template0 = component
-                  .components[0]
+            case 'Input':
+              template.push(start
+                ? `
+                <tac-input
+                  ${controlBind}
+                  [component]="${componentBind}">                
+                ` : `
+                </tac-input>
+                `);
+              break;
+            case 'ExtendedInput':
+              const itemTemplates = component
+                .components
+                .map((child: Component) => `
+                <ng-template let-item>
+                  <div 
+                    style="
+                      display: grid;
+                      grid-gap: .5em;
+                      grid-template-columns: ${child.columns.map((column: any) => Math.ceil(column.size * 100) + '%').join(' ')};">
+                ` + child
                   .columns
-                  .map((column: any) => `
-                    <span style="display: block; float: left; width: ${Math.ceil(column.size * 100)}%;">
-                    {{item.data.${column.field}}}
-                    </span>`)
-                  .join('\n');
+                  .map((column: any, len: number, index: number) => `
+                  <div 
+                  *ngIf="!item"
+                  style="
+                    background: #adb5bd;
+                    opacity: .25;
+                    border-radius: 3px;
+                    grid-column: ${index + 1};
+                    text-align: left;"
+                  >&nbsp;</div>
+                <div
+                  *ngIf="item"
+                  style="
+                    grid-column: ${index + 1};
+                    text-align: left;
+                    white-space: normal;
+                    ${!column.value ? '' : 'font-weight: bold;'}"
+                  ><span>{{item.${column.field}}}</span></div>`).join('\n') + `
+                  </div>
+                </ng-template>`);
+
+              template.push(start
+                ? `
+                <tac-input
+                  ${controlBind}
+                  [component]="${componentBind}">
+                  <tac-dropdown>
+                    <tac-list
+                      [component]="${componentBind}.dropdown">
+                      ${itemTemplates}
+                    </tac-list>
+                  </tac-dropdown>
+                </tac-input>             
+                <tac-model-switch 
+                  extra
+                  [component]="${componentBind}"></tac-model-switch>   
+                ` : ``);
+              break;
+            case 'Chosen':
+              console.log(component);
+
+              /*
+                                <span *ngIf="false"
+                        style="
+                          flex: ${Math.ceil(column.size * 100) / 100};
+                          ${!column.value ? '' : ' font-weight: bold;'}
+                          ${0 < index ? '' : 'margin-left: 0.5em;'}
+                          display: inline-block;
+                          background: lightgray;
+                          border-radius: 2px;">...</span>
+                          */
+
+                          //  flex: ${Math.ceil(column.size * 100) / 100};
+              if (null !== component.model.columns) {
+                const itemTemplates2 = [component.model]
+                  .map((child: Component) => `
+                    <ng-template let-item>
+                      <div 
+                        style="
+                          display: grid;
+                          grid-gap: .5em;
+                          grid-template-columns: ${child.columns.map((column: any) => Math.ceil(column.size * 100) + '%').join(' ')};">
+                    ` + child
+                    .columns
+                    .map((column: any, index: number) => `
+                        <div 
+                          *ngIf="!item"
+                          style="
+                            background: #adb5bd;
+                            opacity: .25;
+                            border-radius: 3px;
+                            grid-column: ${index + 1};
+                            text-align: left;"
+                          >&nbsp;</div>
+                        <div
+                          *ngIf="item"
+                          style="
+                            grid-column: ${index + 1};
+                            text-align: left;
+                            white-space: normal;
+                            ${!column.value ? '' : 'font-weight: bold;'}"
+                          ><span>{{item.${column.field}}}</span></div>`).join('\n') + `
+                      </div>
+                    </ng-template>`);
+
                 template.push(start
                   ? `
                   <tac-input
                     ${controlBind}
                     [component]="${componentBind}">
-                    <ng-template 
-                      tacItem="default"
-                      let-data>
-                      <div>${template0}</div>
-                    </ng-template>
-                  </tac-input>             
-                  <tac-model-switch 
-                    extra
-                    [component]="${componentBind}"></tac-model-switch>   
+                    <tac-dropdown>
+                      <tac-list
+                        [component]="${componentBind}.model">
+                        ${itemTemplates2}
+                      </tac-list>
+                    </tac-dropdown>
+                  </tac-input>
                   ` : ``);
-                break;
-              case 'DatePicker':
-                template.push(start 
-                  ? `
-                  <tac-datetime-picker
-                    ${controlBind}
-                    [component]="${componentBind}">
-                  ` : `
-                  </tac-datetime-picker>`);
-                break;
-              case 'Checkbox':
-                if (options.cellEditor) {
-                  template.push(start ? `
-                    <tac-checkbox 
-                        ${controlBind}
-                        [component]="${componentBind}"
-                        title="">
-                    ` : ` 
-                    </tac-checkbox>`);
-                } else {
-                  template.push(start 
-                    ? `<tf-field cols="2" title="&nbsp;">
-                        <tac-checkbox 
-                          ${controlBind}
-                          [component]="${componentBind}"
-                          title="${component.title.text}">` 
-                    : ` </tac-checkbox>
-                      </tf-field>`);
-                }
-                break;
-              case 'Radio':
-                template.push(start 
-                  ? `
-                  <tac-radio     
-                      ${controlBind}
-                      [component]="${componentBind}"
-                      title="${component.title.text}">` 
-                  : `
-                  </tac-radio>`);
-                break;
-              case 'Dropdown':
-                template.push(start 
-                  ? `
-                  <tac-dropdown     
-                      ${controlBind}
-                      [component]="${componentBind}"
-                      title="${component.title.text}">` 
-                  : `
-                  </tac-dropdown>`);
-                break;
-              case 'Chosen':
+              } else {
                 template.push(start 
                   ? `           
                   <tac-chosen          
@@ -358,33 +394,84 @@ export class TemplateService {
                     </ng-template>
                   ` : `
                   </tac-chosen>`);
-                break;
-              case 'DataGrid':
-                console.log('dataGrid:', component);
-                template.push(start
-                  ? `
-                  <tac-data-grid
-                    [component]="${componentBind}">
-                    <ng-template 
-                      #customEditor 
-                      let-item 
-                      let-stopEditing="stopEditing">
-                      <tf-input
-                          style="width: 100%;"
-                          [standalone]="true"
-                          (blur)="stopEditing($event)"
-                          #input></tf-input>
-                    </ng-template>
-                  ` 
-                  : `</tac-data-grid>`);
-                break;
-            }
-          });
-      });
+              }
+              break;
+            case 'Dropdown':
+              template.push(start 
+                ? `
+                <tac-select     
+                    ${controlBind}
+                    [component]="${componentBind}"
+                    title="${component.title.text}">` 
+                : `
+                </tac-select>`);
+              break;
+            case 'DatePicker':
+              template.push(start 
+                ? `
+                <tac-datetime-picker
+                  ${controlBind}
+                  [component]="${componentBind}">
+                ` : `
+                </tac-datetime-picker>`);
+              break;
+            case 'Checkbox':
+              if (options.cellEditor) {
+                template.push(start ? `
+                  <tac-checkbox 
+                      ${controlBind}
+                      [component]="${componentBind}"
+                      title="">
+                  ` : ` 
+                  </tac-checkbox>`);
+              } else {
+                template.push(start 
+                  ? `<tf-field cols="2" title="&nbsp;">
+                      <tac-checkbox 
+                        ${controlBind}
+                        [component]="${componentBind}"
+                        title="${component.title.text}">` 
+                  : ` </tac-checkbox>
+                    </tf-field>`);
+              }
+              break;
+            case 'Radio':
+              template.push(start 
+                ? `
+                <tac-radio     
+                    ${controlBind}
+                    [component]="${componentBind}"
+                    title="${component.title.text}">` 
+                : `
+                </tac-radio>`);
+              break;
+
+            case 'DataGrid':
+              console.log('dataGrid:', component);
+              template.push(start
+                ? `
+                <tac-data-grid
+                  [component]="${componentBind}">
+                  <ng-template 
+                    #customEditor 
+                    let-item 
+                    let-stopEditing="stopEditing">
+                    <tf-input
+                        style="width: 100%;"
+                        [standalone]="true"
+                        (blur)="stopEditing($event)"
+                        #input></tf-input>
+                  </ng-template>
+                ` 
+                : `</tac-data-grid>`);
+              break;
+          }
+        });
+    });
+
   
-   
-      return template.join('\n');
-    }
+    return template.join('\n');
+  }
 
 
   createComponentByIndex(options: CreateComponentByIndex): any[] {

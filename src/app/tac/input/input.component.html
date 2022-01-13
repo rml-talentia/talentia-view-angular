@@ -9,8 +9,10 @@
         [decimals]="decimals"
         [disabled]="!component.access"
         [(ngModel)]="value"
-        (blur)="doBlur($event)"></tf-input>
+        (blur)="blurHandler($event)"
+        (keyup)="keyupHandler($event)"></tf-input>
     <span
+        *ngIf="!!dropdown"
         style="
             position: absolute;
             top: 7px;
@@ -31,10 +33,3 @@
     </span>
 </span>
 <ng-content></ng-content>
-<ng-template
-    let-component
-    #dropdown>
-    <tac-list
-        [component]="component.components[0]">
-    </tac-list>
-</ng-template>

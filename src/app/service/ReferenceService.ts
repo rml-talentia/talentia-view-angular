@@ -194,7 +194,8 @@ export class ReferenceService {
                 parentValue[reference.key] = value;
                 return;
             case 'DefaultReference':
-                this.setValue(component, reference.value, value);
+            reference.value = { referenceType: 'ValueReference', parent: null, value: value };  
+            //  this.setValue(component, reference.value, value);
                 return;
             case 'SessionReference':
                 const session = findByComponentType(this.getRoot(component), 'SessionComponent');

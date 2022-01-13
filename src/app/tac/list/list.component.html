@@ -3,38 +3,42 @@
     #wrapper
     class="tac-list-wrapper"
     [style]="wrapperStyle">
-    <div
-        #viewport
-        class="tac-list-viewport"
-        [style]="viewportStyle"
-        (wheel)="viewportWheelHandler($event)"
-        (scroll)="viewportScrollHandler($event)">
-        <ul
-            #list
-            class="dropdown-menu"
-            [style]="listStyle">
-            <li 
-                *ngFor="let item of items"
-                role="menuitem" 
-                class="dropdown-item"
-                [title]="item.code">
-                <a 
+    <div 
+        class="tac-list-glass-wrapper"
+        [style]="glassWrapperStyle"
+        (wheel)="viewportWheelHandler($event)">
+        <div
+            #viewport
+            class="tac-list-viewport"
+            [style]="viewportStyle"
+            (scroll)="viewportScrollHandler($event)">
+            <ul
+                #list
+                class="dropdown-menu"
+                [style]="listStyle">
+                <li 
+                    *ngFor="let item of view.items"
+                    role="menuitem" 
                     class="dropdown-item"
-                    href="javascript:void(0)">
-                    <tf-h-layout 
-                        grow="end" 
-                        spacing="sm">
-                        <tf-text
-                        [bold]="true" 
-                        [text]="item.code"></tf-text>
-                        <tf-text
-                            [text]="item.shortLabel"></tf-text>
-                        <tf-text 
-                            [text]="item.label"></tf-text>
-                    </tf-h-layout>
-                </a>
-            </li>
-        </ul>
+                    title="">
+                    <a 
+                        class="dropdown-item"
+                        href="javascript:void(0)">
+                        <ng-container
+                            #itemContainer></ng-container>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div
+            *ngIf="glasspanel"
+            class="tac-list-glass">
+            <div class="tac-list-message">    
+                <i [class]="glasspanel.icon"></i>   
+                <br/>
+                <span>{{glasspanel.message}}</span>
+            </div>
+        </div>
     </div>
     <div
         #scrollbar
@@ -45,5 +49,5 @@
             #scrollbarContent
             class="tac-list-scrollbar-content"
             [style]="scrollbarContentStyle"></div>
-    </div>  
+    </div>
 </div>

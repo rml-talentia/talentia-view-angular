@@ -21,7 +21,7 @@ import { TFShellLibraryModule } from '@talentia/components/shell';
 import { HttpClientModule } from '@angular/common/http';
 import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { CellEditorComponent } from './cell-editor/cell-editor.component';
-import { DropdownComponent } from './dropdown/dropdown.component';
+import { SelectComponent } from './select/select.component';
 import { ChosenComponent } from './chosen/chosen.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { ButtonComponent } from './button/button.component';
@@ -35,8 +35,8 @@ import { TacConstraintsDirective } from './validation';
 import { RadioComponent } from './radio/radio.component';
 import { ModelSwitchComponent } from './model-switch/model-switch.component';
 import { ListComponent } from './list/list.component';
-import { ItemDirective } from './item/item.directive';
-
+import { ItemTypeDirective } from './itemType/itemType.directive';
+import { DropdownComponent } from './dropdown/dropdown.component';
 
 
 @NgModule({
@@ -47,7 +47,7 @@ import { ItemDirective } from './item/item.directive';
     TransactionComponent,
     DataGridComponent,
     BreadcrumbComponent,
-    DropdownComponent,
+    SelectComponent,
     ChosenComponent,
     DatetimePickerComponent,
     InputComponent,
@@ -59,7 +59,8 @@ import { ItemDirective } from './item/item.directive';
     RadioComponent,
     ModelSwitchComponent,
     ListComponent,
-    ItemDirective
+    ItemTypeDirective,
+    DropdownComponent
   ],
   imports: [
     TFUILibraryModule,
@@ -100,18 +101,19 @@ import { ItemDirective } from './item/item.directive';
     TransactionComponent,
     DataGridComponent,
     BreadcrumbComponent,
-    DropdownComponent,
+    SelectComponent,
     ChosenComponent,
     DatetimePickerComponent,
     InputComponent,
-    ItemDirective,
+    ItemTypeDirective,
     CheckboxComponent,
     CellRendererComponent,
     CellEditorComponent,
     TextComponent,
     RadioComponent,
     ModelSwitchComponent,
-    ListComponent
+    ListComponent,
+    DropdownComponent
   ]
 })
 export class TacModule { 

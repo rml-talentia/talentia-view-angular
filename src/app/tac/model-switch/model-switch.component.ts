@@ -9,7 +9,7 @@ import { BaseComponent } from '../base/component-base.component';
 export class ModelSwitchComponent extends BaseComponent {
 
   get model() {
-    return this.component.components[0];
+    return this.component.dropdown;
   }
   
   get icon() {
@@ -18,6 +18,15 @@ export class ModelSwitchComponent extends BaseComponent {
 
   get label() {
     return this.model.label.text;
+  }
+
+  doClick(event: MouseEvent) {
+    const index = this.component.components.indexOf(this.component.dropdown);
+    console.log(this.component);
+    console.log(index);
+   // console.log(this.component.components[0]);
+  //  console.log(this.component.components[1]);
+   this.component.dropdown = this.component.components[0 !== index ? 0 : 1];
   }
   
 }

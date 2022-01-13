@@ -17,7 +17,6 @@ import { MutationService } from './service/MutationService';
 import { AjaxService } from './service/AjaxService';
 import { EventService } from './service/EventService';
 import { ToolsService } from './service/ToolsService';
-import { DropdownPanelComponent, OpenDropdownOptions } from './dropdown-panel/dropdown-panel.component';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -77,14 +76,11 @@ export class AppComponent implements OnInit {
   @ViewChild(PageContentComponent)
   pageContent!: PageContentComponent;
 
-  // Rename glasspanel
-  @ViewChild(DropdownPanelComponent)
-  dropdownPanel!: DropdownPanelComponent;
-
+ 
   currentView: any;
 
   constructor(
-   
+    public viewContainerRef: ViewContainerRef,
     private messageService: TFMessageService,
     //private applicationRef: ApplicationRef,
     private transactionService: TransactionService,
@@ -272,10 +268,6 @@ export class AppComponent implements OnInit {
   
   toggleDesignMode() {
     this.designMode = true;
-  }
-
-  openDropdown<T>(options: OpenDropdownOptions<T>) {
-    this.dropdownPanel.openDropdown(options);
   }
 
 }

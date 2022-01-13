@@ -1,8 +1,8 @@
-import { ItemDirective } from './item.directive';
+import { ItemTypeDirective } from './itemType.directive';
 
 describe('ItemDirective', () => {
   it('should create an instance', () => {
-    const directive = new ItemDirective();
+    const directive = new ItemTypeDirective();
     expect(directive).toBeTruthy();
   });
 });

@@ -25,7 +25,6 @@ import { TemplateService } from './service/TemplateService';
 import { FormatService } from './service/FormatService';
 import { DataGridService } from './service/DataGridService';
 import { ViewEditorComponent } from './view-editor/view-editor.component';
-import { DropdownPanelComponent } from './dropdown-panel/dropdown-panel.component';
 import { ChosenService } from './service/ChosenService';
 
 /*
@@ -60,8 +59,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     PageContentComponent,
     AsidePanelComponent,
     CommandsPanelComponent,
-    ViewEditorComponent,    
-    DropdownPanelComponent
+    ViewEditorComponent
   ],
   imports: [ 
     BrowserAnimationsModule,

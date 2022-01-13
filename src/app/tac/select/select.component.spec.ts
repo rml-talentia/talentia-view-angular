@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DropdownPanelComponent } from './dropdown-panel.component';
+import { SelectComponent } from './select.component';
 
-describe('DropdownPanelComponent', () => {
-  let component: DropdownPanelComponent;
-  let fixture: ComponentFixture<DropdownPanelComponent>;
+describe('SelectComponent', () => {
+  let component: SelectComponent;
+  let fixture: ComponentFixture<SelectComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ DropdownPanelComponent ]
+      declarations: [ SelectComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DropdownPanelComponent);
+    fixture = TestBed.createComponent(SelectComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
