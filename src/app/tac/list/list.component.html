@@ -19,11 +19,11 @@
                 <li 
                     *ngFor="let item of view.items"
                     role="menuitem" 
-                    class="dropdown-item"
                     title="">
                     <a 
-                        class="dropdown-item"
-                        href="javascript:void(0)">
+                        [class]="itemStyle(item)"
+                        href="javascript:void(0)"
+                        (click)="itemClickHandler($event, item)">
                         <ng-container
                             #itemContainer></ng-container>
                     </a>

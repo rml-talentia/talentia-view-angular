@@ -13,5 +13,11 @@ export class ViewEditorComponent implements OnInit {
   }
 
 
+  mousedownHandler(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+
 
 }

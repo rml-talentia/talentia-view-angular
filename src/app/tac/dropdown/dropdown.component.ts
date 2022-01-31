@@ -33,7 +33,7 @@ export class DropdownComponent implements OnInit {
 
 
   constructor(
-    private parent: InputComponent,
+    public parent: InputComponent,
     private appComponent: AppComponent,
     private ngZone: NgZone,
     @Inject(DOCUMENT) private document: Document
@@ -74,7 +74,11 @@ export class DropdownComponent implements OnInit {
     //    if (event.target !== this.glasspanelRef.nativeElement) {
     //      return;
     //    }
-      if ((event.target as any).matches('.fa.fa-chevron-down')) {
+
+      // if ((event.target as any).matches('.fa.fa-chevron-down')) {
+      //   return;
+      // }
+      if (this.parent.input.input.nativeElement.contains(event.target)) {
         return;
       }
       if (!!(event.target as any).closest('.tac-dropdown')) {
@@ -92,6 +96,8 @@ export class DropdownComponent implements OnInit {
 
   }
 
+
+
   close(): void {
     if (null === this.embeddedViewRef) {
       return;
@@ -101,4 +107,9 @@ export class DropdownComponent implements OnInit {
     
   }
 
+  isOpened() {
+    return null !== this.embeddedViewRef;
+  }
+
 }
+

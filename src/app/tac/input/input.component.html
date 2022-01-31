@@ -10,7 +10,8 @@
         [disabled]="!component.access"
         [(ngModel)]="value"
         (blur)="blurHandler($event)"
-        (keyup)="keyupHandler($event)"></tf-input>
+        (keydown)="keydownHandler($event)"
+        (input)="inputHandler($event)"></tf-input>
     <span
         *ngIf="!!dropdown"
         style="
@@ -29,7 +30,7 @@
         <i
             aria-hidden="true" 
             class="fa fa-chevron-down"
-            (click)="doClick($event)"></i>
+            (click)="clickHandler($event)"></i>
     </span>
 </span>
 <ng-content></ng-content>

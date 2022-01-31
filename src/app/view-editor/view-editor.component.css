@@ -6,5 +6,5 @@
     right: 0;
     background: rgba(180, 180, 180, .5);
     /* tf-titlebar is at z-index 900 */
-    z-index: 1800;
+    z-index: 900; /* behind dialogs */
 }

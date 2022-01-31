@@ -24,7 +24,7 @@ export class Component {
 
     [key: string]: any;
     public parent: Component | null = null;
-    private _id: string = uuid.v4(); 
+   // private _id: string = uuid.v4(); 
     private _options: any;
     private _data: any;
     private _bindings: any;
@@ -41,7 +41,7 @@ export class Component {
         this.componentType = options.componentType;
         this._options = options; // TODO : deepFreeze ? https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
         this.parent = parent;
-        
+        this.id = options.id;
 
         this.populate();
         this.defineProperties();

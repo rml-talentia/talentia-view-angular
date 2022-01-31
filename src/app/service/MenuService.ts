@@ -41,6 +41,10 @@ export class MenuService {
                             title: 'CGCCA',
                             uri: '/function/CGCCA',
                             data: { option: 'CGCCA' }
+                        },                        {
+                            title: 'CTCCA',
+                            uri: '/function/CTCCA',
+                            data: { option: 'CTCCA' }
                         },
                         {
                             title: 'CGCBL',
@@ -61,6 +65,11 @@ export class MenuService {
                             title: 'CGPOR',
                             uri: '/function/CGPOR',
                             data: { option: 'CGPOR' }
+                        },
+                        {
+                            title: 'XINIT',
+                            uri: '/function/XINIT',
+                            data: { option: 'XINIT' }
                         }
                     ])
                     .concat(data.map(function m(option: any) {

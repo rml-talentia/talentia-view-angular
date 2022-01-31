@@ -68,6 +68,16 @@ export class ReferenceService {
                 return null === parentValue ? null : this.asValue(parentValue[reference.key]);
             case 'AtIndexReference':
                 return null === parentValue ? null : this.asValue(parentValue[reference.index]);
+            case 'ByIdReference':
+                return this.asValue(findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
+                    switch (component.componentType) {
+                        default:
+                            if (reference.id !== component.id) {
+                                return;
+                            }
+                            return component;
+                    }
+                }));
             case 'DefaultReference':
                 return null !== parentValue ? parentValue : this._getValue(component, reference.value);
             case 'SelfReference':
@@ -212,6 +222,7 @@ export class ReferenceService {
                 }
                 this.dataGridService.setRowByIndex(dataGrid, reference.index, value);
                 return;
+            case 'ByIdReference':
             case 'ViewReference':
             case 'FormReference':
             case 'SelfReference':

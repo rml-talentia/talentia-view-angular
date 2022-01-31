@@ -26,6 +26,7 @@ import { FormatService } from './service/FormatService';
 import { DataGridService } from './service/DataGridService';
 import { ViewEditorComponent } from './view-editor/view-editor.component';
 import { ChosenService } from './service/ChosenService';
+import { DialogComponent } from './dialog/dialog.component';
 
 /*
 Licence ag-Grid
@@ -59,7 +60,8 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     PageContentComponent,
     AsidePanelComponent,
     CommandsPanelComponent,
-    ViewEditorComponent
+    ViewEditorComponent,
+    DialogComponent
   ],
   imports: [ 
     BrowserAnimationsModule,

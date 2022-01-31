@@ -2,6 +2,7 @@ import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetecto
 import { asyncScheduler, BehaviorSubject, EMPTY, forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { debounceTime, first, last, map, sample, tap, throttleTime } from 'rxjs/operators';
 import { ChosenService } from 'src/app/service/ChosenService';
+import { EventService } from 'src/app/service/EventService';
 import { Component as Bindable } from "src/app/service/types";
 import { DropdownComponent } from '../dropdown/dropdown.component';
 import { ItemTypeDirective } from '../itemType/itemType.directive';
@@ -38,11 +39,14 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
   @ViewChild('scrollbarContent', { read: ElementRef })
   scrollbarContent!: ElementRef;
 
+  glasspanel: GlassPanel | null = null;
 
   pageSize: number = 30;
   pages: Pages = {};
-  view: View = { items: [], top: 0, range: { first: -1, last: -1 } };
   viewSize: number = 10;
+  view: View = { items: [], top: 0, range: { first: -1, last: -1 } };
+  
+  _focusedItem: number | null = null;
 
   _itemCount: number | null = null;
   _averageItemHeight: number | null = null;
@@ -57,6 +61,7 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
     @Optional()
     private dropdown: DropdownComponent,
     private changeDetectorRef: ChangeDetectorRef,
+    private eventService: EventService,
     private chosenService: ChosenService) {
     if (null !== dropdown) {
       dropdown.opened.subscribe({
@@ -84,6 +89,7 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
     this.view = { items: [], top: 0, range: { first: -1, last: -1 } };
     for (let i = 0; i < this.viewSize; i++) {
       this.view.items.push({
+        focused: false,
         top: null,
         bottom: null,
         height: null,
@@ -186,6 +192,7 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
       this.pages = {};
       for (let i = this.view.items.length - 1; i >= 0; i--) {
         let item = this.view.items[i];
+        item.focused = false;
         if (!item.embeddedViewRef) {
           continue;
         }
@@ -212,8 +219,18 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
     // Their is no items.
     // TODO : show a "no data" message.
     if (0 > this.view.range.first) {
+      this.glasspanel = {
+        icon: 'fal fa-empty-set',
+        message: 'Aucune donnée'
+      };
+      this.changeDetectorRef.markForCheck();
       return;
     }
+        // Empty result, no data
+        // if (1 > pages.length) {
+          
+        // }
+    
 
     // this.view.items.forEach(item => {
     //   item.data = null;
@@ -259,18 +276,21 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
     pages
       .forEach(page => {
         for (let i = this.view.range.first + viewIndex; i <= page.range.last && viewIndex < this.view.items.length; i++) {
-          let pageItem = page.items[i - page.range.first];
+          let pageIndex = i - page.range.first;
+          let pageItem = page.items[pageIndex];
           let viewItem = this.view.items[viewIndex];
 
           viewItem.data = pageItem.data;
+          viewItem.focused = pageIndex === this._focusedItem;
+
           
 
           if (null === viewItem.embeddedViewRef) {
-            viewItem.embeddedViewRef = this.itemContentRefs.get(viewIndex)?.createEmbeddedView(templateRef, { $implicit: pageItem.data }) || null;
+            viewItem.embeddedViewRef = this.itemContentRefs.get(viewIndex)?.createEmbeddedView(templateRef, { $implicit: viewItem }) || null;
             //viewItem.embeddedViewRef?.detach();
             //viewItem.embeddedViewRef?.detectChanges();
           } else {
-            viewItem.embeddedViewRef.context.$implicit = pageItem.data; 
+            viewItem.embeddedViewRef.context.$implicit = viewItem; 
             //viewItem.embeddedViewRef.detectChanges();
           }
 
@@ -282,8 +302,12 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
       });
 
 
+
+
+    // Unused view items.
     for (; viewIndex < this.view.items.length; viewIndex++) {
       let viewItem = this.view.items[viewIndex];
+      viewItem.focused = false;
       viewItem.data = null;
       if (null === viewItem.embeddedViewRef) {
         viewItem.embeddedViewRef = this.itemContentRefs.get(viewIndex)?.createEmbeddedView(templateRef, { $implicit: null }) || null;
@@ -382,6 +406,10 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
       'transform': `translate(0, ${this.view.top}px)`,
       'padding': '0'
     };
+  }
+
+  itemStyle(item: Item) {
+    return !item.focused ? 'dropdown-item' : 'dropdown-item active';
   }
   
   get itemCount(): number {
@@ -505,9 +533,6 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
   _search: string | null = null;  
 
   private refresh(options: RefreshOptions) {
-   // options = options ? options : { initialize: false };
-   // this.refreshView(options.initialize);
-
     this._refreshSubject.next(options);
   }
 
@@ -519,33 +544,124 @@ export class ListComponent implements OnInit, AfterViewInit, AfterViewChecked {
 
   set search(search: string) {
     this._search = search;
-
     this.glasspanel = {
       icon: 'fal fa-keyboard',
       message: 'Saisie en cours...'
     };
     this.changeDetectorRef.markForCheck();
-
-    // fas fa-spinner fa-spin
-
     this.refresh({ initialize: true });
-
-    // if (null === this._searchSubscription) {
-    //   this._searchSubscription = this
-    //   .refresh()
-    //   .pipe(first())
-    //   .subscribe({
-    //     next: () => {
-    //       console.log('[ListComponent] next refresh time:', new Date().getTime());
-    //       this.glasspanel = null;
-    //     }
-    //   });
-    // }
   }
 
+  private focusNext() {
+    if (null === this._focusedItem) {
+      this._focusedItem = 0;
+    } else if (this._focusedItem < -1 + this.itemCount) {
+      this._focusedItem++;
+    } else {
+      this._focusedItem = 0;
+    }
+    this.refreshView();
+  }
 
-  glasspanel: GlassPanel | null = null;
+  private focusPrevious() {
+    if (null === this._focusedItem) {
+      this._focusedItem = this.itemCount - 1;
+    } else if (0 < this._focusedItem) {
+      this._focusedItem--;
+    } else {
+      this._focusedItem = this.itemCount - 1;
+    }
+    if (0 > this._focusedItem) {
+      this._focusedItem = null;
+    }
+    this.refreshView();
+  }
 
+  private getItemByIndex(index: number): Observable<Item> {
+    return this
+      .getPage(Math.floor(index / this.pageSize))
+      .pipe(map(page => page.items[index - page.index * this.pageSize] || null));
+  }
+
+  private getValueByIndex(index: number): Observable<any> {
+    return this
+      .getItemByIndex(index)
+      .pipe(map(item => null === item ? null : item.data[this.getValueColumn().field]));
+  }
+
+  private getValueColumn() {
+    return this.component.columns.find((column: any) => column.value);
+  }
+
+  keydownHandler(event: KeyboardEvent) {
+    switch (event.code) {
+      case 'Escape':
+        this.dropdown.close();
+        break;
+      case 'NumpadEnter':
+      case 'Enter':
+        if (!this.dropdown.isOpened()) {
+          break;
+        }
+        if (null !== this._focusedItem) {
+          this
+            .getValueByIndex(this._focusedItem)
+            .subscribe({
+              next: value => {
+                if (null !== this.component.parent) { // input component
+                  this.component.parent.value = value;
+                  this.eventService.doEvent(this.component.parent, 'Change');
+                }
+                this.dropdown.close();
+                
+              }
+            });
+        }
+        break;
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        if (event.ctrlKey) {
+          if (!!this.component.parent) { // typescript want it.
+            event.preventDefault();
+            const index = this.component.parent.components.indexOf(this.component.parent.dropdown);
+            this.component.parent.dropdown = this.component.parent.components[0 !== index ? 0 : 1];
+            if (this.dropdown.isOpened()) {
+              this.refreshView(true);
+            }
+          }          
+        }
+        break;
+      case 'ArrowUp':
+        if (this.dropdown.isOpened()) {
+          this.focusPrevious();
+        }
+        break;
+      case 'ArrowDown':
+        if (event.ctrlKey) {
+          event.preventDefault();
+          if (!this.dropdown.isOpened()) {
+            this.dropdown.open();
+          }
+        } else if (this.dropdown.isOpened()) {
+          this.focusNext();
+        }
+        break;
+    }
+  }
+
+  inputHandler(event: Event) {
+    this.dropdown.open();
+    this.search = (event.target as any).value;
+  }
+
+  itemClickHandler(event: MouseEvent, item: Item) {
+    const value = item.data[this.getValueColumn().field];
+    if (null !== this.component.parent) { // input component
+      this.component.parent.value = value;
+      this.eventService.doEvent(this.component.parent, 'Change');
+    }
+    this.dropdown.close();
+  }
 
 }
 
@@ -561,6 +677,7 @@ interface GlassPanel {
 
 interface Item {
 
+  focused: boolean;
   data: any;
   height: number | null;
   top: number | null;

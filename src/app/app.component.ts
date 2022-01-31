@@ -9,7 +9,7 @@ import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
 import { toArray } from 'rxjs/operators';
 import { findByComponentType } from './tac/util';
-import { TFLocalizationService, TFMessageService } from '@talentia/components';
+import { TFDialogComponent, TFLocalizationService, TFMessageService } from '@talentia/components';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
 import { ReferenceService } from './service/ReferenceService';
 import { ActionService } from './service/ActionService';
@@ -17,6 +17,7 @@ import { MutationService } from './service/MutationService';
 import { AjaxService } from './service/AjaxService';
 import { EventService } from './service/EventService';
 import { ToolsService } from './service/ToolsService';
+import { Component as Bindable } from './service/types';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -154,6 +155,9 @@ export class AppComponent implements OnInit {
   showView(view: any): Observable<any> {
     view = this.referenceService.toInstance(view);
     this.currentView = view;
+
+    this._inspector = null;
+
     console.debug('[APP] showView(view:', view, ')');  
     // Remove previous view error messages.
     this.messageService.clearMessages();
@@ -263,11 +267,56 @@ export class AppComponent implements OnInit {
     }
   } 
 
-  designMode: boolean = false;
 
+  //
+  //
+  //
+
+
+
+  designMode: boolean = false;
   
   toggleDesignMode() {
     this.designMode = true;
+ //   this.inspectorDialog.show();
+  }
+
+
+  @ViewChild('inspectorDialog', { read: TFDialogComponent })
+  inspectorDialog!: TFDialogComponent;
+
+  _inspector: any = null;
+
+  get inspector(): any {
+    if (null === this._inspector) {
+      this._inspector = [ 
+        {
+          name: 'Root',
+          icon: 'fal fa-file',
+          children: !this.currentView ? [] : [this.toInspectorNode(this.currentView)]
+        }
+      ];
+
+      //this._inspector = [this.currentView];
+
+    }
+    return this._inspector;
+  }
+
+  private toInspectorNode(component: Bindable) {
+    switch (component.componentType) {
+      case 'Insertion':
+        component = this.referenceService.getValue(component, component.insertion);
+    }
+    return {
+      name: component.id ||  `<${component.componentType}>`,
+      icon: 'fal fa-code',
+      children: this.toInspectorNodes(component)
+    }
+  }
+
+  private toInspectorNodes(component: Bindable) {
+    return component.components.map((child: Bindable) => this.toInspectorNode(child));
   }
 
 }

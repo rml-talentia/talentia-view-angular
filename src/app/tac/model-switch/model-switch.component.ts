@@ -22,11 +22,7 @@ export class ModelSwitchComponent extends BaseComponent {
 
   doClick(event: MouseEvent) {
     const index = this.component.components.indexOf(this.component.dropdown);
-    console.log(this.component);
-    console.log(index);
-   // console.log(this.component.components[0]);
-  //  console.log(this.component.components[1]);
-   this.component.dropdown = this.component.components[0 !== index ? 0 : 1];
+    this.component.dropdown = this.component.components[0 !== index ? 0 : 1];
   }
   
 }

@@ -42,15 +42,15 @@ export class InputComponent extends InputBaseComponent implements AfterContentIn
 
   @ViewChild('input', { read: TFInputComponent })
   input!: TFInputComponent;
-
   @ViewChild('dropdown', { read: TemplateRef })
   dropdownRef!: TemplateRef<any>;
-
   @ContentChildren(ItemTypeDirective)
   templates!: QueryList<ItemTypeDirective>;
-
   @ContentChild(DropdownComponent)
   dropdown!: DropdownComponent;
+  @ContentChild(ListComponent)
+  list!: ListComponent;
+
 
   @Output() 
   blur: EventEmitter<TFEvent> = new EventEmitter<TFEvent>();
@@ -148,35 +148,25 @@ export class InputComponent extends InputBaseComponent implements AfterContentIn
     this.blur.emit(new TFEvent("blur", this, { "event": event }));
   }
 
-  @ContentChild(ListComponent)
-  list!: ListComponent;
 
-  keyupHandler(event: KeyboardEvent) {
-    //console.log('[text-input] keypressHandler:', event);
-    if (!this.list) {
-      return;
+  keydownHandler(event: KeyboardEvent) {
+    if (!!this.list) {
+      //this.list.search = this.input.value;
+      this.list.keydownHandler(event);
     }
-    this.list.search = this.input.value
   }
 
-  doClick(event: MouseEvent) {
-    console.log('[text-input] doClick:', event);
-    this.focus();
-
-    // this.appComponent.openDropdown({
-    //   templateRef: this.dropdownRef,
-    //   elementRef: this.input.input,
-    //   data: this.component
-    // });
-    
-
-
-    if (!!this.dropdown) {
-      
-      this.dropdown.open();
-    
-
+  inputHandler(event: Event) {
+    console.log('event:', event);
+    if (!!this.list) {
+      this.list.inputHandler(event);
     }
+  }
 
+  clickHandler(event: MouseEvent) {
+    this.focus();
+    if (!!this.dropdown) {      
+      this.dropdown.open();
+    }
   }
 }

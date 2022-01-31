@@ -125,6 +125,7 @@ export class TemplateService {
           }
 
           switch (component.componentType) {
+            case 'Layout':
             case 'View':
               template.push(start ? `
               <tac-view>
@@ -293,7 +294,7 @@ export class TemplateService {
                     text-align: left;
                     white-space: normal;
                     ${!column.value ? '' : 'font-weight: bold;'}"
-                  ><span>{{item.${column.field}}}</span></div>`).join('\n') + `
+                  ><span>{{item.data.${column.field}}}</span></div>`).join('\n') + `
                   </div>
                 </ng-template>`);
 
@@ -315,19 +316,6 @@ export class TemplateService {
                 ` : ``);
               break;
             case 'Chosen':
-              console.log(component);
-
-              /*
-                                <span *ngIf="false"
-                        style="
-                          flex: ${Math.ceil(column.size * 100) / 100};
-                          ${!column.value ? '' : ' font-weight: bold;'}
-                          ${0 < index ? '' : 'margin-left: 0.5em;'}
-                          display: inline-block;
-                          background: lightgray;
-                          border-radius: 2px;">...</span>
-                          */
-
                           //  flex: ${Math.ceil(column.size * 100) / 100};
               if (null !== component.model.columns) {
                 const itemTemplates2 = [component.model]
@@ -357,7 +345,7 @@ export class TemplateService {
                             text-align: left;
                             white-space: normal;
                             ${!column.value ? '' : 'font-weight: bold;'}"
-                          ><span>{{item.${column.field}}}</span></div>`).join('\n') + `
+                          ><span>{{item.data.${column.field}}}</span></div>`).join('\n') + `
                       </div>
                     </ng-template>`);
 

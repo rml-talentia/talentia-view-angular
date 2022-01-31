@@ -10,6 +10,7 @@ export class PageContentComponent extends ViewContainerComponent {
 
   isIgnoredComponent(component: any): boolean {
     switch(component.componentType) {
+      case 'Layout':
       case 'CommandsPanel':
       case 'AsidePanel':
         return true;

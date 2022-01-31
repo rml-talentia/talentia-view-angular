@@ -1,0 +1,12 @@
+
+.tac-dialog.modal {
+    pointer-events: none;
+}
+
+.tac-dialog .modal-dialog {
+    pointer-events: all;
+}
+
+.tac-dialog .modal-content {
+    overflow: hidden !important;
+}

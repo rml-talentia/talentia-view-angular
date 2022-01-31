@@ -37,6 +37,35 @@
 <app-dropdown-panel
   #dropdownPanel></app-dropdown-panel>
 
-<app-view-editor
-  *ngIf="designMode"></app-view-editor>
+
   -->
+<app-view-editor
+  *ngIf="designMode">
+
+
+
+
+
+</app-view-editor>
+
+<tf-dialog 
+  #inspectorDialog
+  [backdrop]="false"
+  [showHeader]="true"
+  [titleInfo]="{ title:'Inspector', mode:'info' }"
+  dialogSize="sm">
+  <tf-simple-panel content>
+   
+  </tf-simple-panel>
+</tf-dialog>
+
+<app-dialog>
+
+  <tf-treeview 
+    [data]="inspector" 
+    displayField="name" 
+    childrenField="children"
+    iconField="icon">
+  </tf-treeview>
+
+</app-dialog>
