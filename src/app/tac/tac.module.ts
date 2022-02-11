@@ -37,6 +37,7 @@ import { ModelSwitchComponent } from './model-switch/model-switch.component';
 import { ListComponent } from './list/list.component';
 import { ItemTypeDirective } from './itemType/itemType.directive';
 import { DropdownComponent } from './dropdown/dropdown.component';
+import { EditableLayoutComponent } from './editable-layout/editable-layout.component';
 
 
 @NgModule({
@@ -60,7 +61,8 @@ import { DropdownComponent } from './dropdown/dropdown.component';
     ModelSwitchComponent,
     ListComponent,
     ItemTypeDirective,
-    DropdownComponent
+    DropdownComponent,
+    EditableLayoutComponent
   ],
   imports: [
     TFUILibraryModule,
@@ -113,7 +115,8 @@ import { DropdownComponent } from './dropdown/dropdown.component';
     RadioComponent,
     ModelSwitchComponent,
     ListComponent,
-    DropdownComponent
+    DropdownComponent,
+    EditableLayoutComponent
   ]
 })
 export class TacModule { 

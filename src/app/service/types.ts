@@ -51,7 +51,7 @@ export class Component {
         return null !== value 
             && 'object' === typeof value
             && 'bindings' in value
-            && null != value.bindings
+            && null !== value.bindings
             && 'Bindings' === value.bindings.bindingsType;
     }
 

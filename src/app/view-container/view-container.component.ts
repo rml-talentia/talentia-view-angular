@@ -14,7 +14,7 @@ import {
 import { Observable } from 'rxjs';
 import { TemplateService } from '../service/TemplateService';
 import { tap } from 'rxjs/operators';
-import { TFMessageService } from '@talentia/components';
+import { Component as Bindable } from '../service/types';
 
 
 @Component({
@@ -73,11 +73,14 @@ export class ViewContainerComponent implements OnDestroy, AfterViewInit, OnChang
       .pipe(tap((componentRef: ComponentRef<any>) => this.componentRef = componentRef));
   }
 
-  isIgnoredComponent(component: any): boolean {
+  isIgnoredComponent(options: IgnoredComponentOptions): boolean {
     return false;
   }
   
 }
 
-
+export interface IgnoredComponentOptions {
+  component: Bindable;
+  viewEditor: boolean;
+}
 

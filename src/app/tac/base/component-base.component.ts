@@ -1,4 +1,4 @@
-import { Directive, Input } from "@angular/core";
+import { Directive, ElementRef, Input, QueryList, ViewChildren } from "@angular/core";
 import { Component } from "src/app/service/types";
 
 
@@ -7,7 +7,6 @@ import { Component } from "src/app/service/types";
 })
 export abstract class BaseComponent {
 
-   
     _component!: Component;  
 
     @Input()

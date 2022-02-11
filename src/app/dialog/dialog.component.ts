@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-dialog',
@@ -7,7 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DialogComponent implements OnInit {
 
-  constructor() { }
+  @ViewChild('dialog', { read: ElementRef, static: true })
+  dialog!: ElementRef<any>;
+
+  bounds = { x: 100, y: 10 };
+
+  constructor(
+    @Inject(DOCUMENT) private document: Document) {
+  }
 
   ngOnInit(): void {
   }
@@ -24,10 +32,11 @@ export class DialogComponent implements OnInit {
     return {
       'position': 'absolute',
       'margin': '0',
-      'left': '100px',
-      'top': '10px',
-      'width': '560px',
-      'height': '320px'
+      'left': this.bounds.x + 'px',
+      'top': this.bounds.y + 'px',
+      'max-width': 'initial',
+      'width': '320px',
+      'height': '450px'
     };
   }
 
@@ -43,6 +52,20 @@ export class DialogComponent implements OnInit {
     };
   }
 
-
+  headerMousedownHandler(downEvent: MouseEvent): void {
+    const oldBounds = { ...this.bounds };// this.dialog.nativeElement.getBoundingClientRect();
+    const newBounds = this.bounds;
+    const mousemove = (moveEvent: MouseEvent) => {
+      newBounds.x = oldBounds.x + moveEvent.clientX - downEvent.clientX;
+      newBounds.y = oldBounds.y + moveEvent.clientY - downEvent.clientY;
+    };
+    const mouseup = (upEvent: MouseEvent) => {
+      mousemove(upEvent);
+      this.document.defaultView?.removeEventListener('mouseup', mouseup);
+      this.document.defaultView?.removeEventListener('mousemove', mousemove);
+    };
+    this.document.defaultView?.addEventListener('mousemove', mousemove);
+    this.document.defaultView?.addEventListener('mouseup', mouseup);
+  }
 
 }

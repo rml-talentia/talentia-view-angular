@@ -1,0 +1,11 @@
+.tac-view-editor {
+    position: fixed;
+    top: 50px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+    /* background: rgba(180, 180, 180, .5); */
+    /* tf-titlebar is at z-index 900 */
+    z-index: 1500; /* behind dialogs */
+}

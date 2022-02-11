@@ -18,7 +18,6 @@
   <tf-flat-button 
     toolbar-right-before 
     icon="fal fa-edit"
-    [disabled]="designMode" 
     (selected)="toggleDesignMode()"></tf-flat-button>
   <tf-breadcrumb
     titlebar-breadcrumb 
@@ -33,21 +32,21 @@
   <app-page-content 
     page-content></app-page-content>  
 </tf-shell>
-  <!--
-<app-dropdown-panel
-  #dropdownPanel></app-dropdown-panel>
+<app-view-editor-tools
+  *ngIf="designMode"
+  [view]="currentView">
+  <app-dialog>
+    <tf-treeview 
+      [data]="inspector" 
+      displayField="name" 
+      childrenField="children"
+      iconField="icon">
+    </tf-treeview>
+  </app-dialog>
+</app-view-editor-tools>
 
 
-  -->
-<app-view-editor
-  *ngIf="designMode">
-
-
-
-
-
-</app-view-editor>
-
+<!-- deprecated -->
 <tf-dialog 
   #inspectorDialog
   [backdrop]="false"
@@ -55,17 +54,6 @@
   [titleInfo]="{ title:'Inspector', mode:'info' }"
   dialogSize="sm">
   <tf-simple-panel content>
-   
   </tf-simple-panel>
 </tf-dialog>
 
-<app-dialog>
-
-  <tf-treeview 
-    [data]="inspector" 
-    displayField="name" 
-    childrenField="children"
-    iconField="icon">
-  </tf-treeview>
-
-</app-dialog>

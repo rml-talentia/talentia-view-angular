@@ -3,10 +3,12 @@
     class="tac-dialog modal in"
     [style]="wrapperStyle">        
     <div 
+        #dialog
         class="modal-dialog modal-sm tf-modal-dialog-resizable"
         [style]="dialogStyle">
         <div class="modal-content" style="height: 100%;">
-            <div class="modal-header">
+            <div class="modal-header"
+                (mousedown)="headerMousedownHandler($event)">
                 <h5 class="modal-title pull-left">Inspector</h5>
                 <div class="tf-dialog-header-controls"></div>
             </div>

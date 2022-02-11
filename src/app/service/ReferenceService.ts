@@ -69,14 +69,14 @@ export class ReferenceService {
             case 'AtIndexReference':
                 return null === parentValue ? null : this.asValue(parentValue[reference.index]);
             case 'ByIdReference':
+                if (null === reference.id) {
+                    return null;       
+                }
                 return this.asValue(findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
-                    switch (component.componentType) {
-                        default:
-                            if (reference.id !== component.id) {
-                                return;
-                            }
-                            return component;
+                    if (reference.id !== component.id) {
+                        return;
                     }
+                    return component;
                 }));
             case 'DefaultReference':
                 return null !== parentValue ? parentValue : this._getValue(component, reference.value);

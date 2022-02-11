@@ -12,12 +12,4 @@ export class ViewEditorComponent implements OnInit {
   ngOnInit(): void {
   }
 
-
-  mousedownHandler(event: MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-
-
 }
