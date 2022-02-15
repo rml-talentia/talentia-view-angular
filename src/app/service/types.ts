@@ -20,10 +20,10 @@ export type Reference = {
     [key: string]: any
 };
 
-export class Component {
+export class Bindable {
 
     [key: string]: any;
-    public parent: Component | null = null;
+    public parent: Bindable | null = null;
    // private _id: string = uuid.v4(); 
     private _options: any;
     private _data: any;
@@ -37,7 +37,7 @@ export class Component {
     constructor(
         private _referenceService: ReferenceService,
         options: any,
-        parent: Component | null) {
+        parent: Bindable | null) {
         this.componentType = options.componentType;
         this._options = options; // TODO : deepFreeze ? https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
         this.parent = parent;
@@ -70,8 +70,8 @@ export class Component {
     }
 
     private populateValue(value: any) {
-        if (Component.isBindable(value)) {
-            return new Component(this._referenceService, value, this);
+        if (Bindable.isBindable(value)) {
+            return new Bindable(this._referenceService, value, this);
         }
         if (Array.isArray(value)) {
             const result: any[] = [];
@@ -141,7 +141,7 @@ export class Component {
         });
     }
 
-    getClosest(componentType: string): Component | null {
+    getClosest(componentType: string): Bindable | null {
         if (this.componentType === componentType) {
             return this;
         }
@@ -173,12 +173,12 @@ export class Component {
                     continue;
             }
             let value: any = this[key];
-            if (value instanceof Component) {
+            if (value instanceof Bindable) {
                 value = value.toObject();
             }
             if (Array.isArray(value)) {
                 value = value.map(item => {
-                    if (item instanceof Component) {
+                    if (item instanceof Bindable) {
                         return item.toObject();
                     }
                     return item;

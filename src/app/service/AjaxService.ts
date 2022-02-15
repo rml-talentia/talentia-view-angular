@@ -5,7 +5,7 @@ import { AppService } from "./AppService";
 import { MutationService } from "./MutationService";
 import { ReferenceService } from "./ReferenceService";
 import { TransactionService } from "./TransactionService";
-import { Action, Component, Reference } from "./types";
+import { Action, Bindable, Reference } from "./types";
 
 
 type AjaxRequest = {
@@ -24,10 +24,10 @@ export class AjaxService {
         private transactionService: TransactionService) {
     }
 
-    doTableAjax(component: Component, action: Component) {
+    doTableAjax(component: Bindable, action: Bindable) {
 
-        const dataGrid: Component | null = action.getClosest('DataGrid');
-        const control: Component | null | undefined = action.parent?.parent;
+        const dataGrid: Bindable | null = action.getClosest('DataGrid');
+        const control: Bindable | null | undefined = action.parent?.parent;
 
 
         console.log('action:', action);
@@ -67,7 +67,7 @@ export class AjaxService {
                 });
     }
 
-    doAjax(component: Component, action: Component) {
+    doAjax(component: Bindable, action: Bindable) {
         console.log('[AjaxService] component:', component, ' action:', action);
 
         const session = findByComponentType(getRoot(component), 'SessionComponent');
@@ -114,7 +114,7 @@ export class AjaxService {
                 });
     }
 
-    _doAjax(component: Component, action: Action) {
+    _doAjax(component: Bindable, action: Action) {
         console.log('[AjaxService] component:', component, ' action:', action);
 
         const sessionComponent = findByComponentType(getRoot(component), 'SessionComponent');

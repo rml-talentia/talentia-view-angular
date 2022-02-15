@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AppComponent } from "../app.component";
-import { Component } from "./types";
+import { Bindable } from "./types";
 
 @Injectable()
 export class AppService {
@@ -23,7 +23,7 @@ export class AppService {
         this.appComponent.openView(view);
     }
 
-    getView(): Component {
+    getView(): Bindable {
       return this.appComponent.currentView;
     }
 

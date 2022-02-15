@@ -14,7 +14,7 @@ import {
 import { Observable } from 'rxjs';
 import { TemplateService } from '../service/TemplateService';
 import { tap } from 'rxjs/operators';
-import { Component as Bindable } from '../service/types';
+import { Bindable as Bindable } from '../service/types';
 
 
 @Component({

@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, Input, OnInit, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-dialog',
@@ -8,10 +8,16 @@ import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core'
 })
 export class DialogComponent implements OnInit {
 
+  @Input()
+  title: string = '';
+  @Input()
+  bounds = { x: 100, y: 10, width: 320, height: 450 };
+
+
   @ViewChild('dialog', { read: ElementRef, static: true })
   dialog!: ElementRef<any>;
 
-  bounds = { x: 100, y: 10 };
+
 
   constructor(
     @Inject(DOCUMENT) private document: Document) {
@@ -32,11 +38,11 @@ export class DialogComponent implements OnInit {
     return {
       'position': 'absolute',
       'margin': '0',
+      'max-width': 'initial',
       'left': this.bounds.x + 'px',
       'top': this.bounds.y + 'px',
-      'max-width': 'initial',
-      'width': '320px',
-      'height': '450px'
+      'width': this.bounds.width + 'px',
+      'height': this.bounds.height + 'px'
     };
   }
 

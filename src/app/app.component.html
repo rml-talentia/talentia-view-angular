@@ -32,28 +32,78 @@
   <app-page-content 
     page-content></app-page-content>  
 </tf-shell>
+
 <app-view-editor-tools
   *ngIf="designMode"
   [view]="currentView">
-  <app-dialog>
+  
+  <app-dialog
+    title="Inspector"
+    [bounds]="{ x: 100, y: 10, width: 320, height: 450 }">
     <tf-treeview 
+      #inspectorView
       [data]="inspector" 
       displayField="name" 
       childrenField="children"
-      iconField="icon">
+      iconField="icon"
+      [allowDrag]="true"
+      [selection]="inspectorSelection">
+      <ng-template #treeNodeTemplate let-node="node" let-index="index">
+        <span
+          style="font-weight: normal !important;"
+          (mousedown)="inspectorMousedownHandler($event, node)">{{node.data.name}}</span>
+      </ng-template>
     </tf-treeview>
   </app-dialog>
+
+  <app-dialog
+    title="Palette"
+    [bounds]="{ x: 100, y: 470, width: 320, height: 200 }">
+    
+    <div
+    style="padding: 2em 0; overflow-y: auto; height: 100%;">
+    <tf-grid-layout>
+      <tf-panel 
+          padding="xs"
+          colorIndex="410" 
+          [coloredBackground]="true" 
+          [cols]="4"
+          style="text-align: center;">
+          <tf-icon mode="primary" size="xs" icon="fas fa-code"></tf-icon>
+          <div>
+            <tf-text
+            size="sm" text="Panel"></tf-text>
+          </div>
+      </tf-panel>
+      <tf-panel 
+          padding="xs"
+          colorIndex="410" 
+          [coloredBackground]="true" 
+          [cols]="4"
+          style="text-align: center;">
+          <tf-icon mode="primary" size="xs" icon="fas fa-code"></tf-icon>
+          <div>
+            <tf-text
+            size="sm" text="Collapse Panel"></tf-text>
+          </div>
+      </tf-panel>
+      
+      <tf-panel 
+          padding="xs"
+          colorIndex="410" 
+          [coloredBackground]="true" 
+          [cols]="4"
+          style="text-align: center;">
+          <tf-icon mode="primary" size="xs" icon="fas fa-code"></tf-icon>
+          <div>
+            <tf-text 
+            size="sm"
+             text="Rich Text"></tf-text>
+          </div>
+      </tf-panel>
+    </tf-grid-layout>
+    </div>
+
+  </app-dialog>
+
 </app-view-editor-tools>
-
-
-<!-- deprecated -->
-<tf-dialog 
-  #inspectorDialog
-  [backdrop]="false"
-  [showHeader]="true"
-  [titleInfo]="{ title:'Inspector', mode:'info' }"
-  dialogSize="sm">
-  <tf-simple-panel content>
-  </tf-simple-panel>
-</tf-dialog>
-

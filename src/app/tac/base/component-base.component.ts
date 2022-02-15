@@ -1,5 +1,5 @@
 import { Directive, ElementRef, Input, QueryList, ViewChildren } from "@angular/core";
-import { Component } from "src/app/service/types";
+import { Bindable } from "src/app/service/types";
 
 
 @Directive({
@@ -7,14 +7,14 @@ import { Component } from "src/app/service/types";
 })
 export abstract class BaseComponent {
 
-    _component!: Component;  
+    _component!: Bindable;  
 
     @Input()
-    get component(): Component {
+    get component(): Bindable {
         return this._component;
     }
 
-    set component(component: Component) {
+    set component(component: Bindable) {
         if (!!this._component) {
             // Will probably never happens.
             this._component._view = null;

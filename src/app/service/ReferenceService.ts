@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { findByComponentType, findInView } from "../tac/util";
 import { DataGridService } from "./DataGridService";
-import { Component, Reference } from "./types";
+import { Bindable, Reference } from "./types";
 
 
 
@@ -35,21 +35,21 @@ export class ReferenceService {
     constructor(
         private dataGridService: DataGridService) {}
 
-    toInstance(data: any, parent?: Component): Component {
-        return new Component(this, data, parent || null);
+    toInstance(data: any, parent?: Bindable): Bindable {
+        return new Bindable(this, data, parent || null);
     }
 
-    getValues(component: Component, references: Reference[]): any[] {
+    getValues(component: Bindable, references: Reference[]): any[] {
         return references.map(reference => this._getValue(component, reference));
     }
 
-    getValueOrDefault(component: Component, reference: Reference, defaultValue: any): any {
+    getValueOrDefault(component: Bindable, reference: Reference, defaultValue: any): any {
       //  console.log('[ReferenceService] getValueOrDefault(...)');
         const value = this._getValue(component, reference);
         return null !== value ? value : defaultValue;
     }
 
-    getValue(component: Component, reference: Reference): any {
+    getValue(component: Bindable, reference: Reference): any {
         //console.log('[ReferenceService] getValue(component:', component, 'reference:', reference, ')');
         // if ('_value' in reference) {
         //     // Cached.
@@ -58,7 +58,7 @@ export class ReferenceService {
         return this._getValue(component, reference);
     }
 
-    private _getValue(component: Component, reference: Reference): any {
+    private _getValue(component: Bindable, reference: Reference): any {
         
         const parentValue = this.getParentValue(component, reference);
         switch (reference.referenceType) {
@@ -72,7 +72,7 @@ export class ReferenceService {
                 if (null === reference.id) {
                     return null;       
                 }
-                return this.asValue(findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
+                return this.asValue(findInView(this.getRoot(component), (component: Bindable, parent: Bindable, index: Number) => {
                     if (reference.id !== component.id) {
                         return;
                     }
@@ -87,7 +87,7 @@ export class ReferenceService {
             case 'FormReference':
                 return this.getClosest(component, 'Form');
             case 'ControlReference':
-                return this.asValue(findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
+                return this.asValue(findInView(this.getRoot(component), (component: Bindable, parent: Bindable, index: Number) => {
                     // TODO : handle intheritence ???
                     switch (component.componentType) {
                         case 'Input':
@@ -126,7 +126,7 @@ export class ReferenceService {
                         return this.asValue(this.dataGridService.getRowByIndex(dataGrid, reference.index));
                 }
             case 'DataReference':
-                for (let current: (Component | null) = component; null !== current; current = current.parent) {
+                for (let current: (Bindable | null) = component; null !== current; current = current.parent) {
                     // TODO : test reference rather than actual value ???
                     if ('data' in current && null !== current.data) {
                         return current;
@@ -134,7 +134,7 @@ export class ReferenceService {
                 }
                 return null;
             case 'SessionReference':
-                const sessionComponent: any = findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
+                const sessionComponent: any = findInView(this.getRoot(component), (component: Bindable, parent: Bindable, index: Number) => {
                     switch (component.componentType) {
                         case 'SessionComponent':
                             return component;
@@ -144,7 +144,7 @@ export class ReferenceService {
                 }) || null;
                 return null === sessionComponent ? null : sessionComponent.data[reference.key];
             case 'ContextDataReference':
-                const contextDataComponent: any = findInView(this.getRoot(component), (component: Component, parent: Component, index: Number) => {
+                const contextDataComponent: any = findInView(this.getRoot(component), (component: Bindable, parent: Bindable, index: Number) => {
                     switch (component.componentType) {
                         case 'ContextDataComponent':
                             return component;
@@ -158,7 +158,7 @@ export class ReferenceService {
         }
     }
 
-    addValue(component: Component, reference: Reference, value: any): void {
+    addValue(component: Bindable, reference: Reference, value: any): void {
         switch (reference.referenceType) {
             case 'RowByIndexReference':
                 const dataGrid = component.getClosest('DataGrid');
@@ -173,7 +173,7 @@ export class ReferenceService {
         }
     }
 
-    spliceValue(component: Component, reference: Reference, start: number, count: number, addedElements: any[]): void {
+    spliceValue(component: Bindable, reference: Reference, start: number, count: number, addedElements: any[]): void {
         switch (reference.referenceType) {
             case 'RowsReference':
                 const dataGrid = component.getClosest('DataGrid');
@@ -185,7 +185,7 @@ export class ReferenceService {
         }
     }
 
-    setValue(component: Component, reference: Reference, value: any): void {
+    setValue(component: Bindable, reference: Reference, value: any): void {
         const parentValue = this.getParentValue(component, reference);
         switch (reference.referenceType) {
             case 'ValueReference':
@@ -233,7 +233,7 @@ export class ReferenceService {
         }
     }
 
-    private getClosest(component: Component, componentType: string): Component | null {
+    private getClosest(component: Bindable, componentType: string): Bindable | null {
         if (componentType === component.componentType) {
             return component;
         }
@@ -243,11 +243,11 @@ export class ReferenceService {
         return this.getClosest(component.parent, componentType);
     }
 
-    private getRoot(component: Component): Component {
+    private getRoot(component: Bindable): Bindable {
         return null === component.parent ? component : this.getRoot(component.parent);
     }
 
-    private getParentValue(component: Component, reference: Reference): any {
+    private getParentValue(component: Bindable, reference: Reference): any {
         return null === reference.parent ? null : this._getValue(component, reference.parent);
     }
 

@@ -2,12 +2,12 @@ import { HttpClient } from "@angular/common/http";
 import { ChangeDetectorRef, Injectable } from "@angular/core";
 import { map, tap } from "rxjs/operators";
 import { TransactionService } from "./TransactionService";
-import { Component } from "./types";
+import { Bindable } from "./types";
 
 
 export interface GetPageOptions {
 
-    model: Component;
+    model: Bindable;
     search: string;
     page: number;
     pageSize: number;

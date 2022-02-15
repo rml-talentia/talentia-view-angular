@@ -4,7 +4,7 @@ import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { DataGridComponent } from "../tac/data-grid/data-grid.component";
 import { TransactionService } from "./TransactionService";
-import { Component } from "./types";
+import { Bindable } from "./types";
 
 type QueryOptions = {
     page: number,
@@ -169,7 +169,7 @@ export class DataGridService {
         delete this.dataSources[dataGrid.component.name];
     }
 
-    getRows(dataGrid: Component) {
+    getRows(dataGrid: Bindable) {
       const dataSource = this.dataSources[dataGrid.name];
       if (!dataSource) {
           return null;
@@ -177,7 +177,7 @@ export class DataGridService {
       return dataSource.getRows();
     }
 
-    getRowByIndex(dataGrid: Component, index: number) {
+    getRowByIndex(dataGrid: Bindable, index: number) {
         const dataSource = this.dataSources[dataGrid.name];
         if (!dataSource) {
             return null;
@@ -185,7 +185,7 @@ export class DataGridService {
         return dataSource.getRowByIndex(index);
     }
 
-    setRowByIndex(dataGrid: Component, index: number, row: any) {
+    setRowByIndex(dataGrid: Bindable, index: number, row: any) {
         const dataSource = this.dataSources[dataGrid.name];
         if (!dataSource) {
             return;
@@ -193,7 +193,7 @@ export class DataGridService {
         dataSource.setRowByIndex(index, row);
     }
 
-    addRowAtIndex(dataGrid: Component, index: number, row: any) {
+    addRowAtIndex(dataGrid: Bindable, index: number, row: any) {
       const dataSource = this.dataSources[dataGrid.name];
       if (!dataSource) {
           return;
@@ -201,7 +201,7 @@ export class DataGridService {
       dataSource.addRowAtIndex(index, row);
     }
 
-    setValue(dataGrid: Component, rowIndex: number, field: string, value: any) {
+    setValue(dataGrid: Bindable, rowIndex: number, field: string, value: any) {
         const dataSource = this.dataSources[dataGrid.name];
         if (!dataSource) {
             return;
@@ -210,7 +210,7 @@ export class DataGridService {
         row[field] = value;
     }
 
-    splice(dataGrid: Component, start: number, count: number, rows: any[]) {
+    splice(dataGrid: Bindable, start: number, count: number, rows: any[]) {
       const dataSource = this.dataSources[dataGrid.name];
       if (!dataSource) {
           return;

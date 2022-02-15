@@ -1,0 +1,10 @@
+
+
+.tac-editable-layout-placeholder {
+    width: 100%;
+    padding: 10px 0;
+    margin: 3px;
+    background: rgba(172, 172, 172, 0.25);
+    border: 1px dashed rgba(172, 172, 172, 0.5);
+    text-align: center;
+}

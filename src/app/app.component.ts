@@ -1,5 +1,5 @@
-import { AfterViewChecked, AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ElementRef, forwardRef, InjectionToken, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
-import { TFNavigationItem, TFShellOptions, TFUserInfo } from '@talentia/components/shell';
+import { AfterViewChecked, AfterViewInit, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ElementRef, forwardRef, Inject, InjectionToken, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
+import { TFShellOptions, TFUserInfo } from '@talentia/components/shell';
 import { concat, observable, Observable } from 'rxjs';
 import { AsidePanelComponent } from './aside-panel/aside-panel.component';
 import { CommandsPanelComponent } from './commands-panel/commands-panel.component';
@@ -8,8 +8,8 @@ import { ContextService } from './service/ContextService';
 import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
 import { toArray } from 'rxjs/operators';
-import { findByComponentType } from './tac/util';
-import { TFDialogComponent, TFLocalizationService, TFMessageService } from '@talentia/components';
+import { findByComponentId, findByComponentType } from './tac/util';
+import { TFDialogComponent, TFLocalizationService, TFMessageService, TFTreeViewComponent } from '@talentia/components';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
 import { ReferenceService } from './service/ReferenceService';
 import { ActionService } from './service/ActionService';
@@ -17,7 +17,9 @@ import { MutationService } from './service/MutationService';
 import { AjaxService } from './service/AjaxService';
 import { EventService } from './service/EventService';
 import { ToolsService } from './service/ToolsService';
-import { Component as Bindable } from './service/types';
+import { Bindable as Bindable } from './service/types';
+import { DOCUMENT } from '@angular/common';
+import { EditableLayoutComponent } from './tac/editable-layout/editable-layout.component';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -66,7 +68,7 @@ export class AppComponent implements OnInit {
   pageLoading: boolean = false;
   showTitlebar: boolean = true;
   userInfo!: TFUserInfo;
-  navigationHistory: TFNavigationItem[] = [];
+  navigationHistory: any[] = [];
   private _menu!: Observable<any>;
   private _options!: TFShellOptions;
   
@@ -82,6 +84,7 @@ export class AppComponent implements OnInit {
   viewAsData: any;
 
   constructor(
+    @Inject(DOCUMENT) private document: Document,
     public viewContainerRef: ViewContainerRef,
     private messageService: TFMessageService,
     //private applicationRef: ApplicationRef,
@@ -165,8 +168,21 @@ export class AppComponent implements OnInit {
           view.components[0],
           {
             componentType: 'EditableLayout',
+            id: 'pageContent',
             bindings: { bindingsType: 'Bindings', references: {} },
             components: this.toInsertableComponents(view.components[0].components)
+          },
+          {
+            componentType: 'EditableLayout',
+            id: 'editableCommandsPanel',
+            bindings: { references: [] },
+            components: []
+          },
+          {
+            componentType: 'EditableLayout',
+            id: 'editableAsidePanel',
+            bindings: { references: [] },
+            components: []
           }
         ]
       };
@@ -182,8 +198,8 @@ export class AppComponent implements OnInit {
     // Remove previous view error messages.
     this.messageService.clearMessages();
     // Slit view into three view-container.
-    const commandsPanel = !view.components || !view.components.length ? null : findByComponentType(view.components[1], 'CommandsPanel');
-    const asidePanel = !view.components || !view.components.length ? null : findByComponentType(view.components[1], 'AsidePanel');
+    const commandsPanel = !view.components || !view.components.length ? null : this.designMode ? view.components[2] : findByComponentType(view.components[1], 'CommandsPanel');
+    const asidePanel = !view.components || !view.components.length ? null : this.designMode ? view.components[3] : findByComponentType(view.components[1], 'AsidePanel');
     const pageContent = !view.components || !view.components.length ? [] : [view.components[1]];
     return concat(
         this.asidePanel.open({ name: 'asidePanel', components: !asidePanel ? [] : [asidePanel] }),
@@ -261,23 +277,23 @@ export class AppComponent implements OnInit {
     return this._options;
   }
 
-  createNavigationHistory(view: any): TFNavigationItem[] {
+  createNavigationHistory(view: any): any[] { // TFNavigationItem
     if (!!view.legacy) {
       return [
-        <TFNavigationItem> {
+        {
           title: 'Chargement...'
         }
       ];
     }
     const component = findByComponentType(view, 'Breadcrumb');
     return [
-      <TFNavigationItem> {
+      {
         title: 'Acceuil'
       }
     ].concat(component     
       .items
       .map((data: any) => {
-        return <TFNavigationItem> {
+        return {
           title: data.title.text,
           uri: data.url
         };
@@ -313,54 +329,39 @@ export class AppComponent implements OnInit {
 
 
   //
+  // View Editor 
   //
-  //
-
-
 
   designMode: boolean = false;
-  // this.inspectorDialog.show();
 
   toggleDesignMode() {
-    if (this.designMode = !this.designMode) {
-      //this.clearView();
-
-      this
-        .showView({
-          componentType: 'View',
-          bindings: { references: [] },
-          components: [
-            this.viewAsData.components[0],
-            {
-              componentType: 'EditableLayout',
-              bindings: { references: [] },
-              components: this.viewAsData.components[1].components
-            }
-          ]
-        })
-        .subscribe({
-          next(componentRefs: ComponentRef<any>[]) {
-            console.log('[APP] views:', componentRefs);
-          }
-        });
-
-    } else {
-      this
-        .showView(this.viewAsData)
-        .subscribe({
-          next(componentRefs: ComponentRef<any>[]) {
-            console.log('[APP] views:', componentRefs);
-          }
-        });
-    }
+    this.designMode = !this.designMode;
+    this
+      .showView(this.viewAsData)
+      .subscribe({
+        next(componentRefs: ComponentRef<any>[]) {
+          console.log('[APP] views:', componentRefs);
+        }
+      });
   }
 
+  //
+  // Dragging Drop
+  //
 
-  @ViewChild('inspectorDialog', { read: TFDialogComponent })
-  inspectorDialog!: TFDialogComponent;
+  dragging: Dragging | null = null;
+
+
+
+  //
+  // Inspector
+  //
+
+  @ViewChild('inspectorView', { read: TFTreeViewComponent })
+  inspectorView!: TFTreeViewComponent;
+  inspectorSelection: any[] = [];
 
   _inspector: any = null;
-
   _guard: any[] = [];
 
   get inspector(): any {
@@ -404,7 +405,66 @@ export class AppComponent implements OnInit {
     return component.components.map((child: Bindable) => this.toInspectorNode(child)).filter((node: any) => null !== node);
   }
 
+  inspectorMousedownHandler(ev: any, node: any) {
+    console.log('mousedown:', ev, node);
+
+    // https://github.com/Talentia-Software/core-components/blob/develop/projects/components/src/lib/ui/treeview/tf-treeview.component.ts
+    // https://angular2-tree.readme.io/docs/drag-drop#drag-a-node-outside-of-the-tree
+    // Selection on mousedown rather than on click.
+    this.inspectorView.selectNode(node);
+
+    // Start dragging
+    const glass = this.document.createElement('div');
+    glass.style.position = 'fixed';
+    (<any>glass.style).inset = '0';
+    glass.style.zIndex = '3000';
+    glass.style.cursor = 'grabbing';
+
+
+
+
+    
+    
+
+
+    const mousemove = (moveEvent: MouseEvent) => {
+      if (null === this.dragging) {
+        this.dragging = {};
+      }
+
+    };
+    const mouseup = (upEvent: MouseEvent) => {
+      mousemove(upEvent);
+      // Drop
+      this.dragging = null;
+
+
+      //
+      const editableLayout: EditableLayoutComponent = this.currentView.components[1]._view;
+      const component = findByComponentId(this.viewAsData, node.data.name);
+      console.log('component:', component);
+      console.log('currentView:', this.currentView);
+      editableLayout.insertComponent(component);
+
+
+      glass.parentElement?.removeChild(glass);
+    };    
+    glass.addEventListener('mousemove', mousemove);
+    glass.addEventListener('mouseup', mouseup);
+    this.document.body.appendChild(glass);
+  }
+
+  
 }
+
+
+interface Dragging {
+
+}
+
+
+
+
 
 
 

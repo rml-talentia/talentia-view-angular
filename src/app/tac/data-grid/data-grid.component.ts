@@ -86,7 +86,6 @@ export class DataGridComponent extends BaseComponent implements OnInit, OnDestro
       defaultCellRenderer: CellRendererComponent
     };
 
- 
 
     concat(
       this
@@ -97,7 +96,7 @@ export class DataGridComponent extends BaseComponent implements OnInit, OnDestro
             .components
             .map((column: any) => ({
               data: column,
-              template: this // TODO: duplicate code
+              template: this
                 .viewService
                 .createTemplate({
                   components: column.components,
@@ -105,22 +104,22 @@ export class DataGridComponent extends BaseComponent implements OnInit, OnDestro
                 })
             }))
         }),
-        this
-          .compilerService
-          .getColumnFactories({
-            columns: this
-              .component
-              .components
-              .map((column: any) => ({
-                data: column,
-                template: this // TODO: duplicate code
-                  .viewService
-                  .createTemplate({
-                    components: column.components,
-                    cellRenderer: true
-                  })
-              }))
-          }))
+      this
+        .compilerService
+        .getColumnFactories({
+          columns: this
+            .component
+            .components
+            .map((column: any) => ({
+              data: column,
+              template: this
+                .viewService
+                .createTemplate({
+                  components: column.components,
+                  cellRenderer: true
+                })
+            }))
+        }))
       .pipe(toArray())
       .pipe(map(factories => ({
         editorFactrories: factories[0],

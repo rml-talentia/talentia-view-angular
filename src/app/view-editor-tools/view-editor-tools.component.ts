@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Component as Bindable } from '../service/types';
+import { Bindable as Bindable } from '../service/types';
 import { visit } from '../tac/util';
 
 @Component({

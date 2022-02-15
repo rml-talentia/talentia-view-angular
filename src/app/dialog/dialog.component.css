@@ -3,10 +3,6 @@
     pointer-events: none;
 }
 
-.tac-dialog .modal-header {
-    /* cursor: grab; */
-}
-
 .tac-dialog .modal-dialog {
     pointer-events: all;
 }
@@ -14,3 +10,4 @@
 .tac-dialog .modal-content {
     overflow: hidden !important;
 }
+

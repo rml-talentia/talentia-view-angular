@@ -3,7 +3,7 @@ import { asyncScheduler, BehaviorSubject, EMPTY, forkJoin, Observable, of, Repla
 import { debounceTime, first, last, map, sample, tap, throttleTime } from 'rxjs/operators';
 import { ChosenService } from 'src/app/service/ChosenService';
 import { EventService } from 'src/app/service/EventService';
-import { Component as Bindable } from "src/app/service/types";
+import { Bindable as Bindable } from "src/app/service/types";
 import { DropdownComponent } from '../dropdown/dropdown.component';
 import { ItemTypeDirective } from '../itemType/itemType.directive';
 

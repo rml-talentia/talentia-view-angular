@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { TFNavigationItem } from '@talentia/components/shell';
+import { TFNavigationItem } from '@talentia/components/lib/models/tf-navigation-item.model';
+
 
 @Component({
   selector: 'tac-breadcrumb',
@@ -16,15 +17,15 @@ export class BreadcrumbComponent implements OnInit {
 
   ngOnInit(): void {
   }
-
-  _navigationHistory: TFNavigationItem[] | null = null;
+ 
+  _navigationHistory: any[] | null = null; // TFNavigationItem
 
   get navigationHistory() {
     if (!!this._navigationHistory) {
       return this._navigationHistory;
     }
 
-    const home = new TFNavigationItem();
+    const home: any = {}; // TFNavigationItem
     home.title = 'Acceuil';
 
     return this._navigationHistory = [home]
@@ -32,7 +33,7 @@ export class BreadcrumbComponent implements OnInit {
         .data
         .items
         .map((data: any) => {
-          const item = new TFNavigationItem();
+          const item: any = {}; // TFNavigationItem
           item.title = data.title.text;
           item.uri = data.url;
           return item;

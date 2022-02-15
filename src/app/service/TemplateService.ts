@@ -5,7 +5,7 @@ import { map } from "rxjs/operators";
 import { visit } from "../tac/util";
 import { CompilerService } from "./CompilerService";
 import { TFGridColConfig } from "@talentia/components/lib/models/tf-grid-col-config.model";
-import { Component } from "./types";
+import { Bindable } from "./types";
 import { ReferenceService } from "./ReferenceService";
 
 
@@ -135,13 +135,21 @@ export class TemplateService {
             template.push(start ? `
               <ng-template
                 #${component.components[0].id}_template>
-                <tf-grid-layout>
-                  <tf-field cols="12" title="&nbsp;">
-
               ` : `
-                  </tf-field>
-                </tf-grid-layout>
               </ng-template>`);
+
+
+              // template.push(start ? `
+              // <ng-template
+              //   #${component.components[0].id}_template>
+              //   <tf-grid-layout>
+              //     <tf-field cols="12" title="&nbsp;">
+
+              // ` : `
+              //     </tf-field>
+              //   </tf-grid-layout>
+              // </ng-template>`);
+
             break;
           case 'Insertion':
             //
@@ -318,7 +326,7 @@ export class TemplateService {
           case 'ExtendedInput':
             const itemTemplates = component
               .components
-              .map((child: Component) => `
+              .map((child: Bindable) => `
               <ng-template let-item>
                 <div 
                   style="
@@ -369,7 +377,7 @@ export class TemplateService {
                         //  flex: ${Math.ceil(column.size * 100) / 100};
             if (null !== component.model.columns) {
               const itemTemplates2 = [component.model]
-                .map((child: Component) => `
+                .map((child: Bindable) => `
                   <ng-template let-item>
                     <div 
                       style="
@@ -561,7 +569,7 @@ export class TemplateService {
   }
 
 
-  private isIgnoredComponent(options: CreateTemplate, component: Component) {
+  private isIgnoredComponent(options: CreateTemplate, component: Bindable) {
     return !!options.isIgnoredComponent 
       && options.isIgnoredComponent({ component: component, viewEditor: !!options.viewEditor }) 
       || component.componentType === 'DataGridColumn';

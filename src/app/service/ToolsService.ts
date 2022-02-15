@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { AppService } from "./AppService";
 import { ReferenceService } from "./ReferenceService";
-import { Component, Reference } from "./types";
+import { Bindable, Reference } from "./types";
 
 
 
@@ -50,7 +50,7 @@ export class ToolsService {
      * 
      * @returns the root component 
      */
-    getRoot(): Component | null {
+    getRoot(): Bindable | null {
        // throw new Error('Not implemented yet.');
        return this.appService.getView();
     }

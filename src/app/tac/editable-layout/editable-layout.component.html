@@ -1,4 +1,21 @@
+
+
+
+<tf-grid-layout
+    [hidden]="!dragging">
+    <tf-grid-row>
+        <tf-grid-col
+            [cols]="12">
+            <div class="tac-editable-layout-placeholder">
+                Drop Here
+            </div>
+        </tf-grid-col>
+    </tf-grid-row>
+</tf-grid-layout>
+
+
 <ng-content
     ></ng-content>
 <ng-container 
     #container></ng-container>
+

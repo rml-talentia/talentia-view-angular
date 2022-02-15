@@ -1,12 +1,17 @@
-import { Component } from "../service/types";
+import { Bindable } from "../service/types";
 
+
+export function findByComponentId(view: any, id: string): any {
+    return findInView(view, 
+        (component: any, parent: any, index: Number) => id === component.id ? component : undefined);
+}
 
 export function findByComponentType(view: any, componentType: string): any {
     return findInView(view, 
         (component: any, parent: any, index: Number) => componentType === component.componentType ? component : undefined);
 }
 
-export function getRoot(component: Component): Component {
+export function getRoot(component: Bindable): Bindable {
     return null === component.parent ? component : getRoot(component.parent);
 }
   
