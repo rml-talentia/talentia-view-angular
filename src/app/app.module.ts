@@ -24,7 +24,7 @@ import { CompilerService } from './service/CompilerService';
 import { TemplateService } from './service/TemplateService';
 import { FormatService } from './service/FormatService';
 import { DataGridService } from './service/DataGridService';
-import { ViewEditorComponent } from './view-editor-tools/view-editor-tools.component';
+import { ViewEditorToolsComponent } from './view-editor-tools/view-editor-tools.component';
 import { ChosenService } from './service/ChosenService';
 import { DialogComponent } from './dialog/dialog.component';
 
@@ -60,7 +60,7 @@ export function createCompiler(compilerFactory: CompilerFactory) {
     PageContentComponent,
     AsidePanelComponent,
     CommandsPanelComponent,
-    ViewEditorComponent,
+    ViewEditorToolsComponent,
     DialogComponent
   ],
   imports: [ 

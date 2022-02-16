@@ -8,8 +8,8 @@ import { ContextService } from './service/ContextService';
 import { MenuService } from './service/MenuService';
 import { AppService } from './service/AppService';
 import { toArray } from 'rxjs/operators';
-import { findByComponentId, findByComponentType } from './tac/util';
-import { TFDialogComponent, TFLocalizationService, TFMessageService, TFTreeViewComponent } from '@talentia/components';
+import { findByComponentType } from './tac/util';
+import { TFLocalizationService, TFMessageService, TFTreeViewComponent } from '@talentia/components';
 import { TransactionService, WritableTransactionService } from './service/TransactionService';
 import { ReferenceService } from './service/ReferenceService';
 import { ActionService } from './service/ActionService';
@@ -19,7 +19,7 @@ import { EventService } from './service/EventService';
 import { ToolsService } from './service/ToolsService';
 import { Bindable as Bindable } from './service/types';
 import { DOCUMENT } from '@angular/common';
-import { EditableLayoutComponent } from './tac/editable-layout/editable-layout.component';
+import { ViewEditorToolsComponent } from './view-editor-tools/view-editor-tools.component';
 
 export function localizationServiceFactory() {
   const localizationService: TFLocalizationService = new TFLocalizationService();
@@ -84,7 +84,6 @@ export class AppComponent implements OnInit {
   viewAsData: any;
 
   constructor(
-    @Inject(DOCUMENT) private document: Document,
     public viewContainerRef: ViewContainerRef,
     private messageService: TFMessageService,
     //private applicationRef: ApplicationRef,
@@ -175,14 +174,14 @@ export class AppComponent implements OnInit {
           {
             componentType: 'EditableLayout',
             id: 'editableCommandsPanel',
-            bindings: { references: [] },
-            components: []
+            bindings: { bindingsType: 'Bindings', references: {} },
+            components: this.toInsertableComponents(view.components[0].components)
           },
           {
             componentType: 'EditableLayout',
             id: 'editableAsidePanel',
-            bindings: { references: [] },
-            components: []
+            bindings: { bindingsType: 'Bindings', references: {} },
+            components: this.toInsertableComponents(view.components[0].components)
           }
         ]
       };
@@ -192,7 +191,9 @@ export class AppComponent implements OnInit {
     view = this.referenceService.toInstance(view);
     this.currentView = view;
 
-    this._inspector = null;
+    if (!!this.viewEditorTools) {
+      this.viewEditorTools.inspector = null;
+    }
 
     console.debug('[APP] showView(view:', view, ')');  
     // Remove previous view error messages.
@@ -332,6 +333,9 @@ export class AppComponent implements OnInit {
   // View Editor 
   //
 
+  @ViewChild(ViewEditorToolsComponent)
+  viewEditorTools!: ViewEditorToolsComponent;
+
   designMode: boolean = false;
 
   toggleDesignMode() {
@@ -345,122 +349,11 @@ export class AppComponent implements OnInit {
       });
   }
 
-  //
-  // Dragging Drop
-  //
 
-  dragging: Dragging | null = null;
-
-
-
-  //
-  // Inspector
-  //
-
-  @ViewChild('inspectorView', { read: TFTreeViewComponent })
-  inspectorView!: TFTreeViewComponent;
-  inspectorSelection: any[] = [];
-
-  _inspector: any = null;
-  _guard: any[] = [];
-
-  get inspector(): any {
-    if (null === this._inspector) {
-      //this._guard = [];
-      this._inspector = !this.currentView ? [] : [this.toInspectorNode(this.currentView)];
-    }
-    return this._inspector;
-  }
-
-  private toInspectorNode(component: Bindable) {
-    
-    // if (this._guard.indexOf(component)) {
-    //   console.log('[Inspector] toInspectorNode(', component, ')');
-    //   throw new Error();
-    // }
-    // this._guard.push(component);
-
-    
-    switch (component.componentType) {
-      case 'Insertion':
-        component = component.insertion;
-        if (null == component) {
-          return null;
-        }
-        return {
-          name: component.id ||  `${component.componentType}`,
-          icon: 'fas fa-link',
-          children: []
-        }
-        //component = this.referenceService.getValue(component, component.insertion);
-    }
-    return {
-      name: component.id ||  `${component.componentType}`,
-      icon: 'fas fa-code',
-      children: this.toInspectorNodes(component)
-    }
-  }
-
-  private toInspectorNodes(component: Bindable) {
-    return component.components.map((child: Bindable) => this.toInspectorNode(child)).filter((node: any) => null !== node);
-  }
-
-  inspectorMousedownHandler(ev: any, node: any) {
-    console.log('mousedown:', ev, node);
-
-    // https://github.com/Talentia-Software/core-components/blob/develop/projects/components/src/lib/ui/treeview/tf-treeview.component.ts
-    // https://angular2-tree.readme.io/docs/drag-drop#drag-a-node-outside-of-the-tree
-    // Selection on mousedown rather than on click.
-    this.inspectorView.selectNode(node);
-
-    // Start dragging
-    const glass = this.document.createElement('div');
-    glass.style.position = 'fixed';
-    (<any>glass.style).inset = '0';
-    glass.style.zIndex = '3000';
-    glass.style.cursor = 'grabbing';
-
-
-
-
-    
-    
-
-
-    const mousemove = (moveEvent: MouseEvent) => {
-      if (null === this.dragging) {
-        this.dragging = {};
-      }
-
-    };
-    const mouseup = (upEvent: MouseEvent) => {
-      mousemove(upEvent);
-      // Drop
-      this.dragging = null;
-
-
-      //
-      const editableLayout: EditableLayoutComponent = this.currentView.components[1]._view;
-      const component = findByComponentId(this.viewAsData, node.data.name);
-      console.log('component:', component);
-      console.log('currentView:', this.currentView);
-      editableLayout.insertComponent(component);
-
-
-      glass.parentElement?.removeChild(glass);
-    };    
-    glass.addEventListener('mousemove', mousemove);
-    glass.addEventListener('mouseup', mouseup);
-    this.document.body.appendChild(glass);
-  }
 
   
 }
 
-
-interface Dragging {
-
-}
 
 
 

@@ -7,6 +7,10 @@
     pointer-events: all;
 }
 
+.tac-dialog .modal-header * {
+    cursor: default;
+}
+
 .tac-dialog .modal-content {
     overflow: hidden !important;
 }

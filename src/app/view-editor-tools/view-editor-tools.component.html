@@ -1,11 +1,28 @@
 <div 
-    class="tac-view-editor"
-    (mousedown)="mousedownHandler($event)">
-
-
-    
+  class="tac-view-editor">
     
 
-    <ng-content></ng-content>
+
+  <ng-content></ng-content>
+
+
+  <app-dialog
+    title="Inspector"
+    [bounds]="{ x: 100, y: 10, width: 320, height: 450 }">
+    <tf-treeview 
+      #inspectorView
+      [data]="inspector" 
+      displayField="name" 
+      childrenField="children"
+      iconField="icon"
+      [allowDrag]="true"
+      [selection]="inspectorSelection">
+      <ng-template #treeNodeTemplate let-node="node" let-index="index">
+        <span
+          style="font-weight: normal !important;"
+          (mousedown)="inspectorMousedownHandler($event, node)">{{node.data.name}}</span>
+      </ng-template>
+    </tf-treeview>
+  </app-dialog>
 
 </div>

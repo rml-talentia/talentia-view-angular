@@ -17,7 +17,7 @@ export class CompilerService {
     private injector: Injector) {}
 
   getComponentFactory(template: string): Observable<ComponentFactory<any>> {
-    console.log('template:', template);
+    console.log('[CompilerService] template:', template);
     const templateKey = crypto
       .createHash('md5')
       .update(template)

@@ -16,14 +16,6 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
 
   @ContentChildren(TemplateRef)
   private templateRefs!: QueryList<TemplateRef<any>>;
-
-  @ViewChild('el_GridLayout', { read: TemplateRef, static: false })
-  private el_GridLayout_TemplateRef!: TemplateRef<any>;
-  @ViewChild('el_GridRow', { read: TemplateRef, static: false })
-  private el_GridRow_TemplateRef!: TemplateRef<any>;
-  @ViewChild('el_Field', { read: TemplateRef, static: false })
-  private el_Field_TemplateRef!: TemplateRef<any>;
-
   @ViewChild('container', { read: ViewContainerRef, static: false })
   private containerRef!: ViewContainerRef;
 
@@ -34,12 +26,13 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
     private componentFactoryResolver: ComponentFactoryResolver,
     private appRef: ApplicationRef,
     private ngZone: NgZone,
-    private injector: Injector) {
+    private injector: Injector,
+    private elementRef: ElementRef) {
     super();
   }
 
   get dragging() {
-    return !this.appComponent ? null : this.appComponent.dragging;
+    return !this.appComponent?.viewEditorTools ? null : this.appComponent.viewEditorTools.dragging;
   }
 
   _initialize: boolean = true;
@@ -90,26 +83,11 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
               .map((child: Bindable) => this.insertComponentImpl(child, null)));
       
       // Bind layout components.
-      switch(component.componentType) {
-        case 'GridLayout':
-        case 'GridRow':
-          break;
-        case 'GridColumn':          
-          componentRef.instance.addClasses = 'tf-bold';
-          componentRef.instance.cols = <TFGridColConfig> { 'default': 6, 'sm': 6, 'md': 6, 'lg': 6, 'xl': 6 };
-          componentRef.instance.setDefaultColsClasses(componentRef.instance.cols); 
-          componentRef.changeDetectorRef.detectChanges();
-          break;
-        case 'Field':
-          componentRef.instance.title = 'unnamed field';
-          componentRef.instance.addClasses = 'tf-bold';
-          componentRef.instance.cols = <TFGridColConfig> { 'default': 6, 'sm': 6, 'md': 6, 'lg': 6, 'xl': 6 };
-          componentRef.instance.setDefaultColsClasses(componentRef.instance.cols);
-          componentRef.changeDetectorRef.detectChanges();
-          break;
-      }     
+      this.setupComponentInstance(component, componentRef);
 
+      
       if (null !== containerRef) {
+        // Finally add to container.
         containerRef.insert(componentRef.hostView);
       }
       return (componentRef.hostView as any).rootNodes;
@@ -119,19 +97,51 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
     const templateRef = this.getTemplate(component);
     if (null !== templateRef) {
       const embeddedViewRef = templateRef.createEmbeddedView({ $implicit: component });
-      this.appRef.attachView(embeddedViewRef);
+      
+      
+      if (null !== containerRef) {
+        // Finally add to container.
+        containerRef.insert(embeddedViewRef);
+      } else {
+        // Should be attached when it is not inserted directly but projected on a component create.  
+        this.appRef.attachView(embeddedViewRef);
+      }
       return embeddedViewRef.rootNodes;
     }
 
     return null;
   }
 
+
+  private setupComponentInstance(component: Bindable, componentRef: ComponentRef<any>) {
+    const col = this.asidePanel ? 12 : 6;
+    switch(component.componentType) {
+      case 'GridLayout':
+      case 'GridRow':
+        break;
+      case 'GridColumn':          
+        componentRef.instance.addClasses = 'tf-bold';
+        componentRef.instance.cols = <TFGridColConfig> { 'default': col, 'sm': col, 'md': col, 'lg': col, 'xl': col };
+        componentRef.instance.setDefaultColsClasses(componentRef.instance.cols); 
+        componentRef.changeDetectorRef.detectChanges();
+        break;
+      case 'Field':
+        componentRef.instance.title = 'unnamed field';
+        componentRef.instance.addClasses = 'tf-bold';
+        componentRef.instance.cols = <TFGridColConfig> { 'default': col, 'sm': col, 'md': col, 'lg': col, 'xl': col };
+        componentRef.instance.setDefaultColsClasses(componentRef.instance.cols);
+        componentRef.changeDetectorRef.detectChanges();
+        break;
+    }     
+  }
+
   
-  getTemplate(component: Bindable): TemplateRef<any> | null {
+  private getTemplate(component: Bindable): TemplateRef<any> | null {
+    console.log('component: ', component);
     if ('Insertion' === component.componentType) {
       component = component.insertion;
     }
-    const templateRefIndex = this.component
+    const templateRefIndex = this.component//this.appComponent.currentView.components[1]
       .components
       .filter((child: Bindable) => child.componentType === 'InsertableComponent')
       .map((child: Bindable) => child.components[0].id)
@@ -157,7 +167,9 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
   insertComponent(component: Bindable): void {
     let columnType;
     switch (component.componentType) {
+      case 'Dropdown':
       case 'Chosen':
+      case 'DatePicker':
       case 'Input':
       case 'ExtendedInput':
         columnType = 'Field';
@@ -166,41 +178,77 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
         columnType = 'GridColumn';
     }
 
-    this.component.components.push(this.referenceService.toInstance(
-    {
-      componentType: 'GridLayout',
-      bindings: { bindingsType: 'Bindings', references: {} },
-      components: [
-        {
-          componentType: 'GridRow',
+    let insertion: any = {
+      componentType: 'Insertion',
+      bindings: { 
+        bindingsType: 'Bindings', 
+        references: {
+          'insertion': {
+            referenceType: 'ByIdReference',
+            id: component.id,
+            parent: null
+          }
+        } 
+      },
+      components: []
+    };
+  
+
+    switch (this.component.id) {
+      case 'pageContent':
+        insertion = {
+          componentType: 'GridLayout',
           bindings: { bindingsType: 'Bindings', references: {} },
           components: [
             {
-              componentType: columnType,
+              componentType: 'GridRow',
               bindings: { bindingsType: 'Bindings', references: {} },
               components: [
                 {
-                  componentType: 'Insertion',
-                  bindings: { 
-                    bindingsType: 'Bindings', 
-                    references: {
-                      'insertion': {
-                        referenceType: 'ByIdReference',
-                        id: component.id,
-                        parent: null
-                      }
-                    } 
-                  },
-                  components: []
+                  componentType: columnType,
+                  bindings: { bindingsType: 'Bindings', references: {} },
+                  components: [
+                    insertion
+                  ]
                 }
               ]
             }
           ]
-        }
-      ]
+        };
+        break;
+      case 'editableAsidePanel':
+      case 'editableCommandsPanel':
     }
-    , this.component));
+
+
+    this.component.components.push(this.referenceService.toInstance(insertion, this.component));
     this._update = true;
     this.changeDetectorRef.markForCheck();
+  }
+
+  getBoundingRect() {
+    const asidePanel = this.elementRef.nativeElement.closest('#tf-aside');
+    if (asidePanel) {
+      return asidePanel.getBoundingClientRect();
+    }
+    const commandsPanel = this.elementRef.nativeElement.closest('#tf-titlebar-container');//.closest('#tf-titlebar-commands');
+    if (commandsPanel) {
+      return commandsPanel.getBoundingClientRect();
+    }
+    const pageContent = this.elementRef.nativeElement.closest('#tf-page-content');
+    if (pageContent) {
+      return pageContent.getBoundingClientRect();
+    }
+    return null;
+  }
+
+  get asidePanel(): boolean {
+    return 'editableAsidePanel' === this.component.id;
+  }
+
+  get wrapperStyle() {
+    return {
+      'margin-right': this.asidePanel ? '1em' : '0'
+    };
   }
 }

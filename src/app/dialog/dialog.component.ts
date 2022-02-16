@@ -1,10 +1,11 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, Inject, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inject, Input, OnInit, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-dialog',
   templateUrl: './dialog.component.html',
-  styleUrls: ['./dialog.component.css']
+  styleUrls: ['./dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DialogComponent implements OnInit {
 
@@ -20,7 +21,8 @@ export class DialogComponent implements OnInit {
 
 
   constructor(
-    @Inject(DOCUMENT) private document: Document) {
+    @Inject(DOCUMENT) private document: Document,    
+    private changeDetectorRef: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -59,11 +61,14 @@ export class DialogComponent implements OnInit {
   }
 
   headerMousedownHandler(downEvent: MouseEvent): void {
+    downEvent.preventDefault();
     const oldBounds = { ...this.bounds };// this.dialog.nativeElement.getBoundingClientRect();
     const newBounds = this.bounds;
     const mousemove = (moveEvent: MouseEvent) => {
+      moveEvent.preventDefault();
       newBounds.x = oldBounds.x + moveEvent.clientX - downEvent.clientX;
       newBounds.y = oldBounds.y + moveEvent.clientY - downEvent.clientY;
+      this.changeDetectorRef.detectChanges();
     };
     const mouseup = (upEvent: MouseEvent) => {
       mousemove(upEvent);

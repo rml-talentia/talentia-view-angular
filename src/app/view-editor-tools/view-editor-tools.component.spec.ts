@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ViewEditorComponent } from './view-editor-tools.component';
+import { ViewEditorToolsComponent } from './view-editor-tools.component';
 
 describe('ViewEditorToolsComponent', () => {
-  let component: ViewEditorComponent;
-  let fixture: ComponentFixture<ViewEditorComponent>;
+  let component: ViewEditorToolsComponent;
+  let fixture: ComponentFixture<ViewEditorToolsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ViewEditorComponent ]
+      declarations: [ ViewEditorToolsComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ViewEditorComponent);
+    fixture = TestBed.createComponent(ViewEditorToolsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

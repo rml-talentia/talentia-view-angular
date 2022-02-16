@@ -22,7 +22,7 @@ export class PageContentComponent extends ViewContainerComponent {
         if (!!options.component.parent) {
           switch (options.component.parent.componentType) {
             case 'EditableLayout':
-              console.log('[PageContentComponent] isIgnoredComponent editableLayout:', options.component);
+              //console.log('[PageContentComponent] isIgnoredComponent editableLayout:', options.component);
               //return true;
           }
         }
