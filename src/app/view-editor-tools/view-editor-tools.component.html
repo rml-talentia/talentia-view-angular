@@ -2,6 +2,31 @@
   class="tac-view-editor">
     
 
+  <div
+    *ngIf="technicalDrawing"
+    class="tac-technical-drawing"
+    [style]="toTechnicalDrawingStyle(technicalDrawing)">
+  
+    <!-- 
+      - dimensioning (cotation in french)
+    -->
+
+    <div 
+      *ngFor="let row of technicalDrawing.rows; let index = index;"
+      class="tac-technical-drawing-row"
+      [style]="toTechnicalDrawingRowStyle(row)">
+      row {{index}}
+    </div>
+    <div 
+      *ngFor="let column of technicalDrawing.columns; let index = index;"
+      class="tac-technical-drawing-column"
+      [style]="toTechnicalDrawingColumnStyle(column)">
+      column {{index}}
+    </div>
+    
+
+  
+  </div>
 
   <ng-content></ng-content>
 

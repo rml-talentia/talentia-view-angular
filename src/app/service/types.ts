@@ -34,6 +34,11 @@ export class Bindable {
      */
     public _view: BaseComponent | null = null;
 
+    // static create(options: any) {
+    //     return {
+    //     }
+    // }
+
     constructor(
         private _referenceService: ReferenceService,
         options: any,

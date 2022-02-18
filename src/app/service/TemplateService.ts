@@ -130,6 +130,11 @@ export class TemplateService {
               <tac-editable-layout
                 [component]="${componentBind}">` : `</tac-editable-layout>`);
             break;
+          case 'EditableLayoutPlaceholder':
+            template.push(start ? `
+              <tac-editable-layout-placeholder
+                [component]="${componentBind}">` : `</tac-editable-layout-placeholder>`);
+            break;
           case 'InsertableComponent':
 
             template.push(start ? `

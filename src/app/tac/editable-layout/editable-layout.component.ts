@@ -1,15 +1,17 @@
-import { AfterContentChecked, ApplicationRef, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ContentChildren, ElementRef, EmbeddedViewRef, Injector, NgZone, QueryList, TemplateRef, Type, ViewChild, ViewContainerRef, ViewRef } from '@angular/core';
+import { AfterContentChecked, ApplicationRef, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, ContentChildren, ElementRef, EmbeddedViewRef, Injector, NgZone, QueryList, TemplateRef, Type, ViewChild, ViewContainerRef, ViewRef } from '@angular/core';
 import { AppComponent } from 'src/app/app.component';
 import { BaseComponent } from '../base/component-base.component';
 import { Bindable } from '../../service/types';
 import { ReferenceService } from 'src/app/service/ReferenceService';
 import { TFField, TFFieldComponent, TFGridColumnComponent, TFGridComponent, TFGridRowComponent } from '@talentia/components';
 import { TFGridColConfig } from '@talentia/components/lib/models/tf-grid-col-config.model';
+import { EditableLayoutPlaceholderComponent } from '../editable-layout-placeholder/editable-layout-placeholder.component';
 
 @Component({
   selector: 'tac-editable-layout',
   templateUrl: './editable-layout.component.html',
-  styleUrls: ['./editable-layout.component.css']
+  styleUrls: ['./editable-layout.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditableLayoutComponent extends BaseComponent implements AfterContentChecked {
 
@@ -22,12 +24,12 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
   constructor(
     private appComponent: AppComponent,
     private referenceService: ReferenceService,
-    private changeDetectorRef: ChangeDetectorRef,
+    public changeDetectorRef: ChangeDetectorRef,
     private componentFactoryResolver: ComponentFactoryResolver,
     private appRef: ApplicationRef,
     private ngZone: NgZone,
     private injector: Injector,
-    private elementRef: ElementRef) {
+    public elementRef: ElementRef) {
     super();
   }
 
@@ -37,6 +39,8 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
 
   _initialize: boolean = true;
   _update: boolean = false;
+
+  _placeholders: EditableLayoutPlaceholderComponent[] = [];
 
   ngAfterContentChecked(): void {
     // When createEmbeddedView are made in ngAfterViewInit 
@@ -52,43 +56,48 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
 
 
     // Clear container.
-    for (let i = -1 + this.containerRef.length; i >= 0; i--) {
-      this.containerRef.remove(i);
-    }
+    // for (let i = -1 + this.containerRef.length; i >= 0; i--) {
+    //   this.containerRef.remove(i);
+    // }
+    this.containerRef.clear();
 
     // Insert components.
     this.component
       .components
       .filter((child: Bindable) => child.componentType !== 'InsertableComponent')
       .forEach((child: Bindable) => {
-        const callbacks: Function[] = [];
         this.insertComponentImpl(child, this.containerRef);
       });
 
   }
 
   private insertComponentImpl(component: Bindable, containerRef: ViewContainerRef | null): any[] | null {
-    
+   
     // Layout components are created from factory.
     const componentType = this.getComponentType(component);
     if (null !== componentType) {
       
-      // Create layout components.
+      // Recursive layout components creation.
+      const allRootNodes = component
+        .components
+        .map((child: Bindable) => this.insertComponentImpl(child, null))
+        .reduce((acc: any[], x: any[]) => acc.concat(x), []); // flatMap
+
       const componentRef = this.componentFactoryResolver
         .resolveComponentFactory(componentType)
         .create(
             this.injector,
-            component
-              .components
-              .map((child: Bindable) => this.insertComponentImpl(child, null)));
-      
+            [allRootNodes]);
+
       // Bind layout components.
       this.setupComponentInstance(component, componentRef);
 
+      console.log('[insertComponentImpl] component:', component, ' componentRef:', componentRef, 'allRootNodes: ', allRootNodes);
       
       if (null !== containerRef) {
         // Finally add to container.
         containerRef.insert(componentRef.hostView);
+        //componentRef.hostView.reattach();
       }
       return (componentRef.hostView as any).rootNodes;
     }
@@ -114,25 +123,26 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
 
 
   private setupComponentInstance(component: Bindable, componentRef: ComponentRef<any>) {
-    const col = this.asidePanel ? 12 : 6;
+    componentRef.instance.component = component;
     switch(component.componentType) {
       case 'GridLayout':
+        //componentRef.instance.setClasses();
+        break;
       case 'GridRow':
         break;
-      case 'GridColumn':          
-        componentRef.instance.addClasses = 'tf-bold';
-        componentRef.instance.cols = <TFGridColConfig> { 'default': col, 'sm': col, 'md': col, 'lg': col, 'xl': col };
+      case 'GridColumn':
+        componentRef.instance.cols = { 'default': component.size.medium, 'sm': component.size.small, 'md': component.size.medium, 'lg': component.size.large, 'xl': component.size.large };
         componentRef.instance.setDefaultColsClasses(componentRef.instance.cols); 
-        componentRef.changeDetectorRef.detectChanges();
         break;
       case 'Field':
         componentRef.instance.title = 'unnamed field';
         componentRef.instance.addClasses = 'tf-bold';
-        componentRef.instance.cols = <TFGridColConfig> { 'default': col, 'sm': col, 'md': col, 'lg': col, 'xl': col };
+        componentRef.instance.cols = { 'default': component.size.medium, 'sm': component.size.small, 'md': component.size.medium, 'lg': component.size.large, 'xl': component.size.large };
         componentRef.instance.setDefaultColsClasses(componentRef.instance.cols);
-        componentRef.changeDetectorRef.detectChanges();
+        
         break;
     }     
+    componentRef.changeDetectorRef.detectChanges();
   }
 
   
@@ -159,9 +169,15 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
         return TFGridColumnComponent;
       case 'Field':
         return TFFieldComponent;
+      case 'EditableLayoutPlaceholder':
+        return EditableLayoutPlaceholderComponent;
       default:
         return null;
     }
+  }
+
+  replaceComponent(newComponent: Bindable, oldComponent: Bindable): void {
+
   }
 
   insertComponent(component: Bindable): void {
@@ -206,9 +222,184 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
               components: [
                 {
                   componentType: columnType,
-                  bindings: { bindingsType: 'Bindings', references: {} },
+                  bindings: { 
+                    bindingsType: 'Bindings', 
+                    references: {
+                      'size': {
+                        referenceType: 'ValueReference',
+                        parent: null,
+                        value: {
+                          'small': 12,
+                          'medium': 6,
+                          'large': 6
+                        }
+                      }
+                    } 
+                  },
                   components: [
                     insertion
+                  ]
+                },
+                {
+                  componentType: 'GridColumn',
+                  bindings: { 
+                    bindingsType: 'Bindings', 
+                    references: {
+                      'size': {
+                        referenceType: 'ValueReference',
+                        parent: null,
+                        value: {
+                          'small': 1,
+                          'medium': 1,
+                          'large': 1
+                        }
+                      }
+                    } 
+                  },
+                  components: [
+                    {
+                      componentType: 'EditableLayoutPlaceholder',
+                      bindings: { 
+                        bindingsType: 'Bindings', 
+                        references: {} 
+                      },
+                      components: []
+                    }
+                  ]
+                },
+                {
+                  componentType: 'GridColumn',
+                  bindings: { 
+                    bindingsType: 'Bindings', 
+                    references: {
+                      'size': {
+                        referenceType: 'ValueReference',
+                        parent: null,
+                        value: {
+                          'small': 1,
+                          'medium': 1,
+                          'large': 1
+                        }
+                      }
+                    } 
+                  },
+                  components: [
+                    {
+                      componentType: 'EditableLayoutPlaceholder',
+                      bindings: { 
+                        bindingsType: 'Bindings', 
+                        references: {} 
+                      },
+                      components: []
+                    }
+                  ]
+                },
+                {
+                  componentType: 'GridColumn',
+                  bindings: { 
+                    bindingsType: 'Bindings', 
+                    references: {
+                      'size': {
+                        referenceType: 'ValueReference',
+                        parent: null,
+                        value: {
+                          'small': 1,
+                          'medium': 1,
+                          'large': 1
+                        }
+                      }
+                    } 
+                  },
+                  components: [
+                    {
+                      componentType: 'EditableLayoutPlaceholder',
+                      bindings: { 
+                        bindingsType: 'Bindings', 
+                        references: {} 
+                      },
+                      components: []
+                    }
+                  ]
+                },
+                {
+                  componentType: 'GridColumn',
+                  bindings: { 
+                    bindingsType: 'Bindings', 
+                    references: {
+                      'size': {
+                        referenceType: 'ValueReference',
+                        parent: null,
+                        value: {
+                          'small': 1,
+                          'medium': 1,
+                          'large': 1
+                        }
+                      }
+                    } 
+                  },
+                  components: [
+                    {
+                      componentType: 'EditableLayoutPlaceholder',
+                      bindings: { 
+                        bindingsType: 'Bindings', 
+                        references: {} 
+                      },
+                      components: []
+                    }
+                  ]
+                },
+                {
+                  componentType: 'GridColumn',
+                  bindings: { 
+                    bindingsType: 'Bindings', 
+                    references: {
+                      'size': {
+                        referenceType: 'ValueReference',
+                        parent: null,
+                        value: {
+                          'small': 1,
+                          'medium': 1,
+                          'large': 1
+                        }
+                      }
+                    } 
+                  },
+                  components: [
+                    {
+                      componentType: 'EditableLayoutPlaceholder',
+                      bindings: { 
+                        bindingsType: 'Bindings', 
+                        references: {} 
+                      },
+                      components: []
+                    }
+                  ]
+                },
+                {
+                  componentType: 'GridColumn',
+                  bindings: { 
+                    bindingsType: 'Bindings', 
+                    references: {
+                      'size': {
+                        referenceType: 'ValueReference',
+                        parent: null,
+                        value: {
+                          'small': 1,
+                          'medium': 1,
+                          'large': 1
+                        }
+                      }
+                    } 
+                  },
+                  components: [
+                    {
+                      componentType: 'EditableLayoutPlaceholder',
+                      bindings: { 
+                        bindingsType: 'Bindings', 
+                        references: {} 
+                      },
+                      components: []
+                    }
                   ]
                 }
               ]
@@ -250,5 +441,22 @@ export class EditableLayoutComponent extends BaseComponent implements AfterConte
     return {
       'margin-right': this.asidePanel ? '1em' : '0'
     };
+  }
+
+  registerPlaceholder(placeholder: EditableLayoutPlaceholderComponent) {
+    if (0 > this._placeholders.indexOf(placeholder)) {
+      this._placeholders.push(placeholder);
+    }
+  }
+
+  unregisterPlaceholder(placeholder: EditableLayoutPlaceholderComponent) {
+    const index = this._placeholders.indexOf(placeholder);
+    if (-1 < index) {
+      this._placeholders.splice(index, 1);
+    }
+  }
+
+  refreshPlaceholders() {
+    this._placeholders.forEach(placeholder => placeholder.changeDetectorRef.detectChanges());
   }
 }

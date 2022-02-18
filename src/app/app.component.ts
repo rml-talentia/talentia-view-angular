@@ -169,7 +169,49 @@ export class AppComponent implements OnInit {
             componentType: 'EditableLayout',
             id: 'pageContent',
             bindings: { bindingsType: 'Bindings', references: {} },
-            components: this.toInsertableComponents(view.components[0].components)
+            components: []
+              .concat(this.toInsertableComponents(view.components[0].components) as any)
+              .concat([
+                {
+                  componentType: 'GridLayout',
+                  bindings: { bindingsType: 'Bindings', references: {} },
+                  components: [
+                    {
+                      componentType: 'GridRow',
+                      bindings: { bindingsType: 'Bindings', references: {} },
+                      components: [
+                        {
+                          componentType: 'GridColumn',
+                          bindings: { 
+                            bindingsType: 'Bindings', 
+                            references: {
+                              'size': {
+                                referenceType: 'ValueReference',
+                                parent: null,
+                                value: {
+                                  'small': 12,
+                                  'medium': 12,
+                                  'large': 12
+                                }
+                              }
+                            } 
+                          },
+                          components: [
+                            {
+                              componentType: 'EditableLayoutPlaceholder',
+                              bindings: { 
+                                bindingsType: 'Bindings', 
+                                references: {} 
+                              },
+                              components: []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ] as any)
           },
           {
             componentType: 'EditableLayout',

@@ -38,6 +38,7 @@ import { ListComponent } from './list/list.component';
 import { ItemTypeDirective } from './itemType/itemType.directive';
 import { DropdownComponent } from './dropdown/dropdown.component';
 import { EditableLayoutComponent } from './editable-layout/editable-layout.component';
+import { EditableLayoutPlaceholderComponent } from './editable-layout-placeholder/editable-layout-placeholder.component';
 
 
 @NgModule({
@@ -62,7 +63,8 @@ import { EditableLayoutComponent } from './editable-layout/editable-layout.compo
     ListComponent,
     ItemTypeDirective,
     DropdownComponent,
-    EditableLayoutComponent
+    EditableLayoutComponent,
+    EditableLayoutPlaceholderComponent
   ],
   imports: [
     TFUILibraryModule,
@@ -116,7 +118,8 @@ import { EditableLayoutComponent } from './editable-layout/editable-layout.compo
     ModelSwitchComponent,
     ListComponent,
     DropdownComponent,
-    EditableLayoutComponent
+    EditableLayoutComponent,
+    EditableLayoutPlaceholderComponent
   ]
 })
 export class TacModule { 

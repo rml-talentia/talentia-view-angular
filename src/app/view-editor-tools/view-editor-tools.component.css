@@ -4,8 +4,33 @@
     left: 0;
     bottom: 0;
     right: 0;
-    pointer-events: none;
+    /* pointer-events: none; */
     /* background: rgba(180, 180, 180, .5); */
     /* tf-titlebar is at z-index 900 */
-    z-index: 1500; /* behind dialogs */
+    z-index: 1498; /* behind dialogs */
+}
+
+.tac-technical-drawing {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.tac-technical-drawing-row {
+    position: absolute;
+    border: 1px dashed rgba(172, 172, 172, 0.4);
+    padding: 8px;
+    text-align: right;
+    font-size: 8px;
+    font-style: italic;
+}
+
+.tac-technical-drawing-column {
+    position: absolute;
+    /* background: rgba(172, 172, 172, 0.125); */
+    border: 1px dashed rgba(172, 172, 172, 0.8);
+    padding: 4px;
+    text-align: left;
+    font-size: 8px;
+    font-style: italic;
 }
